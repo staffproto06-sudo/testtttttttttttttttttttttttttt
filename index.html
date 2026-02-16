@@ -2547,6 +2547,30 @@ VIP Table</textarea>
             await Promise.all(toDelete.map(o=>deleteOrderFirestore(o.orderNumber)));
         }
 
+        // ========== DELETE SINGLE ORDER (NEW) ==========
+        async function deleteSingleOrder(orderId) {
+            if (!confirm(`Are you sure you want to delete order #${orderId}?`)) return;
+            
+            // Remove from local state
+            state.orders = state.orders.filter(o => o.orderNumber !== orderId);
+            
+            // Update UI
+            updatePendingBadges();
+            populateTableFilter();
+            populateTableFilterModal();
+            loadOrdersForAdmin();
+            if (adminPanel.style.display === 'flex') loadOrdersForAdminModal();
+            if (state.currentTable && !state.isAdminMode) loadMyOrders();
+            
+            // Remove from Firestore
+            await deleteOrderFirestore(orderId);
+            
+            // Recalculate cumulative stats (optional)
+            recalcCumulativeStats();
+            
+            showNotification(`Order #${orderId} deleted.`);
+        }
+
         // ========== QR CODE PDF GENERATOR (include business param) ==========
         function generateTableQRCodePDF(tableNamesArray) {
             if (!tableNamesArray || tableNamesArray.length === 0) {
@@ -3447,6 +3471,12 @@ VIP Table</textarea>
                     const order = state.orders.find(o => o.orderNumber === orderId);
                     if (order) openEditOrderModal(order);
                 }
+                // NEW: Delete single order button handler
+                if (e.target.classList.contains('delete-order-btn') || e.target.closest('.delete-order-btn')) {
+                    const btn = e.target.classList.contains('delete-order-btn') ? e.target : e.target.closest('.delete-order-btn');
+                    const orderId = btn.dataset.orderId;
+                    deleteSingleOrder(orderId);
+                }
             });
             setTimeout(()=>{ 
                 makeAdminGridDraggable('menuItemsList'); 
@@ -4001,7 +4031,8 @@ VIP Table</textarea>
                     }
                     itemsHtml += '</div>';
                 });
-                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button></div>`;
+                // Add a delete button next to edit button
+                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button></div>`;
                 list.appendChild(card);
             });
             populateTableSelect('tableSelectForDelete');
@@ -4533,7 +4564,8 @@ VIP Table</textarea>
                     }
                     itemsHtml += '</div>';
                 });
-                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button></div>`;
+                // Add delete button in modal as well
+                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button></div>`;
                 list.appendChild(card);
             });
             populateTableSelect('tableSelectForDeleteModal');
@@ -4542,6 +4574,11 @@ VIP Table</textarea>
                 const orderId = this.dataset.orderId;
                 const order = state.orders.find(o => o.orderNumber === orderId);
                 if (order) openEditOrderModal(order);
+            }));
+            // Add delete handler for modal
+            document.querySelectorAll('.delete-order-btn-modal').forEach(b=> b.addEventListener('click', function() {
+                const orderId = this.dataset.orderId;
+                deleteSingleOrder(orderId);
             }));
         }
 
