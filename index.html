@@ -1477,7 +1477,10 @@ VIP Table</textarea>
             },
             helpSoundInterval: null,
             cumulativeStats: { totalOrders: 0, totalRevenue: 0 },
-            currentEditOrder: null
+            currentEditOrder: null,
+            // Cooldown timestamps
+            lastHelpRequestTime: 0,
+            lastPayRequestTime: 0
         };
 
         // ========== DEFAULT DATA (unchanged) ==========
@@ -2115,7 +2118,8 @@ VIP Table</textarea>
             let html = `<h3 class="options-modal-title">${getItemName(item)}</h3><div class="options-modal-price">$${item.price.toFixed(2)}</div><div class="item-description" style="margin-bottom:20px;">${getItemDescription(item)}</div>`;
             item.options.forEach((g, gi) => {
                 if (g.type === 'text') {
-                    html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-comment"></i> ${getOptionGroupName(g)}</div><div class="comment-field"><textarea class="admin-textarea" placeholder="${state.currentLanguage === 'el' ? 'Εισάγετε το σχόλιό σας εδώ...' : 'Enter your comment here...'}" id="comment_${g.id||gi}"></textarea></div></div>`;
+                    // Add maxlength="150" to the comment textarea
+                    html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-comment"></i> ${getOptionGroupName(g)}</div><div class="comment-field"><textarea class="admin-textarea" maxlength="150" placeholder="${state.currentLanguage === 'el' ? 'Εισάγετε το σχόλιό σας εδώ...' : 'Enter your comment here...'}" id="comment_${g.id||gi}"></textarea></div></div>`;
                 } else {
                     html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-tag"></i> ${getOptionGroupName(g)} ${g.type==='radio'?`<span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε ένα' : 'choose one'})</span>`:`<span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε οποιοδήποτε' : 'choose any'})</span>`}</div><div class="${g.type==='radio'?'option-group-radio':'option-group-checkbox'}">`;
                     g.choices.forEach((c, ci) => {
@@ -2341,6 +2345,16 @@ VIP Table</textarea>
 
         async function requestPay() {
             if (!state.currentTable || state.currentTable === "Admin" || state.isAdminMode) return;
+            
+            // Cooldown check (2 minutes = 120000 ms)
+            const now = Date.now();
+            if (now - state.lastPayRequestTime < 120000) {
+                const remaining = Math.ceil((120000 - (now - state.lastPayRequestTime)) / 1000);
+                showNotification(state.currentLanguage === 'el' ? `Παρακαλώ περιμένετε ${remaining} δευτερόλεπτα πριν ξαναστείλετε αίτημα πληρωμής.` : `Please wait ${remaining} seconds before sending another payment request.`);
+                return;
+            }
+            state.lastPayRequestTime = now;
+            
             const requestId = 'pay_' + Date.now() + '_' + Math.random().toString(36).substring(2);
             const payRequest = {
                 id: requestId,
@@ -2361,6 +2375,16 @@ VIP Table</textarea>
                 showNotification(state.currentLanguage === 'el' ? 'Παρακαλώ επιλέξτε πρώτα ένα τραπέζι.' : 'Please select a table first.');
                 return;
             }
+            
+            // Cooldown check (2 minutes = 120000 ms)
+            const now = Date.now();
+            if (now - state.lastHelpRequestTime < 120000) {
+                const remaining = Math.ceil((120000 - (now - state.lastHelpRequestTime)) / 1000);
+                showNotification(state.currentLanguage === 'el' ? `Παρακαλώ περιμένετε ${remaining} δευτερόλεπτα πριν ξαναστείλετε αίτημα βοήθειας.` : `Please wait ${remaining} seconds before sending another help request.`);
+                return;
+            }
+            state.lastHelpRequestTime = now;
+            
             playSound(state.soundEffects.helpRequestSound);
             const requestId = 'help_' + Date.now() + '_' + Math.random().toString(36).substring(2);
             const helpRequest = {
