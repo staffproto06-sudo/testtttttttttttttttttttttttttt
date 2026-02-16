@@ -4598,8 +4598,8 @@ VIP Table</textarea>
                 adminPassword.value = '';
                 loginError.style.display = 'none';
                 // enterAdminMode will be triggered by onAuthStateChanged
-            } catch (error) {
-                loginError.textContent = error.message;
+             } catch (error) {
+                loginError.textContent = 'Invalid email or password. Please try again.';
                 loginError.style.display = 'block';
             }
         }
@@ -4747,4 +4747,5 @@ VIP Table</textarea>
         }, 7000);
     </script>
 </body>
+
 </html>
