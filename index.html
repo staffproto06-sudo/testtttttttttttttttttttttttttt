@@ -1416,6 +1416,10 @@ VIP Table</textarea>
             if (businessId === 'default') return db.collection('tables');
             return db.collection(`business_${businessId}_tables`);
         }
+        // Helper to get the business document (stores adminEmail etc.)
+        function getBusinessDoc() {
+            return db.collection('businesses').doc(businessId);
+        }
 
         // Update all Firestore save/load functions to use these helpers
         async function saveRestaurantInfo() { try { await getSettingsDoc().set(state.restaurantInfo); } catch (e) { console.error(e); } }
@@ -2541,11 +2545,31 @@ VIP Table</textarea>
             updateRequestPayButton();
         }
 
-        // ========== AUTH STATE OBSERVER ==========
-        auth.onAuthStateChanged(user => {
-            // If user is logged in and current table is Admin, and not already in admin mode, enter admin mode
+        auth.onAuthStateChanged(async user => {
+            // If user is logged in and current table is Admin, and not already in admin mode, verify business email
             if (user && state.currentTable && state.currentTable.toLowerCase() === "admin" && !state.isAdminMode) {
-                enterAdminMode();
+                try {
+                    const businessDoc = await getBusinessDoc().get();
+                    if (!businessDoc.exists) {
+                        console.error('Business document not found');
+                        showNotification('Business configuration missing. Please contact support.');
+                        await auth.signOut();
+                        return;
+                    }
+                    const businessData = businessDoc.data();
+                    if (businessData.adminEmail !== user.email) {
+                        console.error('User email not authorized for this business');
+                        showNotification('Your email is not authorized for this business.');
+                        await auth.signOut();
+                        return;
+                    }
+                    // If authorized, enter admin mode
+                    enterAdminMode();
+                } catch (e) {
+                    console.error('Error verifying business admin:', e);
+                    showNotification('Error verifying authorization. Please try again.');
+                    await auth.signOut();
+                }
             }
         });
 
@@ -4865,7 +4889,23 @@ VIP Table</textarea>
                 return;
             }
             try {
-                await auth.signInWithEmailAndPassword(email, password);
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                // Check business admin email
+                const businessDoc = await getBusinessDoc().get();
+                if (!businessDoc.exists) {
+                    loginError.textContent = 'Business configuration not found.';
+                    loginError.style.display = 'block';
+                    await auth.signOut();
+                    return;
+                }
+                const businessData = businessDoc.data();
+                if (businessData.adminEmail !== user.email) {
+                    loginError.textContent = 'This email is not authorized for this business.';
+                    loginError.style.display = 'block';
+                    await auth.signOut();
+                    return;
+                }
                 adminLoginPrompt.style.display = 'none';
                 adminEmail.value = '';
                 adminPassword.value = '';
@@ -5052,3 +5092,4 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
+
