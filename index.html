@@ -1490,7 +1490,9 @@ VIP Table</textarea>
                 paymentBg: "#ffffff",
                 buttonText: "#ffffff",
                 fontPrimary: "'Poppins', sans-serif",
-                fontSecondary: "'Playfair Display', serif"
+                fontSecondary: "'Playfair Display', serif",
+                backgroundGradient: null,
+                backgroundBlur: 0
             },
             currentTheme: "default",
             currentFont: "poppins",
@@ -1580,6 +1582,83 @@ VIP Table</textarea>
             muli: { name: "Muli", primary: "'Muli', sans-serif", secondary: "'Merriweather', serif" },
             abel: { name: "Abel", primary: "'Abel', sans-serif", secondary: "'Playfair Display', serif" }
         };
+
+        // ========== GRADIENT LIBRARY (60 PREMIUM GRADIENTS) ==========
+        const gradientLibrary = [
+            // Soft pastels
+            { id: 'pastel1', name: 'Soft Peach', gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' },
+            { id: 'pastel2', name: 'Mint Breeze', gradient: 'linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%)' },
+            { id: 'pastel3', name: 'Lavender Mist', gradient: 'linear-gradient(135deg, #e1bee7 0%, #ba68c8 100%)' },
+            { id: 'pastel4', name: 'Buttercream', gradient: 'linear-gradient(135deg, #fff9c4 0%, #fff176 100%)' },
+            { id: 'pastel5', name: 'Powder Blue', gradient: 'linear-gradient(135deg, #bbdefb 0%, #64b5f6 100%)' },
+            // Rich jewel tones
+            { id: 'jewel1', name: 'Sapphire', gradient: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)' },
+            { id: 'jewel2', name: 'Amethyst', gradient: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)' },
+            { id: 'jewel3', name: 'Emerald', gradient: 'linear-gradient(135deg, #16a085 0%, #27ae60 100%)' },
+            { id: 'jewel4', name: 'Ruby', gradient: 'linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)' },
+            { id: 'jewel5', name: 'Citrine', gradient: 'linear-gradient(135deg, #f39c12 0%, #f1c40f 100%)' },
+            // Warm earth tones
+            { id: 'earth1', name: 'Desert Sand', gradient: 'linear-gradient(135deg, #edc9ab 0%, #c38e6b 100%)' },
+            { id: 'earth2', name: 'Terra Cotta', gradient: 'linear-gradient(135deg, #cb7e5b 0%, #a75b3a 100%)' },
+            { id: 'earth3', name: 'Olive Grove', gradient: 'linear-gradient(135deg, #a8b68a 0%, #7e8d68 100%)' },
+            { id: 'earth4', name: 'Cocoa', gradient: 'linear-gradient(135deg, #8b6b4d 0%, #6b4f3a 100%)' },
+            { id: 'earth5', name: 'Sienna', gradient: 'linear-gradient(135deg, #e0a07c 0%, #b86b4c 100%)' },
+            // Cool moods
+            { id: 'cool1', name: 'Arctic Dawn', gradient: 'linear-gradient(135deg, #a8ede0 0%, #80d0c7 100%)' },
+            { id: 'cool2', name: 'Frost', gradient: 'linear-gradient(135deg, #d3e0f0 0%, #a0b9d9 100%)' },
+            { id: 'cool3', name: 'Stormy Sea', gradient: 'linear-gradient(135deg, #4b6cb0 0%, #182848 100%)' },
+            { id: 'cool4', name: 'Glacier', gradient: 'linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%)' },
+            { id: 'cool5', name: 'Misty Morning', gradient: 'linear-gradient(135deg, #c9d6ff 0%, #e2e2e2 100%)' },
+            // Vibrant hues
+            { id: 'vibrant1', name: 'Electric', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+            { id: 'vibrant2', name: 'Fusion', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+            { id: 'vibrant3', name: 'Coral', gradient: 'linear-gradient(135deg, #f78ca0 0%, #f9748f 100%)' },
+            { id: 'vibrant4', name: 'Mango', gradient: 'linear-gradient(135deg, #f5af19 0%, #f12711 100%)' },
+            { id: 'vibrant5', name: 'Lime', gradient: 'linear-gradient(135deg, #c6ffdd 0%, #fbd786 100%)' },
+            // Elegant neutrals
+            { id: 'neutral1', name: 'Pearly White', gradient: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' },
+            { id: 'neutral2', name: 'Grey Whisper', gradient: 'linear-gradient(135deg, #e0e0e0 0%, #b0b0b0 100%)' },
+            { id: 'neutral3', name: 'Beige Elegance', gradient: 'linear-gradient(135deg, #f4e3d1 0%, #d6c2aa 100%)' },
+            { id: 'neutral4', name: 'Stone', gradient: 'linear-gradient(135deg, #b8b8b8 0%, #7a7a7a 100%)' },
+            { id: 'neutral5', name: 'Sand Dune', gradient: 'linear-gradient(135deg, #eacda3 0%, #d6ae7b 100%)' },
+            // Deep drama
+            { id: 'drama1', name: 'Midnight', gradient: 'linear-gradient(135deg, #141e30 0%, #243b55 100%)' },
+            { id: 'drama2', name: 'Charcoal', gradient: 'linear-gradient(135deg, #283048 0%, #434343 100%)' },
+            { id: 'drama3', name: 'Royal', gradient: 'linear-gradient(135deg, #4b134f 0%, #2c0a2e 100%)' },
+            { id: 'drama4', name: 'Deep Purple', gradient: 'linear-gradient(135deg, #673ab7 0%, #512da8 100%)' },
+            { id: 'drama5', name: 'Oil Spill', gradient: 'linear-gradient(135deg, #0f2027 0%, #203a43 100%)' },
+            // Sunsets
+            { id: 'sunset1', name: 'Golden Hour', gradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)' },
+            { id: 'sunset2', name: 'Twilight', gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)' },
+            { id: 'sunset3', name: 'Sunset Boulevard', gradient: 'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)' },
+            { id: 'sunset4', name: 'Dusk', gradient: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)' },
+            { id: 'sunset5', name: 'Horizon', gradient: 'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)' },
+            // Ocean skies
+            { id: 'ocean1', name: 'Pacific', gradient: 'linear-gradient(135deg, #1c92d2 0%, #f2fcfe 100%)' },
+            { id: 'ocean2', name: 'Lagoon', gradient: 'linear-gradient(135deg, #00b4db 0%, #0083b0 100%)' },
+            { id: 'ocean3', name: 'Deep Blue', gradient: 'linear-gradient(135deg, #0c3483 0%, #6b8cce 100%)' },
+            { id: 'ocean4', name: 'Caribbean', gradient: 'linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%)' },
+            { id: 'ocean5', name: 'Wave', gradient: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)' },
+            // Forest greens
+            { id: 'forest1', name: 'Pine', gradient: 'linear-gradient(135deg, #134e5e 0%, #71b280 100%)' },
+            { id: 'forest2', name: 'Moss', gradient: 'linear-gradient(135deg, #4ac29a 0%, #bdfff3 100%)' },
+            { id: 'forest3', name: 'Jungle', gradient: 'linear-gradient(135deg, #1d976c 0%, #93f9b9 100%)' },
+            { id: 'forest4', name: 'Fern', gradient: 'linear-gradient(135deg, #2c7744 0%, #5fa06d 100%)' },
+            { id: 'forest5', name: 'Evergreen', gradient: 'linear-gradient(135deg, #0b3b2c 0%, #2b7a4b 100%)' },
+            // Luxurious metallics
+            { id: 'metallic1', name: 'Gold', gradient: 'linear-gradient(135deg, #d4af37 0%, #aa8c30 100%)' },
+            { id: 'metallic2', name: 'Silver', gradient: 'linear-gradient(135deg, #bdc3c7 0%, #8e9eab 100%)' },
+            { id: 'metallic3', name: 'Bronze', gradient: 'linear-gradient(135deg, #cd7f32 0%, #b06d2b 100%)' },
+            { id: 'metallic4', name: 'Rose Gold', gradient: 'linear-gradient(135deg, #f7cac9 0%, #d4a5a5 100%)' },
+            { id: 'metallic5', name: 'Copper', gradient: 'linear-gradient(135deg, #b87333 0%, #9c5e2b 100%)' },
+            // Abstract blends
+            { id: 'abstract1', name: 'Neon', gradient: 'linear-gradient(135deg, #00f260 0%, #0575e6 100%)' },
+            { id: 'abstract2', name: 'Aurora', gradient: 'linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)' },
+            { id: 'abstract3', name: 'Cosmic', gradient: 'linear-gradient(135deg, #ff0080 0%, #ff8c00 100%)' },
+            { id: 'abstract4', name: 'Pastel Dream', gradient: 'linear-gradient(135deg, #a8ede0 0%, #fed6e3 100%)' },
+            { id: 'abstract5', name: 'Pixel', gradient: 'linear-gradient(135deg, #83a4d4 0%, #b6fbff 100%)' }
+        ];
+        
         const importantColors = [
             { id: "primary", label: "Primary Color" },
             { id: "secondary", label: "Secondary Color" },
@@ -1820,8 +1899,14 @@ VIP Table</textarea>
                     await getCategoriesDoc().set({ list: state.categories });
                 }
                 
-                if (customDoc.exists) state.customization = customDoc.data();
-                else await getCustomizationDoc().set(state.customization);
+                if (customDoc.exists) {
+                    state.customization = customDoc.data();
+                    // Ensure new properties exist
+                    if (state.customization.backgroundGradient === undefined) state.customization.backgroundGradient = null;
+                    if (state.customization.backgroundBlur === undefined) state.customization.backgroundBlur = 0;
+                } else {
+                    await getCustomizationDoc().set(state.customization);
+                }
                 
                 if (soundDoc.exists) {
                     state.soundEffects = soundDoc.data();
@@ -2060,6 +2145,51 @@ VIP Table</textarea>
                 if (k === 'fontPrimary' || k === 'fontSecondary') root.style.setProperty(`--${k}`, state.customization[k]);
                 else root.style.setProperty(`--${k}`, state.customization[k]);
             });
+            
+            // Background gradient & blur
+            let styleEl = document.getElementById('dynamic-bg-style');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dynamic-bg-style';
+                document.head.appendChild(styleEl);
+            }
+            const gradient = state.customization.backgroundGradient;
+            const blur = state.customization.backgroundBlur || 0;
+            if (gradient) {
+                styleEl.textContent = `
+                    body::before {
+                        content: '';
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: ${gradient};
+                        filter: blur(${blur}px);
+                        pointer-events: none;
+                        z-index: -1;
+                    }
+                    body {
+                        background: transparent;
+                    }
+                `;
+            } else {
+                styleEl.textContent = `
+                    body::before {
+                        content: '';
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: var(--background);
+                        filter: blur(${blur}px);
+                        pointer-events: none;
+                        z-index: -1;
+                    }
+                `;
+            }
+            
             const previewName = document.getElementById('previewRestaurantName');
             if (previewName) { previewName.style.color = state.customization.primary; previewName.style.fontFamily = state.customization.fontSecondary; }
         }
@@ -4469,6 +4599,125 @@ function openVerticalOrdersView() {
                 inp.addEventListener('input', function() { const v = this.value; val.textContent = v; pre.style.backgroundColor = v; state.customization[col.id] = v; state.currentTheme = "custom"; g.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected')); document.getElementById('currentThemeName').textContent = "Custom"; document.getElementById('currentThemeCategory').textContent = "Custom"; applyCustomization(); });
                 cc.appendChild(el);
             });
+        
+            // --- ADD GRADIENT GALLERY AND BLUR SLIDER ---
+            // Create a new section for gradients if not already present
+            let gradSection = document.querySelector('#customizationTab .gradient-section');
+            if (!gradSection) {
+                gradSection = document.createElement('div');
+                gradSection.className = 'customization-section gradient-section';
+                gradSection.innerHTML = `
+                    <div class="section-title-small"><i class="fas fa-palette"></i> Background Gradient Gallery (60 Premium Gradients)</div>
+                    <p style="margin-bottom: 20px; color: var(--gray);">Click a gradient to apply it. Use "None" to use the solid background color or uploaded image.</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" id="gradientNoneBtn"><i class="fas fa-times"></i> None</button>
+                    </div>
+                    <div class="theme-gallery" id="gradientGallery"></div>
+                `;
+                // Insert after the font section, before color customization
+                const fontSection = document.querySelector('#customizationTab .customization-section .font-options')?.closest('.customization-section');
+                if (fontSection) {
+                    fontSection.insertAdjacentElement('afterend', gradSection);
+                } else {
+                    // fallback: append to panel
+                    document.querySelector('.customization-panel').appendChild(gradSection);
+                }
+            }
+        
+            // Populate gradient gallery
+            const gradGallery = document.getElementById('gradientGallery');
+            if (gradGallery) {
+                gradGallery.innerHTML = '';
+                gradientLibrary.forEach(g => {
+                    const card = document.createElement('div');
+                    card.className = `theme-card ${state.customization.backgroundGradient === g.gradient ? 'selected' : ''}`;
+                    card.dataset.gradient = g.gradient;
+                    card.innerHTML = `
+                        <div style="height: 100px; background: ${g.gradient}; border-radius: 8px 8px 0 0;"></div>
+                        <div class="theme-info">
+                            <div class="theme-name">${g.name}</div>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => {
+                        gradGallery.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        state.customization.backgroundGradient = g.gradient;
+                        applyCustomization();
+                        updatePreviewGradient();
+                    });
+                    gradGallery.appendChild(card);
+                });
+            }
+        
+            document.getElementById('gradientNoneBtn')?.addEventListener('click', () => {
+                gradGallery.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+                state.customization.backgroundGradient = null;
+                applyCustomization();
+                updatePreviewGradient();
+            });
+        
+            // Add blur slider section
+            let blurSection = document.querySelector('#customizationTab .blur-section');
+            if (!blurSection) {
+                blurSection = document.createElement('div');
+                blurSection.className = 'customization-section blur-section';
+                blurSection.innerHTML = `
+                    <div class="section-title-small"><i class="fas fa-tint"></i> Background Blur</div>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <input type="range" id="blurSlider" min="0" max="50" value="${state.customization.backgroundBlur}" step="1" style="flex: 1;">
+                        <span id="blurValue">${state.customization.backgroundBlur} px</span>
+                    </div>
+                `;
+                // Insert after gradient section
+                if (gradSection) {
+                    gradSection.insertAdjacentElement('afterend', blurSection);
+                } else {
+                    document.querySelector('.customization-panel').appendChild(blurSection);
+                }
+            }
+        
+            const blurSlider = document.getElementById('blurSlider');
+            const blurValue = document.getElementById('blurValue');
+            if (blurSlider) {
+                blurSlider.value = state.customization.backgroundBlur;
+                blurSlider.addEventListener('input', (e) => {
+                    const val = parseInt(e.target.value);
+                    state.customization.backgroundBlur = val;
+                    blurValue.textContent = val + ' px';
+                    applyCustomization();
+                    updatePreviewBlur(val);
+                });
+            }
+        
+            // Add a preview box for the gradient inside the existing preview grid if not present
+            const previewGrid = document.querySelector('.customization-preview .preview-content-grid');
+            if (previewGrid && !document.getElementById('gradientPreviewBox')) {
+                const gradPreviewDiv = document.createElement('div');
+                gradPreviewDiv.innerHTML = `
+                    <div class="preview-card" style="margin-top: 15px;">
+                        <div style="font-weight: 600; margin-bottom: 10px; color: var(--text);">Background Preview</div>
+                        <div id="gradientPreviewBox" style="height: 100px; border-radius: 8px; background: ${state.customization.backgroundGradient || 'var(--background)'}; filter: blur(${state.customization.backgroundBlur}px);"></div>
+                    </div>
+                `;
+                previewGrid.appendChild(gradPreviewDiv);
+            }
+        
+            function updatePreviewGradient() {
+                const previewBox = document.getElementById('gradientPreviewBox');
+                if (!previewBox) return;
+                if (state.customization.backgroundGradient) {
+                    previewBox.style.background = state.customization.backgroundGradient;
+                } else {
+                    previewBox.style.background = 'var(--background)';
+                }
+            }
+            function updatePreviewBlur(blur) {
+                const previewBox = document.getElementById('gradientPreviewBox');
+                if (previewBox) previewBox.style.filter = `blur(${blur}px)`;
+            }
+        
+            // --- end of new gradient/blur UI ---
+        
             document.getElementById('resetCustomizationBtn').addEventListener('click', function() { if (confirm("Reset all visual customization to default values?")) { resetCustomization(); setTimeout(initializeCustomizationTab,100); } });
             document.getElementById('saveCustomizationBtn').addEventListener('click', saveCustomizationOptimistic);
             const curTheme = themes[state.currentTheme]; if (curTheme) { document.getElementById('currentThemeName').textContent = curTheme.name; document.getElementById('currentThemeCategory').textContent = curTheme.category; }
@@ -4491,8 +4740,35 @@ function openVerticalOrdersView() {
         function updateColorInputs() { importantColors.forEach(col=>{ const inp = document.getElementById(`color-${col.id}`); if (inp) { const val = inp.parentElement.querySelector('.color-value'); const pre = inp.parentElement.parentElement.querySelector('.color-preview'); if (inp && val && pre) { inp.value = state.customization[col.id]; val.textContent = state.customization[col.id]; pre.style.backgroundColor = state.customization[col.id]; } } }); }
         async function saveCustomizationOptimistic() { showNotification("Visual customization saved."); await saveCustomization(); }
         function resetCustomization() {
-            state.customization = { primary: "#e63946", primaryDark: "#c1121f", secondary: "#457b9d", light: "#f8f9fa", dark: "#212529", gray: "#6c757d", lightGray: "#e9ecef", success: "#2a9d8f", warning: "#e9c46a", danger: "#dc3545", shadow: "0 4px 12px rgba(0, 0, 0, 0.08)", radius: "12px", background: "#fefefe", text: "#212529", cardBg: "#ffffff", headerBg: "#ffffff", menuBg: "#ffffff", cartBg: "#ffffff", paymentBg: "#ffffff", buttonText: "#ffffff", fontPrimary: "'Poppins', sans-serif", fontSecondary: "'Playfair Display', serif" };
-            state.currentTheme = "default"; state.currentFont = "poppins"; applyCustomization();
+                state.customization = {
+                primary: "#e63946",
+                primaryDark: "#c1121f",
+                secondary: "#457b9d",
+                light: "#f8f9fa",
+                dark: "#212529",
+                gray: "#6c757d",
+                lightGray: "#e9ecef",
+                success: "#2a9d8f",
+                warning: "#e9c46a",
+                danger: "#dc3545",
+                shadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+                radius: "12px",
+                background: "#fefefe",
+                text: "#212529",
+                cardBg: "#ffffff",
+                headerBg: "#ffffff",
+                menuBg: "#ffffff",
+                cartBg: "#ffffff",
+                paymentBg: "#ffffff",
+                buttonText: "#ffffff",
+                fontPrimary: "'Poppins', sans-serif",
+                fontSecondary: "'Playfair Display', serif",
+                backgroundGradient: null,
+                backgroundBlur: 0
+            };
+            state.currentTheme = "default";
+            state.currentFont = "poppins";
+            applyCustomization();
         }
         function darkenColor(c,p) { const n = parseInt(c.replace("#",""),16); const a = Math.round(2.55*p); const r = (n>>16)-a, g = (n>>8&0x00FF)-a, b = (n&0x0000FF)-a; return "#" + (0x1000000 + (r<255?r<1?0:r:255)*0x10000 + (g<255?g<1?0:g:255)*0x100 + (b<255?b<1?0:b:255)).toString(16).slice(1); }
         function getContrastColor(h) { const r=parseInt(h.substr(1,2),16), g=parseInt(h.substr(3,2),16), b=parseInt(h.substr(5,2),16), yiq=((r*299)+(g*587)+(b*114))/1000; return yiq>=128?'#000000':'#ffffff'; }
@@ -5140,4 +5416,5 @@ function openVerticalOrdersView() {
     </script>
 </body>
 </html>
+
 
