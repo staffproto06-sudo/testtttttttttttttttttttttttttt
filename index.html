@@ -16,6 +16,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- QR scanning library -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.min.js"></script>
     <style>
         /* ========== COMPLETE STYLES – UNCHANGED ========== */
         :root {
@@ -2693,77 +2695,103 @@ VIP Table</textarea>
 
         // ========== PDF DOWNLOAD FUNCTION ==========
         function downloadOrderPdf(order) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
             const lang = state.currentLanguage;
             const restaurantName = state.restaurantInfo.name || 'Restaurant';
-            
-            // Ορισμός font που υποστηρίζει Ελληνικά
-            doc.setFont('times', 'normal');
-            
-            // Title
-            doc.setFontSize(20);
-            doc.setTextColor(230, 57, 70); // primary color
-            doc.text(restaurantName, 105, 20, { align: 'center' });
-            
-            // Order info
-            doc.setFontSize(14);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`${lang === 'el' ? 'Παραγγελία' : 'Order'} #${order.orderNumber}`, 20, 40);
-            doc.setFontSize(12);
-            doc.text(`${lang === 'el' ? 'Τραπέζι:' : 'Table:'} ${order.table}`, 20, 50);
-            doc.text(`${lang === 'el' ? 'Ημερομηνία:' : 'Date:'} ${new Date(order.timestamp).toLocaleString(lang === 'el' ? 'el-GR' : 'en-US')}`, 20, 60);
-            
-            // Items header
-            let y = 80;
-            doc.setFontSize(12);
-            doc.setFont('times', 'bold');
-            doc.text(lang === 'el' ? 'Προϊόν' : 'Item', 20, y);
-            doc.text(lang === 'el' ? 'Ποσ.' : 'Qty', 120, y);
-            doc.text(lang === 'el' ? 'Τιμή' : 'Price', 160, y);
-            doc.line(20, y+2, 190, y+2);
-            y += 10;
-            doc.setFont('times', 'normal');
-            
-            // Items
+        
+            // Δημιουργία πίνακα προϊόντων για το pdfmake
+            const body = [
+                [
+                    { text: lang === 'el' ? 'Προϊόν' : 'Item', style: 'tableHeader' },
+                    { text: lang === 'el' ? 'Ποσ.' : 'Qty', style: 'tableHeader' },
+                    { text: lang === 'el' ? 'Τιμή' : 'Price', style: 'tableHeader' }
+                ]
+            ];
+        
             order.items.forEach(item => {
-                doc.text(item.name, 20, y);
-                doc.text(item.quantity.toString(), 120, y);
-                doc.text(`$${(item.price * item.quantity).toFixed(2)}`, 160, y);
-                y += 7;
+                // Προσθέτουμε την κύρια γραμμή του προϊόντος
+                const itemRow = [
+                    item.name,
+                    item.quantity.toString(),
+                    `$${(item.price * item.quantity).toFixed(2)}`
+                ];
+                body.push(itemRow);
+        
+                // Αν υπάρχουν επιλογές, τις προσθέτουμε ως ξεχωριστές γραμμές (χωρίς ποσότητα/τιμή)
                 if (item.selectedOptions && item.selectedOptions.length) {
                     item.selectedOptions.forEach(opt => {
-                        doc.setFontSize(10);
-                        doc.setTextColor(100, 100, 100);
-                        let optText = opt.isComment 
-                            ? `${opt.groupName}: "${opt.choiceName}"` 
-                            : `${opt.groupName}: ${opt.choiceName} ${opt.price ? (opt.price>0 ? `+$${opt.price.toFixed(2)}` : `-$${Math.abs(opt.price).toFixed(2)}`) : ''}`;
-                        doc.text(optText, 30, y);
-                        y += 5;
+                        let optText = opt.isComment
+                            ? `${opt.groupName}: "${opt.choiceName}"`
+                            : `${opt.groupName}: ${opt.choiceName} ${opt.price ? (opt.price > 0 ? `+$${opt.price.toFixed(2)}` : opt.price < 0 ? `-$${Math.abs(opt.price).toFixed(2)}` : '') : ''}`;
+                        body.push([
+                            { text: optText, fontSize: 10, color: '#666666', margin: [10, 0, 0, 0] },
+                            '',
+                            ''
+                        ]);
                     });
-                    doc.setFontSize(12);
-                    doc.setTextColor(0, 0, 0);
                 }
             });
-            
-            // Total
-            y += 5;
-            doc.setFont('times', 'bold');
-            doc.text(lang === 'el' ? 'Σύνολο:' : 'Total:', 120, y);
-            doc.setTextColor(230, 57, 70);
-            doc.text(`$${order.total.toFixed(2)}`, 160, y);
-            
-            // Payment info
-            y += 15;
-            doc.setFont('times', 'normal');
-            doc.setFontSize(11);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`${lang === 'el' ? 'Τρόπος πληρωμής:' : 'Payment method:'} ${order.paymentMethod === 'card' ? (lang === 'el' ? 'Κάρτα' : 'Card') : (lang === 'el' ? 'Μετρητά' : 'Cash')}`, 20, y);
-            y += 7;
-            doc.text(`${lang === 'el' ? 'Χρόνος πληρωμής:' : 'Payment time:'} ${order.paymentTime === 'now' ? (lang === 'el' ? 'Πληρωμή τώρα' : 'Pay now') : (lang === 'el' ? 'Πληρωμή αργότερα' : 'Pay later')}`, 20, y);
-            
-            // Save
-            doc.save(`order-${order.orderNumber}.pdf`);
+        
+            // Ορισμός του εγγράφου
+            const docDefinition = {
+                content: [
+                    // Τίτλος εστιατορίου
+                    { text: restaurantName, style: 'header', alignment: 'center' },
+                    { text: '\n' },
+                    // Στοιχεία παραγγελίας
+                    { text: `${lang === 'el' ? 'Παραγγελία' : 'Order'} #${order.orderNumber}`, style: 'subheader' },
+                    { text: `${lang === 'el' ? 'Τραπέζι:' : 'Table:'} ${order.table}`, style: 'normal' },
+                    { text: `${lang === 'el' ? 'Ημερομηνία:' : 'Date:'} ${new Date(order.timestamp).toLocaleString(lang === 'el' ? 'el-GR' : 'en-US')}`, style: 'normal' },
+                    { text: '\n' },
+                    // Πίνακας προϊόντων
+                    {
+                        style: 'itemsTable',
+                        table: {
+                            headerRows: 1,
+                            widths: ['*', 'auto', 'auto'],
+                            body: body
+                        },
+                        layout: 'lightHorizontalLines'
+                    },
+                    { text: '\n' },
+                    // Σύνολο
+                    {
+                        columns: [
+                            { width: '*', text: '' },
+                            { width: 'auto', text: lang === 'el' ? 'Σύνολο:' : 'Total:', style: 'totalLabel' },
+                            { width: 'auto', text: `$${order.total.toFixed(2)}`, style: 'totalValue' }
+                        ]
+                    },
+                    { text: '\n' },
+                    // Πληροφορίες πληρωμής
+                    {
+                        columns: [
+                            { width: '*', text: '' },
+                            { width: 'auto', text: `${lang === 'el' ? 'Τρόπος πληρωμής:' : 'Payment method:'} ${order.paymentMethod === 'card' ? (lang === 'el' ? 'Κάρτα' : 'Card') : (lang === 'el' ? 'Μετρητά' : 'Cash')}`, style: 'paymentInfo' },
+                        ]
+                    },
+                    {
+                        columns: [
+                            { width: '*', text: '' },
+                            { width: 'auto', text: `${lang === 'el' ? 'Χρόνος πληρωμής:' : 'Payment time:'} ${order.paymentTime === 'now' ? (lang === 'el' ? 'Πληρωμή τώρα' : 'Pay now') : (lang === 'el' ? 'Πληρωμή αργότερα' : 'Pay later')}`, style: 'paymentInfo' },
+                        ]
+                    }
+                ],
+                styles: {
+                    header: { fontSize: 20, bold: true, color: '#e63946', margin: [0, 0, 0, 10] },
+                    subheader: { fontSize: 14, bold: true, margin: [0, 5, 0, 5] },
+                    normal: { fontSize: 12, margin: [0, 2, 0, 2] },
+                    tableHeader: { bold: true, fontSize: 12, fillColor: '#f2f2f2' },
+                    totalLabel: { bold: true, fontSize: 14, margin: [0, 5, 5, 5] },
+                    totalValue: { bold: true, fontSize: 14, color: '#e63946', margin: [0, 5, 0, 5] },
+                    paymentInfo: { fontSize: 11, margin: [0, 2, 0, 2] }
+                },
+                defaultStyle: {
+                    font: 'Roboto' // Η Roboto υποστηρίζει Ελληνικά
+                }
+            };
+        
+            // Δημιουργία και λήψη PDF
+            pdfMake.createPdf(docDefinition).download(`order-${order.orderNumber}.pdf`);
             showNotification(lang === 'el' ? 'Το PDF δημιουργήθηκε.' : 'PDF generated.');
         }
 
@@ -5096,5 +5124,6 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
+
 
 
