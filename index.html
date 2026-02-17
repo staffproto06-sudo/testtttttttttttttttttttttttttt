@@ -2514,6 +2514,7 @@ VIP Table</textarea>
             }, 60000);
         }
         function enterAdminMode() {
+            if (state.isAdminMode) return;
             state.isAdminMode = true; state.currentTable = "Admin";
             document.body.classList.add('admin-mode');
             document.querySelector('.header-center').innerHTML = '<div class="admin-badge"><i class="fas fa-shield-alt"></i> Administrator Mode</div><button class="language-toggle" id="languageToggleBtn"><i class="fas fa-language"></i> <span id="langToggleText">EN</span></button>';
@@ -4942,6 +4943,7 @@ VIP Table</textarea>
                 adminEmail.value = '';
                 adminPassword.value = '';
                 loginError.style.display = 'none';
+                enterAdminMode();
                 // enterAdminMode will be triggered by onAuthStateChanged
             } catch (error) {
                 loginError.textContent = 'Invalid email or password. Please try again.';
@@ -5124,6 +5126,7 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
+
 
 
 
