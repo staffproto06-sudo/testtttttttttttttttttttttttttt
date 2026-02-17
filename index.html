@@ -2313,16 +2313,15 @@ VIP Table</textarea>
             }
             updateRequestPayButton();
         }
-
-        // ========== AUTO-LOGIN FROM URL (FIXED: NO DEFAULT TABLE) ==========
         function autoLoginFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             const tableParam = urlParams.get('table');
             if (tableParam) {
                 const tableName = decodeURIComponent(tableParam);
                 selectTable(tableName, true);
+            } else {
+                selectTable('Table 1', true);
             }
-            // No default table - stay on scanner if no table parameter
         }
 
         // ========== REQUEST PAY BUTTON (UPDATED LOGIC) ==========
@@ -2629,7 +2628,7 @@ VIP Table</textarea>
             showNotification(`PDF generated with ${tableNamesArray.length} QR code(s).`);
         }
 
-        // ========== OPEN VERTICAL ORDERS VIEW (FIXED: BUSINESS-AWARE) ==========
+        // ========== OPEN VERTICAL ORDERS VIEW (unchanged) ==========
         function openOrdersVerticalView() {
             const winHtml = '<!DOCTYPE html>' +
             '<html>' +
@@ -2712,9 +2711,6 @@ VIP Table</textarea>
                     'firebase.initializeApp(firebaseConfig);' +
                     'const db = firebase.firestore();' +
                     '' +
-                    'const businessId = \'' + businessId + '\';' + // embed businessId
-                    'const ordersCollection = businessId === \'default\' ? db.collection(\'orders\') : db.collection(`business_${businessId}_orders`);' +
-                    '' +
                     'function formatDate(iso) {' +
                         'const d = new Date(iso);' +
                         'return d.toLocaleString();' +
@@ -2722,7 +2718,7 @@ VIP Table</textarea>
                     '' +
                     'async function updateOrderStatus(orderId, newStatus) {' +
                         'try {' +
-                            'await ordersCollection.doc(orderId).update({ status: newStatus });' +
+                            'await db.collection("orders").doc(orderId).update({ status: newStatus });' +
                         '} catch (err) {' +
                             'console.error("Error updating order:", err);' +
                             'alert("Failed to update order status.");' +
@@ -2758,7 +2754,7 @@ VIP Table</textarea>
                             'list.innerHTML = "<div class=\\"no-orders\\"><i class=\\"fas fa-clipboard-list\\"></i><p>No orders found.</p></div>";' +
                             'return;' +
                         '}' +
-                        'filtered.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));' + // ascending order
+                        'filtered.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));' + // ← ascending order
                         'let html = "";' +
                         'filtered.forEach(o => {' +
                             'let badgeClass = "";' +
@@ -2810,7 +2806,7 @@ VIP Table</textarea>
                     '}' +
                     '' +
                     'function loadOrders() {' +
-                        'ordersCollection.onSnapshot(snap => {' +
+                        'db.collection("orders").onSnapshot(snap => {' +
                             'allOrders = snap.docs.map(doc => ({ orderNumber: doc.id, ...doc.data() }));' +
                             'populateTableFilter(allOrders);' +
                             'renderOrders();' +
@@ -2837,7 +2833,7 @@ VIP Table</textarea>
             }
         }
 
-        // ========== OPEN VERTICAL HELP REQUESTS VIEW (FIXED: BUSINESS-AWARE) ==========
+        // ========== OPEN VERTICAL HELP REQUESTS VIEW (unchanged) ==========
         function openHelpVerticalView() {
             const winHtml = '<!DOCTYPE html>' +
             '<html>' +
@@ -2901,9 +2897,6 @@ VIP Table</textarea>
                     'firebase.initializeApp(firebaseConfig);' +
                     'const db = firebase.firestore();' +
                     '' +
-                    'const businessId = \'' + businessId + '\';' + // embed businessId
-                    'const helpRequestsCollection = businessId === \'default\' ? db.collection(\'helpRequests\') : db.collection(`business_${businessId}_helpRequests`);' +
-                    '' +
                     'function formatDate(iso) {' +
                         'const d = new Date(iso);' +
                         'return d.toLocaleString();' +
@@ -2911,7 +2904,7 @@ VIP Table</textarea>
                     '' +
                     'async function updateRequestStatus(requestId, newStatus) {' +
                         'try {' +
-                            'await helpRequestsCollection.doc(requestId).update({ status: newStatus });' +
+                            'await db.collection("helpRequests").doc(requestId).update({ status: newStatus });' +
                         '} catch (err) {' +
                             'console.error("Error updating request:", err);' +
                             'alert("Failed to update request status.");' +
@@ -2921,7 +2914,7 @@ VIP Table</textarea>
                     'async function deleteRequest(requestId) {' +
                         'if (!confirm("Delete this help request?")) return;' +
                         'try {' +
-                            'await helpRequestsCollection.doc(requestId).delete();' +
+                            'await db.collection("helpRequests").doc(requestId).delete();' +
                         '} catch (err) {' +
                             'console.error("Error deleting request:", err);' +
                             'alert("Failed to delete request.");' +
@@ -2963,7 +2956,7 @@ VIP Table</textarea>
                     '}' +
                     '' +
                     'function loadRequests() {' +
-                        'helpRequestsCollection.onSnapshot(snap => {' +
+                        'db.collection("helpRequests").onSnapshot(snap => {' +
                             'allRequests = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));' +
                             'renderRequests();' +
                         '}, err => {' +
@@ -2988,7 +2981,7 @@ VIP Table</textarea>
             }
         }
 
-        // ========== NEW FUNCTION: OPEN CUSTOMER ORDER VIEW (FIXED: BUSINESS-AWARE) ==========
+        // ========== NEW FUNCTION: OPEN CUSTOMER ORDER VIEW (unchanged) ==========
         function openCustomerOrderView() {
             const winHtml = '<!DOCTYPE html>' +
             '<html>' +
@@ -3053,9 +3046,6 @@ VIP Table</textarea>
                     'firebase.initializeApp(firebaseConfig);' +
                     'const db = firebase.firestore();' +
                     '' +
-                    'const businessId = \'' + businessId + '\';' + // embed businessId
-                    'const ordersCollection = businessId === \'default\' ? db.collection(\'orders\') : db.collection(`business_${businessId}_orders`);' +
-                    '' +
                     'function formatDate(iso) {' +
                         'const d = new Date(iso);' +
                         'return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });' +
@@ -3109,7 +3099,7 @@ VIP Table</textarea>
                     '}' +
                     '' +
                     'function loadOrders() {' +
-                        'ordersCollection.onSnapshot(snap => {' +
+                        'db.collection("orders").onSnapshot(snap => {' +
                             'const orders = snap.docs.map(doc => ({ orderNumber: doc.id, ...doc.data() }));' +
                             'renderOrders(orders);' +
                         '}, err => {' +
