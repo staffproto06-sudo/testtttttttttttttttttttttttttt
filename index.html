@@ -824,6 +824,21 @@
                             <p style="margin-bottom: 20px; color: var(--gray);">Fine-tune individual colors if needed.</p>
                             <div class="color-customization" id="colorCustomization"></div>
                         </div>
+                        <!-- ========== NEW: Custom Background Image Upload ========== -->
+                        <div class="customization-section">
+                            <div class="section-title-small"><i class="fas fa-image"></i> Menu Background Image</div>
+                            <p style="margin-bottom:20px; color:var(--gray);">Upload an image to appear behind the menu items.</p>
+                            <div class="image-upload-container">
+                                <div class="image-preview" id="menuBgPreview">
+                                    <div class="image-preview-placeholder"><i class="fas fa-image"></i><p>No background image</p></div>
+                                </div>
+                                <div class="upload-actions">
+                                    <input type="file" id="menuBgUpload" accept="image/*" style="display: none;">
+                                    <button class="btn btn-secondary upload-btn" id="uploadMenuBgBtn"><i class="fas fa-upload"></i> Upload Background</button>
+                                    <button class="remove-image-btn" id="removeMenuBgBtn"><i class="fas fa-trash"></i> Remove</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="customization-preview">
                         <div class="preview-header"><div class="preview-restaurant-name" id="previewRestaurantName">Restaurant Preview</div><div style="font-size: 14px; color: var(--gray);">Live Preview</div></div>
@@ -1490,7 +1505,9 @@ VIP Table</textarea>
                 paymentBg: "#ffffff",
                 buttonText: "#ffffff",
                 fontPrimary: "'Poppins', sans-serif",
-                fontSecondary: "'Playfair Display', serif"
+                fontSecondary: "'Playfair Display', serif",
+                // NEW: Menu background image
+                menuBackgroundImage: null
             },
             currentTheme: "default",
             currentFont: "poppins",
@@ -1821,6 +1838,8 @@ VIP Table</textarea>
                 }
                 
                 if (customDoc.exists) state.customization = customDoc.data();
+                // Ensure the new property exists
+                if (!state.customization.menuBackgroundImage) state.customization.menuBackgroundImage = null;
                 else await getCustomizationDoc().set(state.customization);
                 
                 if (soundDoc.exists) {
@@ -2058,10 +2077,23 @@ VIP Table</textarea>
             const root = document.documentElement;
             Object.keys(state.customization).forEach(k => {
                 if (k === 'fontPrimary' || k === 'fontSecondary') root.style.setProperty(`--${k}`, state.customization[k]);
-                else root.style.setProperty(`--${k}`, state.customization[k]);
+                else if (k !== 'menuBackgroundImage') root.style.setProperty(`--${k}`, state.customization[k]);
             });
             const previewName = document.getElementById('previewRestaurantName');
             if (previewName) { previewName.style.color = state.customization.primary; previewName.style.fontFamily = state.customization.fontSecondary; }
+            
+            // Apply menu background image
+            const menuSection = document.getElementById('menuSection');
+            if (menuSection) {
+                if (state.customization.menuBackgroundImage) {
+                    menuSection.style.backgroundImage = `url('${state.customization.menuBackgroundImage}')`;
+                    menuSection.style.backgroundSize = 'cover';
+                    menuSection.style.backgroundPosition = 'center';
+                    menuSection.style.backgroundRepeat = 'no-repeat';
+                } else {
+                    menuSection.style.backgroundImage = 'none';
+                }
+            }
         }
         function updateRestaurantUI() {
             restaurantName.textContent = state.restaurantInfo.name;
@@ -4469,6 +4501,34 @@ function openVerticalOrdersView() {
                 inp.addEventListener('input', function() { const v = this.value; val.textContent = v; pre.style.backgroundColor = v; state.customization[col.id] = v; state.currentTheme = "custom"; g.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected')); document.getElementById('currentThemeName').textContent = "Custom"; document.getElementById('currentThemeCategory').textContent = "Custom"; applyCustomization(); });
                 cc.appendChild(el);
             });
+            // NEW: Menu background image preview and handlers
+            function updateMenuBgPreview() {
+                const preview = document.getElementById('menuBgPreview');
+                if (state.customization.menuBackgroundImage) {
+                    preview.innerHTML = `<img src="${state.customization.menuBackgroundImage}" alt="Menu Background">`;
+                } else {
+                    preview.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-image"></i><p>No background image</p></div>';
+                }
+            }
+            updateMenuBgPreview();
+            document.getElementById('uploadMenuBgBtn').addEventListener('click', () => document.getElementById('menuBgUpload').click());
+            document.getElementById('menuBgUpload').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file || !file.type.match('image.*')) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    state.customization.menuBackgroundImage = ev.target.result;
+                    updateMenuBgPreview();
+                    showNotification("Background image loaded. Save to persist.");
+                };
+                reader.readAsDataURL(file);
+            });
+            document.getElementById('removeMenuBgBtn').addEventListener('click', () => {
+                state.customization.menuBackgroundImage = null;
+                updateMenuBgPreview();
+                showNotification("Background removed.");
+            });
+
             document.getElementById('resetCustomizationBtn').addEventListener('click', function() { if (confirm("Reset all visual customization to default values?")) { resetCustomization(); setTimeout(initializeCustomizationTab,100); } });
             document.getElementById('saveCustomizationBtn').addEventListener('click', saveCustomizationOptimistic);
             const curTheme = themes[state.currentTheme]; if (curTheme) { document.getElementById('currentThemeName').textContent = curTheme.name; document.getElementById('currentThemeCategory').textContent = curTheme.category; }
@@ -4491,7 +4551,7 @@ function openVerticalOrdersView() {
         function updateColorInputs() { importantColors.forEach(col=>{ const inp = document.getElementById(`color-${col.id}`); if (inp) { const val = inp.parentElement.querySelector('.color-value'); const pre = inp.parentElement.parentElement.querySelector('.color-preview'); if (inp && val && pre) { inp.value = state.customization[col.id]; val.textContent = state.customization[col.id]; pre.style.backgroundColor = state.customization[col.id]; } } }); }
         async function saveCustomizationOptimistic() { showNotification("Visual customization saved."); await saveCustomization(); }
         function resetCustomization() {
-            state.customization = { primary: "#e63946", primaryDark: "#c1121f", secondary: "#457b9d", light: "#f8f9fa", dark: "#212529", gray: "#6c757d", lightGray: "#e9ecef", success: "#2a9d8f", warning: "#e9c46a", danger: "#dc3545", shadow: "0 4px 12px rgba(0, 0, 0, 0.08)", radius: "12px", background: "#fefefe", text: "#212529", cardBg: "#ffffff", headerBg: "#ffffff", menuBg: "#ffffff", cartBg: "#ffffff", paymentBg: "#ffffff", buttonText: "#ffffff", fontPrimary: "'Poppins', sans-serif", fontSecondary: "'Playfair Display', serif" };
+            state.customization = { primary: "#e63946", primaryDark: "#c1121f", secondary: "#457b9d", light: "#f8f9fa", dark: "#212529", gray: "#6c757d", lightGray: "#e9ecef", success: "#2a9d8f", warning: "#e9c46a", danger: "#dc3545", shadow: "0 4px 12px rgba(0, 0, 0, 0.08)", radius: "12px", background: "#fefefe", text: "#212529", cardBg: "#ffffff", headerBg: "#ffffff", menuBg: "#ffffff", cartBg: "#ffffff", paymentBg: "#ffffff", buttonText: "#ffffff", fontPrimary: "'Poppins', sans-serif", fontSecondary: "'Playfair Display', serif", menuBackgroundImage: null };
             state.currentTheme = "default"; state.currentFont = "poppins"; applyCustomization();
         }
         function darkenColor(c,p) { const n = parseInt(c.replace("#",""),16); const a = Math.round(2.55*p); const r = (n>>16)-a, g = (n>>8&0x00FF)-a, b = (n&0x0000FF)-a; return "#" + (0x1000000 + (r<255?r<1?0:r:255)*0x10000 + (g<255?g<1?0:g:255)*0x100 + (b<255?b<1?0:b:255)).toString(16).slice(1); }
@@ -5140,4 +5200,3 @@ function openVerticalOrdersView() {
     </script>
 </body>
 </html>
-
