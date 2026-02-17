@@ -406,69 +406,6 @@
         .edit-order-item-controls { display: flex; align-items: center; gap: 10px; }
         .edit-order-item-quantity { width: 60px; text-align: center; }
         .edit-order-item-price { font-weight: 600; color: var(--primary); min-width: 80px; text-align: right; }
-
-        /* ========== NEW STYLES FOR GRADIENT SECTION ========== */
-        .gradient-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        .gradient-card {
-            height: 100px;
-            border-radius: 10px;
-            border: 2px solid var(--light-gray);
-            cursor: pointer;
-            transition: all 0.3s;
-            background-size: cover;
-        }
-        .gradient-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .gradient-card.selected {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(230,57,70,0.2);
-        }
-        .gradient-card.none-option {
-            background: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--gray);
-            font-weight: 500;
-        }
-        /* Blur slider */
-        .blur-control {
-            margin: 20px 0;
-            padding: 15px;
-            background: var(--card-bg);
-            border-radius: 10px;
-        }
-        .blur-control label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-        .blur-control input[type=range] {
-            width: 100%;
-            margin: 10px 0;
-        }
-        #menuSection {
-            position: relative;
-            isolation: isolate;
-        }
-        #menuSection::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: var(--menu-gradient, none);
-            filter: blur(var(--menu-blur, 0px));
-            z-index: -1;
-            pointer-events: none;
-        }
     </style>
 </head>
 <body>
@@ -886,35 +823,6 @@
                             <div class="section-title-small"><i class="fas fa-sliders-h"></i> Custom Color Adjustments</div>
                             <p style="margin-bottom: 20px; color: var(--gray);">Fine-tune individual colors if needed.</p>
                             <div class="color-customization" id="colorCustomization"></div>
-                        </div>
-                        <!-- ========== Custom Background Image Upload ========== -->
-                        <div class="customization-section">
-                            <div class="section-title-small"><i class="fas fa-image"></i> Menu Background Image</div>
-                            <p style="margin-bottom:20px; color:var(--gray);">Upload an image to appear behind the menu items.</p>
-                            <div class="image-upload-container">
-                                <div class="image-preview" id="menuBgPreview">
-                                    <div class="image-preview-placeholder"><i class="fas fa-image"></i><p>No background image</p></div>
-                                </div>
-                                <div class="upload-actions">
-                                    <input type="file" id="menuBgUpload" accept="image/*" style="display: none;">
-                                    <button class="btn btn-secondary upload-btn" id="uploadMenuBgBtn"><i class="fas fa-upload"></i> Upload Background</button>
-                                    <button class="remove-image-btn" id="removeMenuBgBtn"><i class="fas fa-trash"></i> Remove</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ========== NEW: Gradient Background Section (60 options) ========== -->
-                        <div class="customization-section">
-                            <div class="section-title-small"><i class="fas fa-paint-brush"></i> Gradient Background (60 Premium Gradients)</div>
-                            <p style="margin-bottom:20px; color:var(--gray);">Choose a modern, blurry gradient for the menu background. (Overrides any uploaded image.)</p>
-                            <div class="gradient-gallery" id="gradientGallery"></div>
-                            <div class="blur-control">
-                                <label><i class="fas fa-sliders-h"></i> Blur Intensity: <span id="blurValue">20px</span></label>
-                                <input type="range" id="blurSlider" min="0" max="50" value="20" step="1">
-                            </div>
-                            <div style="margin-top:20px;">
-                                <button class="btn btn-secondary" id="clearGradientBtn"><i class="fas fa-undo"></i> Remove Gradient</button>
-                            </div>
                         </div>
                     </div>
                     <div class="customization-preview">
@@ -1582,12 +1490,7 @@ VIP Table</textarea>
                 paymentBg: "#ffffff",
                 buttonText: "#ffffff",
                 fontPrimary: "'Poppins', sans-serif",
-                fontSecondary: "'Playfair Display', serif",
-                // NEW: Menu background image
-                menuBackgroundImage: null,
-                // NEW: Menu gradient and blur
-                menuGradient: null,
-                menuGradientBlur: 20
+                fontSecondary: "'Playfair Display', serif"
             },
             currentTheme: "default",
             currentFont: "poppins",
@@ -1684,82 +1587,6 @@ VIP Table</textarea>
             { id: "text", label: "Text Color" },
             { id: "cardBg", label: "Card Background" },
             { id: "lightGray", label: "Light Gray" }
-        ];
-
-        // ========== 60 PREMIUM GRADIENTS ==========
-        const gradients = [
-            // Soft & Airy Pastels
-            "linear-gradient(135deg, #f8f0ff 0%, #f0e7ff 50%, #e0f0ff 100%)",
-            "radial-gradient(circle at 10% 30%, #ffe7f0, #f0e7ff, #e0ffe7)",
-            "linear-gradient(120deg, #fff5e6 0%, #ffe6f0 50%, #e6f0ff 100%)",
-            "radial-gradient(circle at 70% 20%, #f7e0e0, #f0e0f7, #e0f0f7)",
-            "linear-gradient(45deg, #faf0e6 0%, #fae6fa 50%, #e6fafa 100%)",
-            // Rich Jewel Tones
-            "radial-gradient(circle at 30% 40%, #4a3f5e, #2e4057, #1e3f4a)",
-            "linear-gradient(145deg, #3e2a47 0%, #5a3e4e 40%, #4e3e5a 100%)",
-            "radial-gradient(circle at 80% 20%, #6e4b5e, #4b5e6e, #5e4b6e)",
-            "linear-gradient(200deg, #2c3e50 0%, #4a2c3e 50%, #3e4a2c 100%)",
-            "radial-gradient(circle at 60% 70%, #5d3f4b, #3f5d4b, #4b3f5d)",
-            // Warm & Earthy
-            "linear-gradient(110deg, #f5e6d3 0%, #e6d3c4 40%, #d3c4b3 100%)",
-            "radial-gradient(circle at 40% 30%, #d9c2a7, #c2b3a7, #a7b3c2)",
-            "linear-gradient(75deg, #f0e0c0 0%, #e0c0d0 50%, #c0d0e0 100%)",
-            "radial-gradient(circle at 90% 60%, #b8a99a, #a99ab8, #9ab8a9)",
-            "linear-gradient(160deg, #e8d5b5 0%, #d5b5c5 40%, #b5c5d5 100%)",
-            // Cool & Moody
-            "linear-gradient(135deg, #2b3a4a 0%, #3a4a5a 50%, #4a5a6a 100%)",
-            "radial-gradient(circle at 20% 80%, #3a4e5f, #4e3a4f, #3a5f4e)",
-            "linear-gradient(90deg, #1e2f3f 0%, #2f3f4e 40%, #3f4e5d 100%)",
-            "radial-gradient(circle at 50% 40%, #4f5d6b, #5d4f5b, #4f6b5d)",
-            "linear-gradient(200deg, #2c3a47 0%, #3a2c47 50%, #2c473a 100%)",
-            // Vibrant & Playful
-            "radial-gradient(circle at 20% 30%, #ffd6e0, #ffe0d6, #e0d6ff)",
-            "linear-gradient(115deg, #ffe6b0 0%, #e6b0ff 40%, #b0ffe6 100%)",
-            "radial-gradient(circle at 70% 80%, #fad0c4, #d0fac4, #c4d0fa)",
-            "linear-gradient(45deg, #ffe0b5 0%, #e0b5ff 50%, #b5ffe0 100%)",
-            "radial-gradient(circle at 30% 60%, #ffcbd6, #d6ffcb, #cbd6ff)",
-            // Elegant Neutrals
-            "linear-gradient(120deg, #f5f0e8 0%, #e8f0f5 50%, #f0e8f5 100%)",
-            "radial-gradient(circle at 60% 40%, #eae0d0, #d0eae0, #e0d0ea)",
-            "linear-gradient(80deg, #f0f0f0 0%, #e0e0f0 40%, #f0e0e0 100%)",
-            "radial-gradient(circle at 40% 70%, #dad0c5, #c5dad0, #d0c5da)",
-            "linear-gradient(150deg, #faf5f0 0%, #f5f0fa 50%, #f0faf5 100%)",
-            // Deep & Dramatic
-            "radial-gradient(circle at 80% 30%, #2e1b2e, #1b2e2e, #2e2e1b)",
-            "linear-gradient(100deg, #1f2b2e 0%, #2b1f2e 40%, #2e2b1f 100%)",
-            "radial-gradient(circle at 20% 70%, #3a293a, #293a29, #3a3a29)",
-            "linear-gradient(190deg, #242a35 0%, #2a2424 50%, #35242a 100%)",
-            "radial-gradient(circle at 50% 50%, #4a3f4a, #3f4a3f, #4a4a3f)",
-            // Sunset-Inspired
-            "linear-gradient(45deg, #ffb3a5 0%, #fad0b3 40%, #ffb3f0 100%)",
-            "radial-gradient(circle at 30% 40%, #f9a8a8, #f9f0a8, #a8f0f9)",
-            "linear-gradient(120deg, #ffa07a 0%, #ffdab9 50%, #b9daff 100%)",
-            "radial-gradient(circle at 70% 60%, #ffccb3, #b3ffcc, #ccb3ff)",
-            "linear-gradient(75deg, #ffb3ba 0%, #b3ffb3 40%, #b3b3ff 100%)",
-            // Ocean & Sky
-            "radial-gradient(circle at 40% 20%, #a8d8ea, #a8eabf, #eaa8d8)",
-            "linear-gradient(160deg, #a0c4ff 0%, #c4a0ff 50%, #ffa0c4 100%)",
-            "radial-gradient(circle at 90% 50%, #b0e0e6, #e6b0e0, #e0e6b0)",
-            "linear-gradient(200deg, #7ec8e0 0%, #e07ec8 40%, #c8e07e 100%)",
-            "radial-gradient(circle at 10% 80%, #9ac7e0, #e09ac7, #c7e09a)",
-            // Forest & Nature
-            "linear-gradient(90deg, #c0d6b3 0%, #b3c0d6 50%, #d6b3c0 100%)",
-            "radial-gradient(circle at 60% 30%, #a8c9a8, #c9a8c9, #a8a8c9)",
-            "linear-gradient(130deg, #b8d0b0 0%, #d0b0d0 40%, #b0d0b0 100%)",
-            "radial-gradient(circle at 30% 60%, #9fb79f, #b79fb7, #9f9fb7)",
-            "linear-gradient(45deg, #afc9af 0%, #c9afc9 50%, #afafc9 100%)",
-            // Luxurious Metallics
-            "radial-gradient(circle at 40% 50%, #d6c8b0, #b0d6c8, #c8b0d6)",
-            "linear-gradient(110deg, #d8c9b0 0%, #b0d8c9 40%, #c9b0d8 100%)",
-            "radial-gradient(circle at 70% 40%, #e5d5b5, #b5e5d5, #d5b5e5)",
-            "linear-gradient(80deg, #d0c0a0 0%, #a0d0c0 50%, #c0a0d0 100%)",
-            "radial-gradient(circle at 20% 70%, #cfb89b, #9bcfb8, #b89bcf)",
-            // Abstract & Artistic
-            "linear-gradient(145deg, #b8a9c9 0%, #c9b8a9 40%, #a9c9b8 100%)",
-            "radial-gradient(circle at 50% 30%, #c9b0b0, #b0c9b0, #b0b0c9)",
-            "linear-gradient(95deg, #d0b0d0 0%, #b0d0b0 50%, #d0b0b0 100%)",
-            "radial-gradient(circle at 80% 80%, #c0a0b0, #b0c0a0, #a0b0c0)",
-            "linear-gradient(65deg, #e0c0e0 0%, #c0e0c0 40%, #e0c0c0 100%)"
         ];
 
         // ========== DOM ELEMENTS (partial) ==========
@@ -1994,10 +1821,6 @@ VIP Table</textarea>
                 }
                 
                 if (customDoc.exists) state.customization = customDoc.data();
-                // Ensure new properties exist
-                if (!state.customization.menuBackgroundImage) state.customization.menuBackgroundImage = null;
-                if (!state.customization.menuGradient) state.customization.menuGradient = null;
-                if (state.customization.menuGradientBlur === undefined) state.customization.menuGradientBlur = 20;
                 else await getCustomizationDoc().set(state.customization);
                 
                 if (soundDoc.exists) {
@@ -2235,30 +2058,10 @@ VIP Table</textarea>
             const root = document.documentElement;
             Object.keys(state.customization).forEach(k => {
                 if (k === 'fontPrimary' || k === 'fontSecondary') root.style.setProperty(`--${k}`, state.customization[k]);
-                else if (!['menuBackgroundImage','menuGradient','menuGradientBlur'].includes(k)) root.style.setProperty(`--${k}`, state.customization[k]);
+                else root.style.setProperty(`--${k}`, state.customization[k]);
             });
             const previewName = document.getElementById('previewRestaurantName');
             if (previewName) { previewName.style.color = state.customization.primary; previewName.style.fontFamily = state.customization.fontSecondary; }
-            
-            // Apply menu background: gradient with blur takes precedence over image
-            const menuSection = document.getElementById('menuSection');
-            if (menuSection) {
-                if (state.customization.menuGradient) {
-                    menuSection.style.setProperty('--menu-gradient', state.customization.menuGradient);
-                    menuSection.style.setProperty('--menu-blur', state.customization.menuGradientBlur + 'px');
-                    menuSection.style.background = ''; // clear any direct background
-                } else {
-                    menuSection.style.setProperty('--menu-gradient', 'none');
-                    if (state.customization.menuBackgroundImage) {
-                        menuSection.style.backgroundImage = `url('${state.customization.menuBackgroundImage}')`;
-                        menuSection.style.backgroundSize = 'cover';
-                        menuSection.style.backgroundPosition = 'center';
-                        menuSection.style.backgroundRepeat = 'no-repeat';
-                    } else {
-                        menuSection.style.background = '';
-                    }
-                }
-            }
         }
         function updateRestaurantUI() {
             restaurantName.textContent = state.restaurantInfo.name;
@@ -3054,8 +2857,9 @@ VIP Table</textarea>
         }
 
         // ========== OPEN VERTICAL ORDERS VIEW (FIXED) ==========
-        function openVerticalOrdersView() {
-            const winHtml = `<!DOCTYPE html>
+       // ========== OPEN VERTICAL ORDERS VIEW (FIXED PERMISSIONS) ==========
+function openVerticalOrdersView() {
+    const winHtml = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -3273,15 +3077,17 @@ VIP Table</textarea>
 </body>
 </html>`;
 
-            // Try to open the window
-            const win = window.open('', '_blank', 'width=900,height=600,scrollbars=yes,resizable=yes');
-            if (win) {
-                win.document.write(winHtml);
-                win.document.close();
-            } else {
-                showNotification('Pop‑up blocked. Please allow pop‑ups for this site.');
-            }
-        }
+    // Try to open the window
+    const win = window.open('', '_blank', 'width=900,height=600,scrollbars=yes,resizable=yes');
+    if (win) {
+        win.document.write(winHtml);
+        win.document.close();
+    } else {
+        showNotification('Pop‑up blocked. Please allow pop‑ups for this site.');
+    }
+}
+
+           
 
         // ========== OPEN VERTICAL HELP REQUESTS VIEW (unchanged) ==========
         function openHelpVerticalView() {
@@ -3815,59 +3621,7 @@ VIP Table</textarea>
             saveCumulativeStats();
         }
 
-        // ========== GRADIENT UI FUNCTIONS ==========
-        function renderGradientOptions() {
-            const gallery = document.getElementById('gradientGallery');
-            if (!gallery) return;
-            gallery.innerHTML = '';
-            
-            // Add a "None" option to remove gradient
-            const noneCard = document.createElement('div');
-            noneCard.className = 'gradient-card none-option';
-            noneCard.textContent = 'None';
-            noneCard.addEventListener('click', () => {
-                state.customization.menuGradient = null;
-                applyCustomization();
-                showNotification('Gradient removed.');
-                document.querySelectorAll('.gradient-card').forEach(c => c.classList.remove('selected'));
-                noneCard.classList.add('selected');
-            });
-            if (!state.customization.menuGradient) noneCard.classList.add('selected');
-            gallery.appendChild(noneCard);
-            
-            gradients.forEach((grad, index) => {
-                const card = document.createElement('div');
-                card.className = 'gradient-card';
-                card.style.background = grad;
-                card.dataset.gradient = grad;
-                card.addEventListener('click', () => {
-                    state.customization.menuGradient = grad;
-                    applyCustomization();
-                    showNotification('Gradient applied.');
-                    document.querySelectorAll('.gradient-card').forEach(c => c.classList.remove('selected'));
-                    card.classList.add('selected');
-                    // Ensure slider is enabled
-                });
-                if (state.customization.menuGradient === grad) card.classList.add('selected');
-                gallery.appendChild(card);
-            });
-
-            // Blur slider
-            const blurSlider = document.getElementById('blurSlider');
-            const blurValue = document.getElementById('blurValue');
-            if (blurSlider) {
-                blurSlider.value = state.customization.menuGradientBlur;
-                blurValue.textContent = state.customization.menuGradientBlur + 'px';
-                blurSlider.oninput = (e) => {
-                    const val = e.target.value;
-                    state.customization.menuGradientBlur = parseInt(val);
-                    blurValue.textContent = val + 'px';
-                    applyCustomization();
-                };
-            }
-        }
-
-        // ========== ADMIN DASHBOARD (unchanged, except added gradient rendering and clear button) ==========
+        // ========== ADMIN DASHBOARD (unchanged, except added button for vertical orders viewer) ==========
         function loadAdminDashboardData() {
             document.getElementById('adminRestaurantName').value = state.restaurantInfo.name;
             document.getElementById('adminTaxRate').value = state.restaurantInfo.taxRate;
@@ -4684,7 +4438,7 @@ VIP Table</textarea>
             }; reader.readAsText(file); e.target.value = '';
         }
 
-        // --- CUSTOMIZATION (unchanged, but with gradient added) ---
+        // --- CUSTOMIZATION (unchanged) ---
         function loadCustomizationSettings() {}
         function initializeCustomizationTab() {
             const g = document.getElementById('themeGallery'); g.innerHTML = '';
@@ -4715,43 +4469,6 @@ VIP Table</textarea>
                 inp.addEventListener('input', function() { const v = this.value; val.textContent = v; pre.style.backgroundColor = v; state.customization[col.id] = v; state.currentTheme = "custom"; g.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected')); document.getElementById('currentThemeName').textContent = "Custom"; document.getElementById('currentThemeCategory').textContent = "Custom"; applyCustomization(); });
                 cc.appendChild(el);
             });
-            // Menu background image preview and handlers
-            function updateMenuBgPreview() {
-                const preview = document.getElementById('menuBgPreview');
-                if (state.customization.menuBackgroundImage) {
-                    preview.innerHTML = `<img src="${state.customization.menuBackgroundImage}" alt="Menu Background">`;
-                } else {
-                    preview.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-image"></i><p>No background image</p></div>';
-                }
-            }
-            updateMenuBgPreview();
-            document.getElementById('uploadMenuBgBtn').addEventListener('click', () => document.getElementById('menuBgUpload').click());
-            document.getElementById('menuBgUpload').addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file || !file.type.match('image.*')) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    state.customization.menuBackgroundImage = ev.target.result;
-                    updateMenuBgPreview();
-                    showNotification("Background image loaded. Save to persist.");
-                };
-                reader.readAsDataURL(file);
-            });
-            document.getElementById('removeMenuBgBtn').addEventListener('click', () => {
-                state.customization.menuBackgroundImage = null;
-                updateMenuBgPreview();
-                showNotification("Background removed.");
-            });
-
-            // Gradient gallery
-            renderGradientOptions();
-            document.getElementById('clearGradientBtn').addEventListener('click', () => {
-                state.customization.menuGradient = null;
-                applyCustomization();
-                renderGradientOptions();
-                showNotification('Gradient cleared.');
-            });
-
             document.getElementById('resetCustomizationBtn').addEventListener('click', function() { if (confirm("Reset all visual customization to default values?")) { resetCustomization(); setTimeout(initializeCustomizationTab,100); } });
             document.getElementById('saveCustomizationBtn').addEventListener('click', saveCustomizationOptimistic);
             const curTheme = themes[state.currentTheme]; if (curTheme) { document.getElementById('currentThemeName').textContent = curTheme.name; document.getElementById('currentThemeCategory').textContent = curTheme.category; }
@@ -4774,7 +4491,7 @@ VIP Table</textarea>
         function updateColorInputs() { importantColors.forEach(col=>{ const inp = document.getElementById(`color-${col.id}`); if (inp) { const val = inp.parentElement.querySelector('.color-value'); const pre = inp.parentElement.parentElement.querySelector('.color-preview'); if (inp && val && pre) { inp.value = state.customization[col.id]; val.textContent = state.customization[col.id]; pre.style.backgroundColor = state.customization[col.id]; } } }); }
         async function saveCustomizationOptimistic() { showNotification("Visual customization saved."); await saveCustomization(); }
         function resetCustomization() {
-            state.customization = { primary: "#e63946", primaryDark: "#c1121f", secondary: "#457b9d", light: "#f8f9fa", dark: "#212529", gray: "#6c757d", lightGray: "#e9ecef", success: "#2a9d8f", warning: "#e9c46a", danger: "#dc3545", shadow: "0 4px 12px rgba(0, 0, 0, 0.08)", radius: "12px", background: "#fefefe", text: "#212529", cardBg: "#ffffff", headerBg: "#ffffff", menuBg: "#ffffff", cartBg: "#ffffff", paymentBg: "#ffffff", buttonText: "#ffffff", fontPrimary: "'Poppins', sans-serif", fontSecondary: "'Playfair Display', serif", menuBackgroundImage: null, menuGradient: null, menuGradientBlur: 20 };
+            state.customization = { primary: "#e63946", primaryDark: "#c1121f", secondary: "#457b9d", light: "#f8f9fa", dark: "#212529", gray: "#6c757d", lightGray: "#e9ecef", success: "#2a9d8f", warning: "#e9c46a", danger: "#dc3545", shadow: "0 4px 12px rgba(0, 0, 0, 0.08)", radius: "12px", background: "#fefefe", text: "#212529", cardBg: "#ffffff", headerBg: "#ffffff", menuBg: "#ffffff", cartBg: "#ffffff", paymentBg: "#ffffff", buttonText: "#ffffff", fontPrimary: "'Poppins', sans-serif", fontSecondary: "'Playfair Display', serif" };
             state.currentTheme = "default"; state.currentFont = "poppins"; applyCustomization();
         }
         function darkenColor(c,p) { const n = parseInt(c.replace("#",""),16); const a = Math.round(2.55*p); const r = (n>>16)-a, g = (n>>8&0x00FF)-a, b = (n&0x0000FF)-a; return "#" + (0x1000000 + (r<255?r<1?0:r:255)*0x10000 + (g<255?g<1?0:g:255)*0x100 + (b<255?b<1?0:b:255)).toString(16).slice(1); }
@@ -5423,3 +5140,4 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
+
