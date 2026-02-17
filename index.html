@@ -2857,10 +2857,9 @@ VIP Table</textarea>
         }
 
         // ========== OPEN VERTICAL ORDERS VIEW (FIXED) ==========
-        function openVerticalOrdersView() {
-            console.log('openVerticalOrdersView called'); // Debug line
-
-            const winHtml = `<!DOCTYPE html>
+       // ========== OPEN VERTICAL ORDERS VIEW (FIXED PERMISSIONS) ==========
+function openVerticalOrdersView() {
+    const winHtml = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -2898,6 +2897,7 @@ VIP Table</textarea>
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"><\/script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"><\/script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"><\/script>
 </head>
 <body>
     <div class="container">
@@ -2924,6 +2924,7 @@ VIP Table</textarea>
     </div>
 
     <script>
+        // Initialize Firebase (Only needed for Reading/Listening)
         const firebaseConfig = {
             apiKey: "AIzaSyBOYqnY3hDTCjBJv97zn4_LlpfpA6Mnvk0",
             authDomain: "trytobereal-ce3f1.firebaseapp.com",
@@ -2932,7 +2933,9 @@ VIP Table</textarea>
             messagingSenderId: "53123319511",
             appId: "1:53123319511:web:78fb36d731b9e94b92d292"
         };
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
 
         const businessId = '${businessId}';
@@ -2943,30 +2946,34 @@ VIP Table</textarea>
             return d.toLocaleString();
         }
 
-        async function updateOrderStatus(orderId, newStatus) {
-            try {
-                await ordersCollection.doc(orderId).update({ status: newStatus });
-            } catch (err) {
-                console.error("Error updating order:", err);
-                alert("Failed to update order status.");
+        // --- UPDATED: DELEGATE TO PARENT WINDOW ---
+        // This uses the functions from the main Admin dashboard which is already logged in
+        function updateOrderStatus(orderId, newStatus) {
+            if (window.opener && !window.opener.closed && typeof window.opener.updateOrderStatusOptimistic === 'function') {
+                window.opener.updateOrderStatusOptimistic(orderId, newStatus);
+            } else {
+                alert("Error: Main Admin window is closed. Cannot update status.");
             }
         }
 
-        async function deleteOrder(orderId) {
+        function deleteOrder(orderId) {
             if (!confirm("Delete this order?")) return;
-            try {
-                await ordersCollection.doc(orderId).delete();
-            } catch (err) {
-                console.error("Error deleting order:", err);
-                alert("Failed to delete order.");
+            
+            if (window.opener && !window.opener.closed && typeof window.opener.deleteSingleOrder === 'function') {
+                window.opener.deleteSingleOrder(orderId);
+            } else {
+                alert("Error: Main Admin window is closed. Cannot delete order.");
             }
         }
+        // ------------------------------------------
 
         let allOrders = [];
 
         function populateTableFilter(orders) {
             const tableFilter = document.getElementById("tableFilter");
+            const currentSelection = tableFilter.value;
             const tables = [...new Set(orders.filter(o => o.table && o.table.toLowerCase() !== "admin").map(o => o.table))].sort();
+            
             tableFilter.innerHTML = "<option value='all'>All Tables</option>";
             tables.forEach(t => {
                 const opt = document.createElement("option");
@@ -2974,6 +2981,7 @@ VIP Table</textarea>
                 opt.textContent = t;
                 tableFilter.appendChild(opt);
             });
+            tableFilter.value = currentSelection;
         }
 
         function renderOrders() {
@@ -3053,7 +3061,10 @@ VIP Table</textarea>
                 renderOrders();
             }, err => {
                 console.error("Firestore error", err);
-                document.getElementById("ordersList").innerHTML = '<div class="no-orders"><i class="fas fa-exclamation-triangle"></i><p>Error loading orders.</p></div>';
+                // If permission denied error occurs on read, show appropriate message
+                if (err.code === 'permission-denied') {
+                     document.getElementById("ordersList").innerHTML = '<div class="no-orders"><i class="fas fa-lock"></i><p>Permission Denied. Please ensure you are logged in on the main window.</p></div>';
+                }
             });
         }
 
@@ -3066,22 +3077,17 @@ VIP Table</textarea>
 </body>
 </html>`;
 
-            // Try to open the window
-            const win = window.open('', '_blank', 'width=900,height=600,scrollbars=yes,resizable=yes');
-            if (win) {
-                win.document.write(winHtml);
-                win.document.close();
-            } else {
-                // Pop‑up blocked – show a notification and offer a fallback
-                showNotification('Pop‑up blocked. Please allow pop‑ups for this site or click the link below.');
-                // Create a temporary link to open in a new tab
-                const a = document.createElement('a');
-                a.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(winHtml);
-                a.target = '_blank';
-                a.rel = 'noopener noreferrer';
-                a.click();
-            }
-        }
+    // Try to open the window
+    const win = window.open('', '_blank', 'width=900,height=600,scrollbars=yes,resizable=yes');
+    if (win) {
+        win.document.write(winHtml);
+        win.document.close();
+    } else {
+        showNotification('Pop‑up blocked. Please allow pop‑ups for this site.');
+    }
+}
+
+           
 
         // ========== OPEN VERTICAL HELP REQUESTS VIEW (unchanged) ==========
         function openHelpVerticalView() {
@@ -5134,3 +5140,4 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
+
