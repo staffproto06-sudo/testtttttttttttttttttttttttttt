@@ -406,6 +406,38 @@
         .edit-order-item-controls { display: flex; align-items: center; gap: 10px; }
         .edit-order-item-quantity { width: 60px; text-align: center; }
         .edit-order-item-price { font-weight: 600; color: var(--primary); min-width: 80px; text-align: right; }
+
+        /* ========== NEW STYLES FOR GRADIENT SECTION ========== */
+        .gradient-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .gradient-card {
+            height: 100px;
+            border-radius: 10px;
+            border: 2px solid var(--light-gray);
+            cursor: pointer;
+            transition: all 0.3s;
+            background-size: cover;
+        }
+        .gradient-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .gradient-card.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(230,57,70,0.2);
+        }
+        .gradient-card.none-option {
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -837,6 +869,16 @@
                                     <button class="btn btn-secondary upload-btn" id="uploadMenuBgBtn"><i class="fas fa-upload"></i> Upload Background</button>
                                     <button class="remove-image-btn" id="removeMenuBgBtn"><i class="fas fa-trash"></i> Remove</button>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- ========== NEW: Gradient Background Section ========== -->
+                        <div class="customization-section">
+                            <div class="section-title-small"><i class="fas fa-paint-brush"></i> Gradient Background</div>
+                            <p style="margin-bottom:20px; color:var(--gray);">Choose a modern, blurry gradient for the menu background. (Overrides any uploaded image.)</p>
+                            <div class="gradient-gallery" id="gradientGallery"></div>
+                            <div style="margin-top:20px;">
+                                <button class="btn btn-secondary" id="clearGradientBtn"><i class="fas fa-undo"></i> Remove Gradient</button>
                             </div>
                         </div>
                     </div>
@@ -1507,7 +1549,9 @@ VIP Table</textarea>
                 fontPrimary: "'Poppins', sans-serif",
                 fontSecondary: "'Playfair Display', serif",
                 // NEW: Menu background image
-                menuBackgroundImage: null
+                menuBackgroundImage: null,
+                // NEW: Menu gradient
+                menuGradient: null
             },
             currentTheme: "default",
             currentFont: "poppins",
@@ -1604,6 +1648,25 @@ VIP Table</textarea>
             { id: "text", label: "Text Color" },
             { id: "cardBg", label: "Card Background" },
             { id: "lightGray", label: "Light Gray" }
+        ];
+
+        // ========== GRADIENT DEFINITIONS (15 modern blurry gradients) ==========
+        const gradients = [
+            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            "linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%)",
+            "linear-gradient(120deg, #f6d365 0%, #fda085 100%)",
+            "linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%)",
+            "linear-gradient(120deg, #fbc2eb 0%, #a6c1ee 100%)",
+            "linear-gradient(120deg, #ff9a9e 0%, #fecfef 100%)",
+            "radial-gradient(circle at 10% 30%, #fbc7d4, #b9d7e9)",
+            "linear-gradient(120deg, #2b5876 0%, #4e4376 100%)",
+            "linear-gradient(120deg, #a8edea 0%, #fed6e3 100%)",
+            "linear-gradient(120deg, #fccb90 0%, #d57eeb 100%)",
+            "linear-gradient(120deg, #f093fb 0%, #f5576c 100%)",
+            "linear-gradient(120deg, #4facfe 0%, #00f2fe 100%)",
+            "linear-gradient(120deg, #43e97b 0%, #38f9d7 100%)",
+            "linear-gradient(120deg, #fa709a 0%, #fee140 100%)",
+            "radial-gradient(circle at 30% 50%, #d4fc79, #96e6a1)"
         ];
 
         // ========== DOM ELEMENTS (partial) ==========
@@ -1838,8 +1901,9 @@ VIP Table</textarea>
                 }
                 
                 if (customDoc.exists) state.customization = customDoc.data();
-                // Ensure the new property exists
+                // Ensure new properties exist
                 if (!state.customization.menuBackgroundImage) state.customization.menuBackgroundImage = null;
+                if (!state.customization.menuGradient) state.customization.menuGradient = null;
                 else await getCustomizationDoc().set(state.customization);
                 
                 if (soundDoc.exists) {
@@ -2077,21 +2141,25 @@ VIP Table</textarea>
             const root = document.documentElement;
             Object.keys(state.customization).forEach(k => {
                 if (k === 'fontPrimary' || k === 'fontSecondary') root.style.setProperty(`--${k}`, state.customization[k]);
-                else if (k !== 'menuBackgroundImage') root.style.setProperty(`--${k}`, state.customization[k]);
+                else if (k !== 'menuBackgroundImage' && k !== 'menuGradient') root.style.setProperty(`--${k}`, state.customization[k]);
             });
             const previewName = document.getElementById('previewRestaurantName');
             if (previewName) { previewName.style.color = state.customization.primary; previewName.style.fontFamily = state.customization.fontSecondary; }
             
-            // Apply menu background image
+            // Apply menu background: gradient takes precedence over image
             const menuSection = document.getElementById('menuSection');
             if (menuSection) {
-                if (state.customization.menuBackgroundImage) {
+                if (state.customization.menuGradient) {
+                    menuSection.style.background = state.customization.menuGradient;
+                    menuSection.style.backgroundSize = 'cover';
+                    menuSection.style.backgroundPosition = 'center';
+                } else if (state.customization.menuBackgroundImage) {
                     menuSection.style.backgroundImage = `url('${state.customization.menuBackgroundImage}')`;
                     menuSection.style.backgroundSize = 'cover';
                     menuSection.style.backgroundPosition = 'center';
                     menuSection.style.backgroundRepeat = 'no-repeat';
                 } else {
-                    menuSection.style.backgroundImage = 'none';
+                    menuSection.style.background = 'none';
                 }
             }
         }
@@ -2889,9 +2957,8 @@ VIP Table</textarea>
         }
 
         // ========== OPEN VERTICAL ORDERS VIEW (FIXED) ==========
-       // ========== OPEN VERTICAL ORDERS VIEW (FIXED PERMISSIONS) ==========
-function openVerticalOrdersView() {
-    const winHtml = `<!DOCTYPE html>
+        function openVerticalOrdersView() {
+            const winHtml = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -3109,17 +3176,15 @@ function openVerticalOrdersView() {
 </body>
 </html>`;
 
-    // Try to open the window
-    const win = window.open('', '_blank', 'width=900,height=600,scrollbars=yes,resizable=yes');
-    if (win) {
-        win.document.write(winHtml);
-        win.document.close();
-    } else {
-        showNotification('Pop‑up blocked. Please allow pop‑ups for this site.');
-    }
-}
-
-           
+            // Try to open the window
+            const win = window.open('', '_blank', 'width=900,height=600,scrollbars=yes,resizable=yes');
+            if (win) {
+                win.document.write(winHtml);
+                win.document.close();
+            } else {
+                showNotification('Pop‑up blocked. Please allow pop‑ups for this site.');
+            }
+        }
 
         // ========== OPEN VERTICAL HELP REQUESTS VIEW (unchanged) ==========
         function openHelpVerticalView() {
@@ -3653,7 +3718,44 @@ function openVerticalOrdersView() {
             saveCumulativeStats();
         }
 
-        // ========== ADMIN DASHBOARD (unchanged, except added button for vertical orders viewer) ==========
+        // ========== GRADIENT UI FUNCTIONS ==========
+        function renderGradientOptions() {
+            const gallery = document.getElementById('gradientGallery');
+            if (!gallery) return;
+            gallery.innerHTML = '';
+            
+            // Add a "None" option to remove gradient
+            const noneCard = document.createElement('div');
+            noneCard.className = 'gradient-card none-option';
+            noneCard.textContent = 'None';
+            noneCard.addEventListener('click', () => {
+                state.customization.menuGradient = null;
+                applyCustomization();
+                showNotification('Gradient removed.');
+                document.querySelectorAll('.gradient-card').forEach(c => c.classList.remove('selected'));
+                noneCard.classList.add('selected');
+            });
+            if (!state.customization.menuGradient) noneCard.classList.add('selected');
+            gallery.appendChild(noneCard);
+            
+            gradients.forEach((grad, index) => {
+                const card = document.createElement('div');
+                card.className = 'gradient-card';
+                card.style.background = grad;
+                card.dataset.gradient = grad;
+                card.addEventListener('click', () => {
+                    state.customization.menuGradient = grad;
+                    applyCustomization();
+                    showNotification('Gradient applied.');
+                    document.querySelectorAll('.gradient-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                });
+                if (state.customization.menuGradient === grad) card.classList.add('selected');
+                gallery.appendChild(card);
+            });
+        }
+
+        // ========== ADMIN DASHBOARD (unchanged, except added gradient rendering and clear button) ==========
         function loadAdminDashboardData() {
             document.getElementById('adminRestaurantName').value = state.restaurantInfo.name;
             document.getElementById('adminTaxRate').value = state.restaurantInfo.taxRate;
@@ -4470,7 +4572,7 @@ function openVerticalOrdersView() {
             }; reader.readAsText(file); e.target.value = '';
         }
 
-        // --- CUSTOMIZATION (unchanged) ---
+        // --- CUSTOMIZATION (unchanged, but with gradient added) ---
         function loadCustomizationSettings() {}
         function initializeCustomizationTab() {
             const g = document.getElementById('themeGallery'); g.innerHTML = '';
@@ -4501,7 +4603,7 @@ function openVerticalOrdersView() {
                 inp.addEventListener('input', function() { const v = this.value; val.textContent = v; pre.style.backgroundColor = v; state.customization[col.id] = v; state.currentTheme = "custom"; g.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected')); document.getElementById('currentThemeName').textContent = "Custom"; document.getElementById('currentThemeCategory').textContent = "Custom"; applyCustomization(); });
                 cc.appendChild(el);
             });
-            // NEW: Menu background image preview and handlers
+            // Menu background image preview and handlers
             function updateMenuBgPreview() {
                 const preview = document.getElementById('menuBgPreview');
                 if (state.customization.menuBackgroundImage) {
@@ -4529,6 +4631,15 @@ function openVerticalOrdersView() {
                 showNotification("Background removed.");
             });
 
+            // Gradient gallery
+            renderGradientOptions();
+            document.getElementById('clearGradientBtn').addEventListener('click', () => {
+                state.customization.menuGradient = null;
+                applyCustomization();
+                renderGradientOptions();
+                showNotification('Gradient cleared.');
+            });
+
             document.getElementById('resetCustomizationBtn').addEventListener('click', function() { if (confirm("Reset all visual customization to default values?")) { resetCustomization(); setTimeout(initializeCustomizationTab,100); } });
             document.getElementById('saveCustomizationBtn').addEventListener('click', saveCustomizationOptimistic);
             const curTheme = themes[state.currentTheme]; if (curTheme) { document.getElementById('currentThemeName').textContent = curTheme.name; document.getElementById('currentThemeCategory').textContent = curTheme.category; }
@@ -4551,7 +4662,7 @@ function openVerticalOrdersView() {
         function updateColorInputs() { importantColors.forEach(col=>{ const inp = document.getElementById(`color-${col.id}`); if (inp) { const val = inp.parentElement.querySelector('.color-value'); const pre = inp.parentElement.parentElement.querySelector('.color-preview'); if (inp && val && pre) { inp.value = state.customization[col.id]; val.textContent = state.customization[col.id]; pre.style.backgroundColor = state.customization[col.id]; } } }); }
         async function saveCustomizationOptimistic() { showNotification("Visual customization saved."); await saveCustomization(); }
         function resetCustomization() {
-            state.customization = { primary: "#e63946", primaryDark: "#c1121f", secondary: "#457b9d", light: "#f8f9fa", dark: "#212529", gray: "#6c757d", lightGray: "#e9ecef", success: "#2a9d8f", warning: "#e9c46a", danger: "#dc3545", shadow: "0 4px 12px rgba(0, 0, 0, 0.08)", radius: "12px", background: "#fefefe", text: "#212529", cardBg: "#ffffff", headerBg: "#ffffff", menuBg: "#ffffff", cartBg: "#ffffff", paymentBg: "#ffffff", buttonText: "#ffffff", fontPrimary: "'Poppins', sans-serif", fontSecondary: "'Playfair Display', serif", menuBackgroundImage: null };
+            state.customization = { primary: "#e63946", primaryDark: "#c1121f", secondary: "#457b9d", light: "#f8f9fa", dark: "#212529", gray: "#6c757d", lightGray: "#e9ecef", success: "#2a9d8f", warning: "#e9c46a", danger: "#dc3545", shadow: "0 4px 12px rgba(0, 0, 0, 0.08)", radius: "12px", background: "#fefefe", text: "#212529", cardBg: "#ffffff", headerBg: "#ffffff", menuBg: "#ffffff", cartBg: "#ffffff", paymentBg: "#ffffff", buttonText: "#ffffff", fontPrimary: "'Poppins', sans-serif", fontSecondary: "'Playfair Display', serif", menuBackgroundImage: null, menuGradient: null };
             state.currentTheme = "default"; state.currentFont = "poppins"; applyCustomization();
         }
         function darkenColor(c,p) { const n = parseInt(c.replace("#",""),16); const a = Math.round(2.55*p); const r = (n>>16)-a, g = (n>>8&0x00FF)-a, b = (n&0x0000FF)-a; return "#" + (0x1000000 + (r<255?r<1?0:r:255)*0x10000 + (g<255?g<1?0:g:255)*0x100 + (b<255?b<1?0:b:255)).toString(16).slice(1); }
@@ -5196,8 +5307,7 @@ function openVerticalOrdersView() {
                 overlay.style.opacity = '0';
                 setTimeout(() => { overlay.style.display = 'none'; }, 500);
             }
-        }, 9000);
+        }, 7000);
     </script>
 </body>
 </html>
-
