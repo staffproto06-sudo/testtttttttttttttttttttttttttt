@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content Security Policy (allows necessary external resources) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://firestore.googleapis.com https://*.firebaseio.com;">
     <title data-i18n="appTitle">Εφαρμογή Εστιατορίου - PERFECT + SOUNDS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts with MANY options (now 20+ fonts) -->
@@ -1209,6 +1211,24 @@ VIP Table</textarea>
     <div style="display:none;"><span class="code-mapping" data-letter="l" data-digit="6"></span></div>
 
     <script>
+        // ========== SECURITY HELPER: ESCAPE HTML ==========
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                if (m === '"') return '&quot;';
+                return m;
+            });
+        }
+
+        // Escape single quotes for use in HTML attributes (data-options)
+        function escapeAttr(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/'/g, '&#39;');
+        }
+
         // ========== BUILD THE CODE MAP FROM HIDDEN ELEMENTS (NO FALLBACK) ==========
         function buildCodeMap() {
             const map = {};
@@ -1712,9 +1732,9 @@ VIP Table</textarea>
             });
             if (state.currentTable && !state.isAdminMode) {
                 menuSubtitle.textContent = state.cart.length === 0 
-                    ? (lang === 'el' ? `Επιλέξτε είδη για την παραγγελία σας για ${state.currentTable}` : `Select items for your order for ${state.currentTable}`)
-                    : (lang === 'el' ? `Συνεχίστε να προσθέτετε είδη στην παραγγελία σας για ${state.currentTable}` : `Continue adding items to your order for ${state.currentTable}`);
-                cartSubtitle.textContent = lang === 'el' ? `Η παραγγελία σας για ${state.currentTable}` : `Your order for ${state.currentTable}`;
+                    ? (lang === 'el' ? `Επιλέξτε είδη για την παραγγελία σας για ${escapeHTML(state.currentTable)}` : `Select items for your order for ${escapeHTML(state.currentTable)}`)
+                    : (lang === 'el' ? `Συνεχίστε να προσθέτετε είδη στην παραγγελία σας για ${escapeHTML(state.currentTable)}` : `Continue adding items to your order for ${escapeHTML(state.currentTable)}`);
+                cartSubtitle.textContent = lang === 'el' ? `Η παραγγελία σας για ${escapeHTML(state.currentTable)}` : `Your order for ${escapeHTML(state.currentTable)}`;
             }
             document.getElementById('langToggleText').textContent = lang === 'el' ? 'EN' : 'EL';
         }
@@ -1893,7 +1913,7 @@ VIP Table</textarea>
             tables.forEach(t => {
                 const opt = document.createElement('option');
                 opt.value = t;
-                opt.textContent = t;
+                opt.textContent = escapeHTML(t);
                 tableFilter.appendChild(opt);
             });
         }
@@ -1906,7 +1926,7 @@ VIP Table</textarea>
             tables.forEach(t => {
                 const opt = document.createElement('option');
                 opt.value = t;
-                opt.textContent = t;
+                opt.textContent = escapeHTML(t);
                 tableFilter.appendChild(opt);
             });
         }
@@ -2092,12 +2112,12 @@ VIP Table</textarea>
             }
             filtered.forEach(item => {
                 const el = document.createElement('div'); el.className = 'menu-item';  // cursor:pointer added in CSS
-                const imgStyle = item.image ? `background-image: url('${item.image}')` : 'background-color: var(--light-gray)';
+                const imgStyle = item.image ? `background-image: url('${escapeHTML(item.image)}')` : 'background-color: var(--light-gray)';
                 let optInd = '';
                 if (item.options && item.options.length) optInd = `<div class="item-options-indicator"><i class="fas fa-sliders-h"></i> ${state.currentLanguage === 'el' ? 'Με επιλογές' : 'With options'}</div>`;
-                const itemName = getItemName(item);
-                const itemDesc = getItemDescription(item);
-                const itemTags = getItemTags(item);
+                const itemName = escapeHTML(getItemName(item));
+                const itemDesc = escapeHTML(getItemDescription(item));
+                const itemTags = getItemTags(item).map(t => escapeHTML(t));
                 el.innerHTML = `<div class="item-image" style="${imgStyle}"></div><div class="item-content"><div class="item-header"><div class="item-name">${itemName}</div><div class="item-price">$${item.price.toFixed(2)}</div></div><div class="item-description">${itemDesc}</div>${optInd}<div class="item-footer"><div class="item-tags">${itemTags.map(t=>`<span class="item-tag">${t}</span>`).join('')}</div><button class="add-to-cart" data-id="${item.id}"><i class="fas fa-plus"></i></button></div></div>`;
                 el.addEventListener('click', function(e) {
                     if (e.target.closest('.add-to-cart')) return;
@@ -2145,24 +2165,24 @@ VIP Table</textarea>
                 else state.cart.push(cartItem);
             } else state.cart.push(cartItem);
             updateCart();
-            showNotification(state.currentLanguage === 'el' ? `Το ${getItemName(menuItem)} προστέθηκε στο καλάθι` : `${getItemName(menuItem)} added to cart`);
+            showNotification(state.currentLanguage === 'el' ? `Το ${escapeHTML(getItemName(menuItem))} προστέθηκε στο καλάθι` : `${escapeHTML(getItemName(menuItem))} added to cart`);
             playSound(state.soundEffects.addToCartSound);
         }
         function openOptionsModal(item) {
-            let html = `<h3 class="options-modal-title">${getItemName(item)}</h3><div class="options-modal-price">$${item.price.toFixed(2)}</div><div class="item-description" style="margin-bottom:20px;">${getItemDescription(item)}</div>`;
+            let html = `<h3 class="options-modal-title">${escapeHTML(getItemName(item))}</h3><div class="options-modal-price">$${item.price.toFixed(2)}</div><div class="item-description" style="margin-bottom:20px;">${escapeHTML(getItemDescription(item))}</div>`;
             item.options.forEach((g, gi) => {
                 if (g.type === 'text') {
                     // Add maxlength="150" to the comment textarea
-                    html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-comment"></i> ${getOptionGroupName(g)}</div><div class="comment-field"><textarea class="admin-textarea" maxlength="150" placeholder="${state.currentLanguage === 'el' ? 'Εισάγετε το σχόλιό σας εδώ...' : 'Enter your comment here...'}" id="comment_${g.id||gi}"></textarea></div></div>`;
+                    html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-comment"></i> ${escapeHTML(getOptionGroupName(g))}</div><div class="comment-field"><textarea class="admin-textarea" maxlength="150" placeholder="${state.currentLanguage === 'el' ? 'Εισάγετε το σχόλιό σας εδώ...' : 'Enter your comment here...'}" id="comment_${g.id||gi}"></textarea></div></div>`;
                 } else {
-                    html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-tag"></i> ${getOptionGroupName(g)} ${g.type==='radio'?`<span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε ένα' : 'choose one'})</span>`:`<span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε οποιοδήποτε' : 'choose any'})</span>`}</div><div class="${g.type==='radio'?'option-group-radio':'option-group-checkbox'}">`;
+                    html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-tag"></i> ${escapeHTML(getOptionGroupName(g))} ${g.type==='radio'?`<span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε ένα' : 'choose one'})</span>`:`<span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε οποιοδήποτε' : 'choose any'})</span>`}</div><div class="${g.type==='radio'?'option-group-radio':'option-group-checkbox'}">`;
                     g.choices.forEach((c, ci) => {
                         let priceText = ''; let priceClass = '';
                         if (c.price>0) { priceText = `+$${c.price.toFixed(2)}`; priceClass = 'choice-price-positive'; }
                         else if (c.price<0) { priceText = `-$${Math.abs(c.price).toFixed(2)}`; priceClass = 'choice-price-negative'; }
-                        const choiceName = getChoiceName(c);
-                        if (g.type==='radio') html += `<div class="choice-item"><label class="choice-label"><input type="radio" name="group_${g.id||gi}" value="${c.name}" data-price="${c.price}" data-group-name="${g.name}" data-choice-name="${choiceName}"> <span class="choice-name">${choiceName}</span></label><span class="choice-price ${priceClass}">${priceText}</span></div>`;
-                        else html += `<div class="choice-item"><label class="choice-label"><input type="checkbox" name="group_${g.id||gi}" value="${c.name}" data-price="${c.price}" data-group-name="${g.name}" data-choice-name="${choiceName}"> <span class="choice-name">${choiceName}</span></label><span class="choice-price ${priceClass}">${priceText}</span></div>`;
+                        const choiceName = escapeHTML(getChoiceName(c));
+                        if (g.type==='radio') html += `<div class="choice-item"><label class="choice-label"><input type="radio" name="group_${g.id||gi}" value="${escapeHTML(c.name)}" data-price="${c.price}" data-group-name="${escapeHTML(g.name)}" data-choice-name="${choiceName}"> <span class="choice-name">${choiceName}</span></label><span class="choice-price ${priceClass}">${priceText}</span></div>`;
+                        else html += `<div class="choice-item"><label class="choice-label"><input type="checkbox" name="group_${g.id||gi}" value="${escapeHTML(c.name)}" data-price="${c.price}" data-group-name="${escapeHTML(g.name)}" data-choice-name="${choiceName}"> <span class="choice-name">${choiceName}</span></label><span class="choice-price ${priceClass}">${priceText}</span></div>`;
                     });
                     html += `</div></div>`;
                 }
@@ -2209,17 +2229,18 @@ VIP Table</textarea>
                     if (item.selectedOptions && item.selectedOptions.length) {
                         optHtml = '<div style="font-size:12px; color:var(--gray); margin-top:5px;">';
                         item.selectedOptions.forEach(o => {
-                            if (o.isComment) optHtml += `<div><i class="fas fa-comment"></i> ${o.groupName}: "${o.choiceName}"</div>`;
-                            else optHtml += `<div>• ${o.groupName}: ${o.choiceName} ${o.price>0 ? `+$${o.price.toFixed(2)}` : o.price<0 ? `-$${Math.abs(o.price).toFixed(2)}` : ''}</div>`;
+                            if (o.isComment) optHtml += `<div><i class="fas fa-comment"></i> ${escapeHTML(o.groupName)}: "${escapeHTML(o.choiceName)}"</div>`;
+                            else optHtml += `<div>• ${escapeHTML(o.groupName)}: ${escapeHTML(o.choiceName)} ${o.price>0 ? `+$${o.price.toFixed(2)}` : o.price<0 ? `-$${Math.abs(o.price).toFixed(2)}` : ''}</div>`;
                         });
                         optHtml += '</div>';
                     }
-                    el.innerHTML = `<div class="cart-item-info"><div class="cart-item-name">${item.name}</div>${optHtml}<div class="cart-item-price">$${item.price.toFixed(2)}</div></div><div class="cart-item-controls"><div class="quantity-control"><button class="quantity-btn decrease" data-id="${item.id}" data-options='${JSON.stringify(item.selectedOptions)}'><i class="fas fa-minus"></i></button><span class="quantity">${item.quantity}</span><button class="quantity-btn increase" data-id="${item.id}" data-options='${JSON.stringify(item.selectedOptions)}'><i class="fas fa-plus"></i></button></div><div class="remove-item" data-id="${item.id}" data-options='${JSON.stringify(item.selectedOptions)}'><i class="fas fa-trash"></i></div></div>`;
+                    const safeOptions = escapeAttr(JSON.stringify(item.selectedOptions));
+                    el.innerHTML = `<div class="cart-item-info"><div class="cart-item-name">${escapeHTML(item.name)}</div>${optHtml}<div class="cart-item-price">$${item.price.toFixed(2)}</div></div><div class="cart-item-controls"><div class="quantity-control"><button class="quantity-btn decrease" data-id="${item.id}" data-options='${safeOptions}'><i class="fas fa-minus"></i></button><span class="quantity">${item.quantity}</span><button class="quantity-btn increase" data-id="${item.id}" data-options='${safeOptions}'><i class="fas fa-plus"></i></button></div><div class="remove-item" data-id="${item.id}" data-options='${safeOptions}'><i class="fas fa-trash"></i></div></div>`;
                     cartItems.appendChild(el);
                 });
-                document.querySelectorAll('.decrease').forEach(b => b.addEventListener('click', function() { updateCartItemQuantity(parseInt(this.dataset.id), JSON.parse(this.dataset.options||'[]'), -1); }));
-                document.querySelectorAll('.increase').forEach(b => b.addEventListener('click', function() { updateCartItemQuantity(parseInt(this.dataset.id), JSON.parse(this.dataset.options||'[]'), 1); }));
-                document.querySelectorAll('.remove-item').forEach(b => b.addEventListener('click', function() { removeFromCart(parseInt(this.dataset.id), JSON.parse(this.dataset.options||'[]')); }));
+                document.querySelectorAll('.decrease').forEach(b => b.addEventListener('click', function() { updateCartItemQuantity(parseInt(this.dataset.id), JSON.parse(escapeHTML(this.dataset.options)||'[]'), -1); }));
+                document.querySelectorAll('.increase').forEach(b => b.addEventListener('click', function() { updateCartItemQuantity(parseInt(this.dataset.id), JSON.parse(escapeHTML(this.dataset.options)||'[]'), 1); }));
+                document.querySelectorAll('.remove-item').forEach(b => b.addEventListener('click', function() { removeFromCart(parseInt(this.dataset.id), JSON.parse(escapeHTML(this.dataset.options)||'[]')); }));
             }
             updateCartSummary();
         }
@@ -2233,7 +2254,7 @@ VIP Table</textarea>
         }
         function removeFromCart(id, opts) {
             const idx = state.cart.findIndex(i => i.id===id && JSON.stringify(i.selectedOptions)===JSON.stringify(opts));
-            if (idx !== -1) { const item = state.cart[idx]; state.cart.splice(idx,1); updateCart(); showNotification(state.currentLanguage === 'el' ? `Το ${item.name} αφαιρέθηκε από το καλάθι` : `${item.name} removed from cart`); }
+            if (idx !== -1) { const item = state.cart[idx]; state.cart.splice(idx,1); updateCart(); showNotification(state.currentLanguage === 'el' ? `Το ${escapeHTML(item.name)} αφαιρέθηκε από το καλάθι` : `${escapeHTML(item.name)} removed from cart`); }
         }
         function calculateSubtotal() { return state.cart.reduce((s,i)=>s + i.price * i.quantity, 0); }
         function calculateTotal() { return calculateSubtotal(); }
@@ -2250,14 +2271,14 @@ VIP Table</textarea>
         function generateOrderNumber() { return `ORD-${Math.floor(1000+Math.random()*9000)}`; }
         function showOrderConfirmation(order) {
             orderNumberDisplay.textContent = order.orderNumber;
-            confirmationTable.textContent = `${state.currentLanguage === 'el' ? 'Τραπέζι:' : 'Table:'} ${order.table}`;
+            confirmationTable.textContent = `${state.currentLanguage === 'el' ? 'Τραπέζι:' : 'Table:'} ${escapeHTML(order.table)}`;
             confirmationItems.innerHTML = '';
             order.items.forEach(i => {
                 let opt = '';
                 if (i.selectedOptions && i.selectedOptions.length) {
-                    opt = '<div style="font-size:12px; color:var(--gray);">' + i.selectedOptions.map(o => o.isComment ? `${o.groupName}: "${o.choiceName}"` : `${o.groupName}: ${o.choiceName}`).join(', ') + '</div>';
+                    opt = '<div style="font-size:12px; color:var(--gray);">' + i.selectedOptions.map(o => o.isComment ? `${escapeHTML(o.groupName)}: "${escapeHTML(o.choiceName)}"` : `${escapeHTML(o.groupName)}: ${escapeHTML(o.choiceName)}`).join(', ') + '</div>';
                 }
-                confirmationItems.innerHTML += `<div class="order-item"><div class="order-item-name"><div class="order-item-quantity">${i.quantity}</div><div>${i.name}${opt}</div></div><div class="order-item-price">$${(i.price*i.quantity).toFixed(2)}</div></div>`;
+                confirmationItems.innerHTML += `<div class="order-item"><div class="order-item-name"><div class="order-item-quantity">${i.quantity}</div><div>${escapeHTML(i.name)}${opt}</div></div><div class="order-item-price">$${(i.price*i.quantity).toFixed(2)}</div></div>`;
             });
             confirmationTotal.textContent = `$${order.total.toFixed(2)}`;
             confirmationPaymentMethod.textContent = order.paymentMethod === 'card' ? (state.currentLanguage === 'el' ? 'Πιστωτική/Χρεωστική Κάρτα' : 'Credit/Debit Card') : (state.currentLanguage === 'el' ? 'Μετρητά' : 'Cash');
@@ -2278,8 +2299,8 @@ VIP Table</textarea>
             document.querySelectorAll('.app-section, .admin-dashboard-section').forEach(s=>{ s.classList.remove('active-section'); s.style.display='none'; });
             const sec = document.getElementById(id);
             if (sec) { sec.style.display = 'block'; setTimeout(()=>sec.classList.add('active-section'),10); }
-            if (id==='cartSection' && state.currentTable && !state.isAdminMode) cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${state.currentTable}` : `Your order for ${state.currentTable}`;
-            if (id==='menuSection' && state.currentTable && !state.isAdminMode) menuSubtitle.textContent = state.cart.length===0 ? (state.currentLanguage === 'el' ? `Επιλέξτε είδη για την παραγγελία σας για ${state.currentTable}` : `Select items for your order for ${state.currentTable}`) : (state.currentLanguage === 'el' ? `Συνεχίστε να προσθέτετε είδη στην παραγγελία σας για ${state.currentTable}` : `Continue adding items to your order for ${state.currentTable}`);
+            if (id==='cartSection' && state.currentTable && !state.isAdminMode) cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${escapeHTML(state.currentTable)}` : `Your order for ${escapeHTML(state.currentTable)}`;
+            if (id==='menuSection' && state.currentTable && !state.isAdminMode) menuSubtitle.textContent = state.cart.length===0 ? (state.currentLanguage === 'el' ? `Επιλέξτε είδη για την παραγγελία σας για ${escapeHTML(state.currentTable)}` : `Select items for your order for ${escapeHTML(state.currentTable)}`) : (state.currentLanguage === 'el' ? `Συνεχίστε να προσθέτετε είδη στην παραγγελία σας για ${escapeHTML(state.currentTable)}` : `Continue adding items to your order for ${escapeHTML(state.currentTable)}`);
             if (id==='myOrdersSection' && state.currentTable && !state.isAdminMode) loadMyOrders();
             if (state.isAdminMode && state.currentTable && state.currentTable !== "Admin") {
                 cartFloating.style.display = 'flex';
@@ -2315,26 +2336,26 @@ VIP Table</textarea>
                     case 'payed': badge=`<span class="order-status-badge status-payed">${state.currentLanguage === 'el' ? 'Πληρωμένο' : 'Payed'}</span>`;
                 }
                 let itemsSum = '';
-                if (o.items.length<=3) itemsSum = o.items.map(i=>`<div class="order-item-summary"><div class="order-item-summary-name"><div class="order-item-summary-quantity">${i.quantity}</div><div>${i.name}</div></div><div>$${(i.price*i.quantity).toFixed(2)}</div></div>`).join('');
+                if (o.items.length<=3) itemsSum = o.items.map(i=>`<div class="order-item-summary"><div class="order-item-summary-name"><div class="order-item-summary-quantity">${i.quantity}</div><div>${escapeHTML(i.name)}</div></div><div>$${(i.price*i.quantity).toFixed(2)}</div></div>`).join('');
                 else {
                     const first = o.items.slice(0,3); const rem = o.items.length-3;
-                    itemsSum = first.map(i=>`<div class="order-item-summary"><div class="order-item-summary-name"><div class="order-item-summary-quantity">${i.quantity}</div><div>${i.name}</div></div><div>$${(i.price*i.quantity).toFixed(2)}</div></div>`).join('');
+                    itemsSum = first.map(i=>`<div class="order-item-summary"><div class="order-item-summary-name"><div class="order-item-summary-quantity">${i.quantity}</div><div>${escapeHTML(i.name)}</div></div><div>$${(i.price*i.quantity).toFixed(2)}</div></div>`).join('');
                     itemsSum += `<div class="order-item-summary"><div class="order-item-summary-name" style="margin-left: 10px; font-style: italic;">+${rem} ${state.currentLanguage === 'el' ? 'ακόμα' : 'more'} ${rem>1 ? (state.currentLanguage === 'el' ? 'είδη' : 'items') : (state.currentLanguage === 'el' ? 'είδος' : 'item')}</div><div></div></div>`;
                 }
                 card.innerHTML = `<div class="order-card-header"><div><div class="order-card-title">${state.currentLanguage === 'el' ? 'Παραγγελία' : 'Order'} #${o.orderNumber}</div><div class="order-card-time">${date}</div></div><div>${badge}</div></div><div class="order-card-body"><div class="order-items-summary">${itemsSum}</div><div style="margin-top:15px;"><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${state.currentLanguage === 'el' ? 'Τρόπος Πληρωμής:' : 'Payment Method:'}</span><span>${o.paymentMethod==='card' ? (state.currentLanguage === 'el' ? 'Κάρτα' : 'Card') : (state.currentLanguage === 'el' ? 'Μετρητά' : 'Cash')}</span></div><div style="display:flex; justify-content:space-between;"><span>${state.currentLanguage === 'el' ? 'Χρόνος Πληρωμής:' : 'Payment Time:'}</span><span>${o.paymentTime==='now' ? (state.currentLanguage === 'el' ? 'Πληρωμή Τώρα' : 'Pay Now') : (state.currentLanguage === 'el' ? 'Πληρωμή Αργότερα' : 'Pay Later')}</span></div></div></div><div class="order-card-footer"><div class="order-total-summary">${state.currentLanguage === 'el' ? 'Σύνολο:' : 'Total:'} $${o.total.toFixed(2)}</div><div style="font-size:14px; color:var(--gray);">${o.status==='pending' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας επεξεργάζεται' : 'Your order is being processed') : o.status==='preparing' ? (state.currentLanguage === 'el' ? 'Το φαγητό σας ετοιμάζεται' : 'Your food is being prepared') : o.status==='ready' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας είναι έτοιμη' : 'Your order is ready') : o.status==='served' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας σερβιρίστηκε' : 'Your order has been served') : o.status==='payed' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας πληρώθηκε' : 'Your order is payed') : (state.currentLanguage === 'el' ? 'Η παραγγελία σας ακυρώθηκε' : 'Your order was cancelled')}</div></div>`;
                 ordersList.appendChild(card);
             });
-            myOrdersSubtitle.textContent = state.currentLanguage === 'el' ? `Έχετε ${tableOrders.length} παραγγελ${tableOrders.length!==1?'ίες':'ία'} για ${state.currentTable}` : `You have ${tableOrders.length} order${tableOrders.length!==1?'s':''} for ${state.currentTable}`;
+            myOrdersSubtitle.textContent = state.currentLanguage === 'el' ? `Έχετε ${tableOrders.length} παραγγελ${tableOrders.length!==1?'ίες':'ία'} για ${escapeHTML(state.currentTable)}` : `You have ${tableOrders.length} order${tableOrders.length!==1?'s':''} for ${escapeHTML(state.currentTable)}`;
         }
 
         // ========== SELECT TABLE ==========
         function selectTable(name, isAutoLogin = false) {
             state.currentTable = name;
-            tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${name}`;
-            menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${name}` : `Select items to add to your order for ${name}`;
-            cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${name}` : `Your order for ${name}`;
+            tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${escapeHTML(name)}`;
+            menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${escapeHTML(name)}` : `Select items to add to your order for ${escapeHTML(name)}`;
+            cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${escapeHTML(name)}` : `Your order for ${escapeHTML(name)}`;
             localStorage.setItem('dineEasyTable', name);
-            showNotification(state.currentLanguage === 'el' ? `Το τραπέζι ${name} επιλέχθηκε. Καλώς ήρθατε!` : `Table ${name} selected. Welcome!`);
+            showNotification(state.currentLanguage === 'el' ? `Το τραπέζι ${escapeHTML(name)} επιλέχθηκε. Καλώς ήρθατε!` : `Table ${escapeHTML(name)} selected. Welcome!`);
             resetCart();
             updateCategoryTabs();
             displayMenuItems('all');
@@ -2467,7 +2488,7 @@ VIP Table</textarea>
             };
             state.helpRequests.push(payRequest);
             await saveHelpRequest(payRequest);
-            showNotification(state.currentLanguage === 'el' ? `Αίτημα πληρωμής για ${state.currentTable} στάλθηκε.` : `Payment request for ${state.currentTable} sent.`);
+            showNotification(state.currentLanguage === 'el' ? `Αίτημα πληρωμής για ${escapeHTML(state.currentTable)} στάλθηκε.` : `Payment request for ${escapeHTML(state.currentTable)} sent.`);
             playSound(state.soundEffects.helpRequestSound);
         }
 
@@ -2498,7 +2519,7 @@ VIP Table</textarea>
             };
             state.helpRequests.push(helpRequest);
             await saveHelpRequest(helpRequest);
-            showNotification(state.currentLanguage === 'el' ? `Αίτημα βοήθειας για ${state.currentTable}. Ένας σερβιτόρος θα σας εξυπηρετήσει σύντομα.` : `Help request for ${state.currentTable}. A waiter will assist you shortly.`);
+            showNotification(state.currentLanguage === 'el' ? `Αίτημα βοήθειας για ${escapeHTML(state.currentTable)}. Ένας σερβιτόρος θα σας εξυπηρετήσει σύντομα.` : `Help request for ${escapeHTML(state.currentTable)}. A waiter will assist you shortly.`);
         }
         function showHelpNotification() { 
             if (state.currentTable) { requestHelp(); } 
@@ -2656,8 +2677,8 @@ VIP Table</textarea>
         async function deleteOrdersForTable(tableName) {
             if (!tableName) { showNotification('Please select a table.'); return; }
             const toDelete = state.orders.filter(o=>o.table===tableName);
-            if (toDelete.length===0) { showNotification(`No orders for table "${tableName}".`); return; }
-            if (!confirm(`Delete ALL orders for table "${tableName}"?`)) return;
+            if (toDelete.length===0) { showNotification(`No orders for table "${escapeHTML(tableName)}".`); return; }
+            if (!confirm(`Delete ALL orders for table "${escapeHTML(tableName)}"?`)) return;
             state.orders = state.orders.filter(o=>o.table!==tableName);
             updatePendingBadges();
             populateTableFilter();
@@ -2672,7 +2693,7 @@ VIP Table</textarea>
 
         // ========== DELETE SINGLE ORDER (NEW) ==========
         async function deleteSingleOrder(orderId) {
-            if (!confirm(`Are you sure you want to delete order #${orderId}?`)) return;
+            if (!confirm(`Are you sure you want to delete order #${escapeHTML(orderId)}?`)) return;
             
             // Remove from local state
             state.orders = state.orders.filter(o => o.orderNumber !== orderId);
@@ -2691,7 +2712,7 @@ VIP Table</textarea>
             // Recalculate cumulative stats (optional)
             recalcCumulativeStats();
             
-            showNotification(`Order #${orderId} deleted.`);
+            showNotification(`Order #${escapeHTML(orderId)} deleted.`);
         }
 
         // ========== PDF DOWNLOAD FUNCTION ==========
@@ -3388,11 +3409,11 @@ VIP Table</textarea>
                 el.innerHTML = `
                     <div style="display:flex; align-items:center;">
                         <i class="fas fa-chair"></i>
-                        <span class="category-item-name">${tableName}</span>
+                        <span class="category-item-name">${escapeHTML(tableName)}</span>
                     </div>
                     <div class="admin-card-actions">
-                        <button class="admin-small-btn btn-success order-for-table" data-table="${tableName}"><i class="fas fa-shopping-cart"></i> Order</button>
-                        <button class="admin-small-btn btn-danger delete-table" data-table="${tableName}"><i class="fas fa-trash"></i></button>
+                        <button class="admin-small-btn btn-success order-for-table" data-table="${escapeHTML(tableName)}"><i class="fas fa-shopping-cart"></i> Order</button>
+                        <button class="admin-small-btn btn-danger delete-table" data-table="${escapeHTML(tableName)}"><i class="fas fa-trash"></i></button>
                     </div>
                 `;
                 container.appendChild(el);
@@ -3401,9 +3422,9 @@ VIP Table</textarea>
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
                     state.currentTable = table;
-                    tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${table}`;
-                    menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${table}` : `Select items to add to your order for ${table}`;
-                    cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${table}` : `Your order for ${table}`;
+                    tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${escapeHTML(table)}`;
+                    menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${escapeHTML(table)}` : `Select items to add to your order for ${escapeHTML(table)}`;
+                    cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${escapeHTML(table)}` : `Your order for ${escapeHTML(table)}`;
                     resetCart();
                     updateCategoryTabs();
                     displayMenuItems('all');
@@ -3415,12 +3436,12 @@ VIP Table</textarea>
             document.querySelectorAll('.delete-table').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
-                    if (confirm(`Delete table "${table}"?`)) {
+                    if (confirm(`Delete table "${escapeHTML(table)}"?`)) {
                         state.tables = state.tables.filter(t => t !== table);
                         deleteTableFirestore(table);
                         loadTablesForAdmin();
                         if (adminPanel.style.display === 'flex') loadTablesForAdminModal();
-                        showNotification(`Table "${table}" deleted.`);
+                        showNotification(`Table "${escapeHTML(table)}" deleted.`);
                     }
                 });
             });
@@ -3439,11 +3460,11 @@ VIP Table</textarea>
                 el.innerHTML = `
                     <div style="display:flex; align-items:center;">
                         <i class="fas fa-chair"></i>
-                        <span class="category-item-name">${tableName}</span>
+                        <span class="category-item-name">${escapeHTML(tableName)}</span>
                     </div>
                     <div class="admin-card-actions">
-                        <button class="admin-small-btn btn-success order-for-table-modal" data-table="${tableName}"><i class="fas fa-shopping-cart"></i> Order</button>
-                        <button class="admin-small-btn btn-danger delete-table-modal" data-table="${tableName}"><i class="fas fa-trash"></i></button>
+                        <button class="admin-small-btn btn-success order-for-table-modal" data-table="${escapeHTML(tableName)}"><i class="fas fa-shopping-cart"></i> Order</button>
+                        <button class="admin-small-btn btn-danger delete-table-modal" data-table="${escapeHTML(tableName)}"><i class="fas fa-trash"></i></button>
                     </div>
                 `;
                 container.appendChild(el);
@@ -3452,9 +3473,9 @@ VIP Table</textarea>
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
                     state.currentTable = table;
-                    tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${table}`;
-                    menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${table}` : `Select items to add to your order for ${table}`;
-                    cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${table}` : `Your order for ${table}`;
+                    tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${escapeHTML(table)}`;
+                    menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${escapeHTML(table)}` : `Select items to add to your order for ${escapeHTML(table)}`;
+                    cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${escapeHTML(table)}` : `Your order for ${escapeHTML(table)}`;
                     resetCart();
                     updateCategoryTabs();
                     displayMenuItems('all');
@@ -3467,12 +3488,12 @@ VIP Table</textarea>
             document.querySelectorAll('.delete-table-modal').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
-                    if (confirm(`Delete table "${table}"?`)) {
+                    if (confirm(`Delete table "${escapeHTML(table)}"?`)) {
                         state.tables = state.tables.filter(t => t !== table);
                         deleteTableFirestore(table);
                         loadTablesForAdmin();
                         loadTablesForAdminModal();
-                        showNotification(`Table "${table}" deleted.`);
+                        showNotification(`Table "${escapeHTML(table)}" deleted.`);
                     }
                 });
             });
@@ -3494,7 +3515,7 @@ VIP Table</textarea>
             input.value = '';
             loadTablesForAdmin();
             if (adminPanel.style.display === 'flex') loadTablesForAdminModal();
-            showNotification(`Table "${name}" added.`);
+            showNotification(`Table "${escapeHTML(name)}" added.`);
         }
 
         async function addTableModal() {
@@ -3513,7 +3534,7 @@ VIP Table</textarea>
             input.value = '';
             loadTablesForAdmin();
             loadTablesForAdminModal();
-            showNotification(`Table "${name}" added.`);
+            showNotification(`Table "${escapeHTML(name)}" added.`);
         }
 
         // ========== EDIT ORDER FUNCTIONS (unchanged) ==========
@@ -3536,14 +3557,14 @@ VIP Table</textarea>
                 if (item.selectedOptions && item.selectedOptions.length) {
                     optionsHtml = '<div class="edit-order-item-options">';
                     item.selectedOptions.forEach(opt => {
-                        if (opt.isComment) optionsHtml += `<div><i class="fas fa-comment"></i> ${opt.groupName}: "${opt.choiceName}"</div>`;
-                        else optionsHtml += `<div>• ${opt.groupName}: ${opt.choiceName} ${opt.price>0?`(+$${opt.price.toFixed(2)})`:opt.price<0?`(-$${Math.abs(opt.price).toFixed(2)})`:''}</div>`;
+                        if (opt.isComment) optionsHtml += `<div><i class="fas fa-comment"></i> ${escapeHTML(opt.groupName)}: "${escapeHTML(opt.choiceName)}"</div>`;
+                        else optionsHtml += `<div>• ${escapeHTML(opt.groupName)}: ${escapeHTML(opt.choiceName)} ${opt.price>0?`(+$${opt.price.toFixed(2)})`:opt.price<0?`(-$${Math.abs(opt.price).toFixed(2)})`:''}</div>`;
                     });
                     optionsHtml += '</div>';
                 }
                 div.innerHTML = `
                     <div class="edit-order-item-info">
-                        <div class="edit-order-item-name">${item.name}</div>
+                        <div class="edit-order-item-name">${escapeHTML(item.name)}</div>
                         ${optionsHtml}
                     </div>
                     <div class="edit-order-item-controls">
@@ -3739,7 +3760,7 @@ VIP Table</textarea>
 
         function updateLogoPreview() {
             const p = document.getElementById('logoPreview'); const p2 = document.getElementById('logoPreviewModal');
-            if (state.restaurantInfo.logoImage) { p.innerHTML = `<img src="${state.restaurantInfo.logoImage}" alt="Restaurant Logo">`; if (p2) p2.innerHTML = `<img src="${state.restaurantInfo.logoImage}" alt="Restaurant Logo">`; }
+            if (state.restaurantInfo.logoImage) { p.innerHTML = `<img src="${escapeHTML(state.restaurantInfo.logoImage)}" alt="Restaurant Logo">`; if (p2) p2.innerHTML = `<img src="${escapeHTML(state.restaurantInfo.logoImage)}" alt="Restaurant Logo">`; }
             else { p.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-image"></i><p>No logo uploaded</p></div>'; if (p2) p2.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-image"></i><p>No logo uploaded</p></div>'; }
         }
         function handleLogoUpload(e) {
@@ -3766,8 +3787,8 @@ VIP Table</textarea>
             const sorted = [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
-                const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                const img = item.image ? `<div style="height:120px; background-image:url('${escapeHTML(item.image)}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${escapeHTML(item.name)}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${escapeHTML(item.description)}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${escapeHTML(getCategoryDisplayName(item.category))}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${escapeHTML(t)}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
@@ -3786,7 +3807,7 @@ VIP Table</textarea>
             loadMenuItemsForAdmin();
             loadMenuItemsForAdminEn();
             displayMenuItems('all');
-            showNotification(`"${newItem.name}" duplicated.`);
+            showNotification(`"${escapeHTML(newItem.name)}" duplicated.`);
             await saveMenuItem(newItem);
         }
         function openEditMenuItemForm(id) {
@@ -3835,13 +3856,13 @@ VIP Table</textarea>
                 container.innerHTML = '';
                 options.forEach((g, gi) => {
                     const grp = document.createElement('div'); grp.className = 'admin-option-group';
-                    grp.innerHTML = `<div class="admin-option-group-header"><div class="admin-option-group-title"><i class="fas fa-layer-group"></i> <input type="text" class="admin-input" style="width:150px;" placeholder="Group name" value="${g.name}" id="group_name_${gi}"><select class="admin-select" style="width:140px;" id="group_type_${gi}"><option value="radio" ${g.type==='radio'?'selected':''}>Single choice</option><option value="checkbox" ${g.type==='checkbox'?'selected':''}>Multiple choice</option><option value="text" ${g.type==='text'?'selected':''}>Comment field</option></select></div><button class="admin-small-btn btn-danger remove-group" data-index="${gi}"><i class="fas fa-trash"></i></button></div><div id="choices_${gi}" class="choices-container"></div>${g.type!=='text'?'<button class="btn btn-secondary add-choice-btn" data-group-index="'+gi+'"><i class="fas fa-plus"></i> Add Choice</button>':''}`;
+                    grp.innerHTML = `<div class="admin-option-group-header"><div class="admin-option-group-title"><i class="fas fa-layer-group"></i> <input type="text" class="admin-input" style="width:150px;" placeholder="Group name" value="${escapeHTML(g.name)}" id="group_name_${gi}"><select class="admin-select" style="width:140px;" id="group_type_${gi}"><option value="radio" ${g.type==='radio'?'selected':''}>Single choice</option><option value="checkbox" ${g.type==='checkbox'?'selected':''}>Multiple choice</option><option value="text" ${g.type==='text'?'selected':''}>Comment field</option></select></div><button class="admin-small-btn btn-danger remove-group" data-index="${gi}"><i class="fas fa-trash"></i></button></div><div id="choices_${gi}" class="choices-container"></div>${g.type!=='text'?'<button class="btn btn-secondary add-choice-btn" data-group-index="'+gi+'"><i class="fas fa-plus"></i> Add Choice</button>':''}`;
                     container.appendChild(grp);
                     if (g.type !== 'text') {
                         const chc = document.getElementById(`choices_${gi}`);
                         g.choices.forEach((c, ci) => {
                             const row = document.createElement('div'); row.className = 'admin-choice-item';
-                            row.innerHTML = `<input type="text" class="admin-input admin-choice-input" placeholder="Choice name" value="${c.name||''}" id="choice_name_${gi}_${ci}"><input type="number" class="admin-input admin-choice-price" placeholder="Price adj." step="0.01" value="${c.price||0}" id="choice_price_${gi}_${ci}"><button class="admin-small-btn btn-danger remove-choice" data-group="${gi}" data-choice="${ci}"><i class="fas fa-times"></i></button>`;
+                            row.innerHTML = `<input type="text" class="admin-input admin-choice-input" placeholder="Choice name" value="${escapeHTML(c.name||'')}" id="choice_name_${gi}_${ci}"><input type="number" class="admin-input admin-choice-price" placeholder="Price adj." step="0.01" value="${c.price||0}" id="choice_price_${gi}_${ci}"><button class="admin-small-btn btn-danger remove-choice" data-group="${gi}" data-choice="${ci}"><i class="fas fa-times"></i></button>`;
                             chc.appendChild(row);
                             row.querySelector(`#choice_name_${gi}_${ci}`).addEventListener('input', e=> { if (!options[gi].choices[ci]) options[gi].choices[ci] = {}; options[gi].choices[ci].name = e.target.value; });
                             row.querySelector(`#choice_price_${gi}_${ci}`).addEventListener('input', e=> { if (!options[gi].choices[ci]) options[gi].choices[ci] = {}; options[gi].choices[ci].price = parseFloat(e.target.value)||0; });
@@ -3859,7 +3880,7 @@ VIP Table</textarea>
         }
         function updateItemImagePreview(data) {
             const pv = document.getElementById('itemImagePreview');
-            if (data) { pv.innerHTML = `<img src="${data}" alt="Menu Item Image">`; state.currentImageUpload = data; }
+            if (data) { pv.innerHTML = `<img src="${escapeHTML(data)}" alt="Menu Item Image">`; state.currentImageUpload = data; }
             else { pv.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-utensils"></i><p>No image uploaded</p></div>'; state.currentImageUpload = null; }
         }
         function handleItemImageUpload(e) {
@@ -3924,7 +3945,7 @@ VIP Table</textarea>
             loadMenuItemsForAdmin();
             loadMenuItemsForAdminEn();
             displayMenuItems('all');
-            showNotification(`"${item?.name}" deleted.`);
+            showNotification(`"${escapeHTML(item?.name)}" deleted.`);
             await deleteMenuItemFirestore(id);
         }
 
@@ -3939,8 +3960,8 @@ VIP Table</textarea>
             const sorted = [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
-                const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                const img = item.image ? `<div style="height:120px; background-image:url('${escapeHTML(item.image)}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${escapeHTML(item.nameEn || '(no English name)')}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${escapeHTML(item.descriptionEn || '')}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${escapeHTML(getCategoryDisplayName(item.category))}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${escapeHTML(t)}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
@@ -3994,7 +4015,7 @@ VIP Table</textarea>
         }
         function updateItemImagePreviewEn(src) {
             const pv = document.getElementById('itemImagePreviewEn');
-            if (src) { pv.innerHTML = `<img src="${src}" alt="Menu Item Image">`; }
+            if (src) { pv.innerHTML = `<img src="${escapeHTML(src)}" alt="Menu Item Image">`; }
             else { pv.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-utensils"></i><p>No image uploaded</p></div>'; }
         }
         function buildOptionsAdminUIEn(options) {
@@ -4009,7 +4030,7 @@ VIP Table</textarea>
                         <div class="admin-option-group-header">
                             <div class="admin-option-group-title">
                                 <i class="fas fa-layer-group"></i> 
-                                <input type="text" class="admin-input" style="width:150px;" placeholder="Group name (EN)" value="${g.nameEn || ''}" id="group_name_en_${gi}">
+                                <input type="text" class="admin-input" style="width:150px;" placeholder="Group name (EN)" value="${escapeHTML(g.nameEn || '')}" id="group_name_en_${gi}">
                                 <span style="margin-left:10px; font-size:12px; color:var(--gray);">(${g.type})</span>
                             </div>
                             <!-- No delete button in EN mode -->
@@ -4022,7 +4043,7 @@ VIP Table</textarea>
                         g.choices.forEach((c, ci) => {
                             const row = document.createElement('div'); row.className = 'admin-choice-item';
                             row.innerHTML = `
-                                <input type="text" class="admin-input admin-choice-input" placeholder="Choice name (EN)" value="${c.nameEn || ''}" id="choice_name_en_${gi}_${ci}">
+                                <input type="text" class="admin-input admin-choice-input" placeholder="Choice name (EN)" value="${escapeHTML(c.nameEn || '')}" id="choice_name_en_${gi}_${ci}">
                                 <span class="admin-choice-price" style="width:100px;">Price: $${(c.price || 0).toFixed(2)}</span>
                                 <!-- No delete button -->
                             `;
@@ -4143,7 +4164,7 @@ VIP Table</textarea>
             loadMenuItemsForAdmin();
             loadMenuItemsForAdminEn();
             displayMenuItems('all');
-            showNotification(`"${newItem.name}" duplicated.`);
+            showNotification(`"${escapeHTML(newItem.name)}" duplicated.`);
             await saveMenuItem(newItem);
         }
         async function deleteMenuItemOptimisticEn(id) {
@@ -4153,7 +4174,7 @@ VIP Table</textarea>
             loadMenuItemsForAdmin();
             loadMenuItemsForAdminEn();
             displayMenuItems('all');
-            showNotification(`"${item?.name || item?.nameEn}" deleted.`);
+            showNotification(`"${escapeHTML(item?.name || item?.nameEn)}" deleted.`);
             await deleteMenuItemFirestore(id);
         }
 
@@ -4164,7 +4185,7 @@ VIP Table</textarea>
             state.categories.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0)).forEach(c => {
                 const cnt = state.menuItems.filter(i=>i.category===c.id).length;
                 const el = document.createElement('div'); el.className = 'category-item'; el.setAttribute('draggable','true'); el.dataset.categoryId = c.id;
-                el.innerHTML = `<div style="display:flex; align-items:center;"><i class="fas fa-grip-vertical drag-handle-category"></i><span class="category-item-name">${c.displayName} <span style="font-size:12px; color:var(--gray);">(EN: ${c.displayNameEn || ''})</span></span><span class="category-item-count">${cnt} item${cnt!==1?'s':''}</span></div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-category-el" data-id="${c.id}" data-displayname="${c.displayName}" data-displaynameen="${c.displayNameEn || ''}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-danger delete-category" data-id="${c.id}"><i class="fas fa-trash"></i></button></div>`;
+                el.innerHTML = `<div style="display:flex; align-items:center;"><i class="fas fa-grip-vertical drag-handle-category"></i><span class="category-item-name">${escapeHTML(c.displayName)} <span style="font-size:12px; color:var(--gray);">(EN: ${escapeHTML(c.displayNameEn || '')})</span></span><span class="category-item-count">${cnt} item${cnt!==1?'s':''}</span></div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-category-el" data-id="${c.id}" data-displayname="${escapeHTML(c.displayName)}" data-displaynameen="${escapeHTML(c.displayNameEn || '')}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-danger delete-category" data-id="${c.id}"><i class="fas fa-trash"></i></button></div>`;
                 con.appendChild(el);
             });
             document.querySelectorAll('.delete-category').forEach(b=> b.addEventListener('click', function() { const id = this.dataset.id; showAdminChangePrompt(()=>deleteCategoryOptimistic(id)); }));
@@ -4196,7 +4217,7 @@ VIP Table</textarea>
             state.categories.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0)).forEach(c => {
                 const cnt = state.menuItems.filter(i=>i.category===c.id).length;
                 const el = document.createElement('div'); el.className = 'category-item'; el.setAttribute('draggable','true'); el.dataset.categoryId = c.id;
-                el.innerHTML = `<div style="display:flex; align-items:center;"><i class="fas fa-grip-vertical drag-handle-category"></i><span class="category-item-name">${c.displayNameEn || c.displayName}</span><span class="category-item-count">${cnt} item${cnt!==1?'s':''}</span></div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-category-en" data-id="${c.id}" data-displaynameen="${c.displayNameEn || ''}"><i class="fas fa-edit"></i></button></div>`;
+                el.innerHTML = `<div style="display:flex; align-items:center;"><i class="fas fa-grip-vertical drag-handle-category"></i><span class="category-item-name">${escapeHTML(c.displayNameEn || c.displayName)}</span><span class="category-item-count">${cnt} item${cnt!==1?'s':''}</span></div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-category-en" data-id="${c.id}" data-displaynameen="${escapeHTML(c.displayNameEn || '')}"><i class="fas fa-edit"></i></button></div>`;
                 con.appendChild(el);
             });
             document.querySelectorAll('.edit-category-en').forEach(b=> b.addEventListener('click', function() {
@@ -4227,17 +4248,17 @@ VIP Table</textarea>
             state.categories.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             loadCategoriesForAdmin(); loadCategoriesForAdminEn(); updateCategoryTabs();
             ni.value = ''; di.value = ''; die.value = '';
-            showNotification(`Category "${disp}" added.`);
+            showNotification(`Category "${escapeHTML(disp)}" added.`);
             await saveCategories();
         }
         async function deleteCategoryOptimistic(id) {
             const cat = state.categories.find(c=>c.id===id); if (!cat) return;
             const used = state.menuItems.filter(i=>i.category===id).length;
-            if (used>0) { showNotification(`Cannot delete "${cat.displayName}" – it has ${used} menu item(s).`); return; }
-            if (!confirm(`Delete category "${cat.displayName}"?`)) return;
+            if (used>0) { showNotification(`Cannot delete "${escapeHTML(cat.displayName)}" – it has ${used} menu item(s).`); return; }
+            if (!confirm(`Delete category "${escapeHTML(cat.displayName)}"?`)) return;
             state.categories = state.categories.filter(c=>c.id!==id);
             loadCategoriesForAdmin(); loadCategoriesForAdminEn(); updateCategoryTabs();
-            showNotification(`Category "${cat.displayName}" deleted.`);
+            showNotification(`Category "${escapeHTML(cat.displayName)}" deleted.`);
             await saveCategories();
         }
 
@@ -4270,19 +4291,19 @@ VIP Table</textarea>
                 }
                 let itemsHtml = '';
                 o.items.forEach(item => {
-                    itemsHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span><strong>${item.quantity}x ${item.name}</strong></span><span style="color:var(--primary);">$${(item.price*item.quantity).toFixed(2)}</span></div>`;
+                    itemsHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span><strong>${item.quantity}x ${escapeHTML(item.name)}</strong></span><span style="color:var(--primary);">$${(item.price*item.quantity).toFixed(2)}</span></div>`;
                     if (item.selectedOptions?.length) {
                         itemsHtml += '<div style="margin-left:20px; font-size:12px; color:var(--gray);">';
                         item.selectedOptions.forEach(opt => {
-                            if (opt.isComment) itemsHtml += `<div><i class="fas fa-comment"></i> ${opt.groupName}: "${opt.choiceName}"</div>`;
-                            else itemsHtml += `<div>• ${opt.groupName}: ${opt.choiceName} ${opt.price>0?`(+$${opt.price.toFixed(2)})`:opt.price<0?`(-$${Math.abs(opt.price).toFixed(2)})`:''}</div>`;
+                            if (opt.isComment) itemsHtml += `<div><i class="fas fa-comment"></i> ${escapeHTML(opt.groupName)}: "${escapeHTML(opt.choiceName)}"</div>`;
+                            else itemsHtml += `<div>• ${escapeHTML(opt.groupName)}: ${escapeHTML(opt.choiceName)} ${opt.price>0?`(+$${opt.price.toFixed(2)})`:opt.price<0?`(-$${Math.abs(opt.price).toFixed(2)})`:''}</div>`;
                         });
                         itemsHtml += '</div>';
                     }
                     itemsHtml += '</div>';
                 });
                 // Add a delete button next to edit button
-                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button></div>`;
+                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${escapeHTML(o.table)}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button></div>`;
                 list.appendChild(card);
             });
             populateTableSelect('tableSelectForDelete');
@@ -4333,7 +4354,7 @@ VIP Table</textarea>
                 const icon = r.requestType === 'payment' ? '💰' : '🆘';
                 card.innerHTML = `
                     <div class="help-request-header">
-                        <div class="help-request-table">${icon} ${r.table}</div>
+                        <div class="help-request-table">${icon} ${escapeHTML(r.table)}</div>
                         <div>${badge}</div>
                     </div>
                     <div class="help-request-time">${date}</div>
@@ -4493,22 +4514,22 @@ VIP Table</textarea>
             const helpPreview = document.getElementById('helpSoundPreview');
             const newOrderPreview = document.getElementById('newOrderSoundPreview');
             if (state.soundEffects.addToCartSound) {
-                cartPreview.innerHTML = `<audio controls src="${state.soundEffects.addToCartSound}" style="width:100%;"></audio>`;
+                cartPreview.innerHTML = `<audio controls src="${escapeHTML(state.soundEffects.addToCartSound)}" style="width:100%;"></audio>`;
             } else {
                 cartPreview.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-music"></i><p>No sound uploaded</p></div>';
             }
             if (state.soundEffects.checkoutSound) {
-                checkoutPreview.innerHTML = `<audio controls src="${state.soundEffects.checkoutSound}" style="width:100%;"></audio>`;
+                checkoutPreview.innerHTML = `<audio controls src="${escapeHTML(state.soundEffects.checkoutSound)}" style="width:100%;"></audio>`;
             } else {
                 checkoutPreview.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-music"></i><p>No sound uploaded</p></div>';
             }
             if (state.soundEffects.helpRequestSound) {
-                helpPreview.innerHTML = `<audio controls src="${state.soundEffects.helpRequestSound}" style="width:100%;"></audio>`;
+                helpPreview.innerHTML = `<audio controls src="${escapeHTML(state.soundEffects.helpRequestSound)}" style="width:100%;"></audio>`;
             } else {
                 helpPreview.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-music"></i><p>No sound uploaded</p></div>';
             }
             if (state.soundEffects.newOrderSound) {
-                newOrderPreview.innerHTML = `<audio controls src="${state.soundEffects.newOrderSound}" style="width:100%;"></audio>`;
+                newOrderPreview.innerHTML = `<audio controls src="${escapeHTML(state.soundEffects.newOrderSound)}" style="width:100%;"></audio>`;
             } else {
                 newOrderPreview.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-music"></i><p>No sound uploaded</p></div>';
             }
@@ -4677,8 +4698,8 @@ VIP Table</textarea>
             const sorted = [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
-                const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                const img = item.image ? `<div style="height:120px; background-image:url('${escapeHTML(item.image)}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${escapeHTML(item.name)}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${escapeHTML(item.description)}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${escapeHTML(getCategoryDisplayName(item.category))}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${escapeHTML(t)}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
@@ -4698,8 +4719,8 @@ VIP Table</textarea>
             const sorted = [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
-                const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                const img = item.image ? `<div style="height:120px; background-image:url('${escapeHTML(item.image)}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${escapeHTML(item.nameEn || '(no English name)')}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${escapeHTML(item.descriptionEn || '')}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${escapeHTML(getCategoryDisplayName(item.category))}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${escapeHTML(t)}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
@@ -4716,7 +4737,7 @@ VIP Table</textarea>
             state.categories.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0)).forEach(c => {
                 const cnt = state.menuItems.filter(i=>i.category===c.id).length;
                 const el = document.createElement('div'); el.className = 'category-item'; el.setAttribute('draggable','true'); el.dataset.categoryId = c.id;
-                el.innerHTML = `<div style="display:flex; align-items:center;"><i class="fas fa-grip-vertical drag-handle-category"></i><span class="category-item-name">${c.displayName}</span><span class="category-item-count">${cnt} item${cnt!==1?'s':''}</span></div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-category-modal" data-id="${c.id}" data-displayname="${c.displayName}" data-displaynameen="${c.displayNameEn||''}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-danger delete-category-modal" data-id="${c.id}"><i class="fas fa-trash"></i></button></div>`;
+                el.innerHTML = `<div style="display:flex; align-items:center;"><i class="fas fa-grip-vertical drag-handle-category"></i><span class="category-item-name">${escapeHTML(c.displayName)}</span><span class="category-item-count">${cnt} item${cnt!==1?'s':''}</span></div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-category-modal" data-id="${c.id}" data-displayname="${escapeHTML(c.displayName)}" data-displaynameen="${escapeHTML(c.displayNameEn||'')}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-danger delete-category-modal" data-id="${c.id}"><i class="fas fa-trash"></i></button></div>`;
                 con.appendChild(el);
             });
             document.querySelectorAll('.delete-category-modal').forEach(b=> b.addEventListener('click', function() { const id = this.dataset.id; showAdminChangePrompt(()=>deleteCategoryOptimistic(id)); }));
@@ -4751,7 +4772,7 @@ VIP Table</textarea>
             state.categories.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0)).forEach(c => {
                 const cnt = state.menuItems.filter(i=>i.category===c.id).length;
                 const el = document.createElement('div'); el.className = 'category-item'; el.setAttribute('draggable','true'); el.dataset.categoryId = c.id;
-                el.innerHTML = `<div style="display:flex; align-items:center;"><i class="fas fa-grip-vertical drag-handle-category"></i><span class="category-item-name">${c.displayNameEn || c.displayName}</span><span class="category-item-count">${cnt} item${cnt!==1?'s':''}</span></div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-category-en-modal" data-id="${c.id}" data-displaynameen="${c.displayNameEn||''}"><i class="fas fa-edit"></i></button></div>`;
+                el.innerHTML = `<div style="display:flex; align-items:center;"><i class="fas fa-grip-vertical drag-handle-category"></i><span class="category-item-name">${escapeHTML(c.displayNameEn || c.displayName)}</span><span class="category-item-count">${cnt} item${cnt!==1?'s':''}</span></div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-category-en-modal" data-id="${c.id}" data-displaynameen="${escapeHTML(c.displayNameEn||'')}"><i class="fas fa-edit"></i></button></div>`;
                 con.appendChild(el);
             });
             document.querySelectorAll('.edit-category-en-modal').forEach(b=> b.addEventListener('click', function() {
@@ -4803,19 +4824,19 @@ VIP Table</textarea>
                 }
                 let itemsHtml = '';
                 o.items.forEach(item => {
-                    itemsHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span><strong>${item.quantity}x ${item.name}</strong></span><span style="color:var(--primary);">$${(item.price*item.quantity).toFixed(2)}</span></div>`;
+                    itemsHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span><strong>${item.quantity}x ${escapeHTML(item.name)}</strong></span><span style="color:var(--primary);">$${(item.price*item.quantity).toFixed(2)}</span></div>`;
                     if (item.selectedOptions?.length) {
                         itemsHtml += '<div style="margin-left:20px; font-size:12px; color:var(--gray);">';
                         item.selectedOptions.forEach(opt => {
-                            if (opt.isComment) itemsHtml += `<div><i class="fas fa-comment"></i> ${opt.groupName}: "${opt.choiceName}"</div>`;
-                            else itemsHtml += `<div>• ${opt.groupName}: ${opt.choiceName} ${opt.price>0?`(+$${opt.price.toFixed(2)})`:opt.price<0?`(-$${Math.abs(opt.price).toFixed(2)})`:''}</div>`;
+                            if (opt.isComment) itemsHtml += `<div><i class="fas fa-comment"></i> ${escapeHTML(opt.groupName)}: "${escapeHTML(opt.choiceName)}"</div>`;
+                            else itemsHtml += `<div>• ${escapeHTML(opt.groupName)}: ${escapeHTML(opt.choiceName)} ${opt.price>0?`(+$${opt.price.toFixed(2)})`:opt.price<0?`(-$${Math.abs(opt.price).toFixed(2)})`:''}</div>`;
                         });
                         itemsHtml += '</div>';
                     }
                     itemsHtml += '</div>';
                 });
                 // Add delete button in modal as well
-                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button></div>`;
+                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${escapeHTML(o.table)}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button></div>`;
                 list.appendChild(card);
             });
             populateTableSelect('tableSelectForDeleteModal');
@@ -4850,7 +4871,7 @@ VIP Table</textarea>
                 const icon = r.requestType === 'payment' ? '💰' : '🆘';
                 card.innerHTML = `
                     <div class="help-request-header">
-                        <div class="help-request-table">${icon} ${r.table}</div>
+                        <div class="help-request-table">${icon} ${escapeHTML(r.table)}</div>
                         <div>${badge}</div>
                     </div>
                     <div class="help-request-time">${date}</div>
@@ -4995,14 +5016,14 @@ VIP Table</textarea>
                 state.selectedPaymentTime = null;
                 document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
                 if (state.currentTable) {
-                    menuSubtitle.textContent = state.currentLanguage === 'el' ? `Ξεκινήστε μια νέα παραγγελία για ${state.currentTable}` : `Start a new order for ${state.currentTable}`;
+                    menuSubtitle.textContent = state.currentLanguage === 'el' ? `Ξεκινήστε μια νέα παραγγελία για ${escapeHTML(state.currentTable)}` : `Start a new order for ${escapeHTML(state.currentTable)}`;
                 }
                 showSection('menuSection');
                 showNotification(state.currentLanguage === 'el' ? 'Έτοιμοι για νέα παραγγελία!' : 'Ready for a new order!');
             });
             
             document.getElementById('viewMyOrdersBtn').addEventListener('click', function() { loadMyOrders(); showSection('myOrdersSection'); });
-            document.getElementById('viewMenuBtn').addEventListener('click', function() { resetCart(); state.selectedPaymentMethod = null; state.selectedPaymentTime = null; document.querySelectorAll('.option-card').forEach(c=>c.classList.remove('selected')); if (state.currentTable) menuSubtitle.textContent = state.currentLanguage === 'el' ? `Ξεκινήστε μια νέα παραγγελία για ${state.currentTable}` : `Start a new order for ${state.currentTable}`; showSection('menuSection'); showNotification(state.currentLanguage === 'el' ? 'Έτοιμοι για νέα παραγγελία!' : 'Ready for a new order!'); });
+            document.getElementById('viewMenuBtn').addEventListener('click', function() { resetCart(); state.selectedPaymentMethod = null; state.selectedPaymentTime = null; document.querySelectorAll('.option-card').forEach(c=>c.classList.remove('selected')); if (state.currentTable) menuSubtitle.textContent = state.currentLanguage === 'el' ? `Ξεκινήστε μια νέα παραγγελία για ${escapeHTML(state.currentTable)}` : `Start a new order for ${escapeHTML(state.currentTable)}`; showSection('menuSection'); showNotification(state.currentLanguage === 'el' ? 'Έτοιμοι για νέα παραγγελία!' : 'Ready for a new order!'); });
             document.getElementById('needHelpBtn').addEventListener('click', showHelpNotification);
             headerHelpButton.addEventListener('click', showHelpNotification);
             requestPayBtn.addEventListener('click', requestPay);
@@ -5126,7 +5147,3 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
-
-
-
-
