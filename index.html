@@ -2712,213 +2712,229 @@ VIP Table</textarea>
             showNotification(`PDF generated with ${tableNamesArray.length} QR code(s).`);
         }
 
-        // ========== OPEN VERTICAL ORDERS VIEW (FIXED: BUSINESS-AWARE) ==========
-        function openOrdersVerticalView() {
-            const winHtml = '<!DOCTYPE html>' +
-            '<html>' +
-            '<head>' +
-                '<meta charset="UTF-8">' +
-                '<title>Vertical Orders View</title>' +
-                '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">' +
-                '<style>' +
-                    'body { font-family: "Poppins", sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }' +
-                    '.container { max-width: 1200px; margin: 0 auto; }' +
-                    'h2 { color: #e63946; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-top: 0; }' +
-                    '.toolbar { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }' +
-                    '.toolbar select { padding: 8px; border-radius: 6px; border: 1px solid #ced4da; flex: 0 0 200px; }' +
-                    'button { padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; background: #e63946; color: white; transition: 0.2s; }' +
-                    'button:hover { background: #c1121f; }' +
-                    'button.secondary { background: #6c757d; }' +
-                    'button.secondary:hover { background: #495057; }' +
-                    '.orders-list { display: flex; flex-direction: column; gap: 20px; }' +
-                    '.order-card { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 20px; border-left: 4px solid #e63946; }' +
-                    '.order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }' +
-                    '.order-title { font-size: 18px; font-weight: 600; color: #212529; }' +
-                    '.order-time { font-size: 14px; color: #6c757d; }' +
-                    '.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }' +
-                    '.status-pending { background: #fff3cd; color: #856404; }' +
-                    '.status-preparing { background: #d1ecf1; color: #0c5460; }' +
-                    '.status-ready { background: #d4edda; color: #155724; }' +
-                    '.status-served { background: #cce5ff; color: #004085; }' +
-                    '.status-cancelled { background: #f8d7da; color: #721c24; }' +
-                    '.status-payed { background: #cce5ff; color: #004085; }' +
-                    '.order-body { margin-bottom: 15px; }' +
-                    '.order-items { margin: 10px 0; padding-left: 15px; }' +
-                    '.order-item { display: flex; justify-content: space-between; margin-bottom: 8px; }' +
-                    '.item-name { font-weight: 500; }' +
-                    '.item-price { color: #e63946; font-weight: 600; }' +
-                    '.order-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 15px; font-weight: 600; }' +
-                    '.order-total { font-size: 18px; color: #e63946; }' +
-                    '.payment-info { font-size: 14px; color: #6c757d; }' +
-                    '.order-actions { margin-top: 15px; display: flex; gap: 10px; align-items: center; }' +
-                    '.order-actions select { padding: 8px; border-radius: 6px; border: 1px solid #ced4da; flex: 1; }' +
-                    '.order-actions button { background: #457b9d; }' +
-                    '.order-actions button:hover { background: #2c5a7a; }' +
-                    '.no-orders { text-align: center; padding: 60px 20px; color: #6c757d; }' +
-                    '.no-orders i { font-size: 60px; margin-bottom: 20px; opacity: 0.5; }' +
-                '</style>' +
-                '<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"><\/script>' +
-                '<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"><\/script>' +
-            '</head>' +
-            '<body>' +
-                '<div class="container">' +
-                    '<h2><i class="fas fa-clipboard-list"></i> Vertical Orders View</h2>' +
-                    '<div class="toolbar">' +
-                        '<select id="statusFilter">' +
-                            '<option value="all">All Orders</option>' +
-                            '<option value="pending">Pending</option>' +
-                            '<option value="preparing">Preparing</option>' +
-                            '<option value="ready">Ready</option>' +
-                            '<option value="served">Served</option>' +
-                            '<option value="cancelled">Cancelled</option>' +
-                            '<option value="payed">Payed</option>' +
-                        '</select>' +
-                        '<select id="tableFilter">' +
-                            '<option value="all">All Tables</option>' +
-                        '</select>' +
-                        '<button id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>' +
-                        '<button class="secondary" onclick="window.close()"><i class="fas fa-times"></i> Close</button>' +
-                    '</div>' +
-                    '<div id="ordersList" class="orders-list">' +
-                        '<div class="no-orders"><i class="fas fa-spinner fa-pulse"></i><p>Loading orders...</p></div>' +
-                    '</div>' +
-                '</div>' +
-                '<script>' +
-                    'const firebaseConfig = {' +
-                        'apiKey: "AIzaSyBOYqnY3hDTCjBJv97zn4_LlpfpA6Mnvk0",'+
-                        'authDomain: "trytobereal-ce3f1.firebaseapp.com",'+
-                        'projectId: "trytobereal-ce3f1",'+
-                        'storageBucket: "trytobereal-ce3f1.firebasestorage.app",'+
-                        'messagingSenderId: "53123319511",'+
-                        'appId: "1:53123319511:web:78fb36d731b9e94b92d292"'+
-                    '};' +
-                    'firebase.initializeApp(firebaseConfig);' +
-                    'const db = firebase.firestore();' +
+        // ========== OPEN VERTICAL ORDERS VIEW (with delete button) ==========
+function openOrdersVerticalView() {
+    const winHtml = '<!DOCTYPE html>' +
+    '<html>' +
+    '<head>' +
+        '<meta charset="UTF-8">' +
+        '<title>Vertical Orders View</title>' +
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">' +
+        '<style>' +
+            'body { font-family: "Poppins", sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }' +
+            '.container { max-width: 1200px; margin: 0 auto; }' +
+            'h2 { color: #e63946; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-top: 0; }' +
+            '.toolbar { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }' +
+            '.toolbar select { padding: 8px; border-radius: 6px; border: 1px solid #ced4da; flex: 0 0 200px; }' +
+            'button { padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; background: #e63946; color: white; transition: 0.2s; }' +
+            'button:hover { background: #c1121f; }' +
+            'button.secondary { background: #6c757d; }' +
+            'button.secondary:hover { background: #495057; }' +
+            'button.danger { background: #dc3545; }' +
+            'button.danger:hover { background: #c82333; }' +
+            '.orders-list { display: flex; flex-direction: column; gap: 20px; }' +
+            '.order-card { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 20px; border-left: 4px solid #e63946; }' +
+            '.order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }' +
+            '.order-title { font-size: 18px; font-weight: 600; color: #212529; }' +
+            '.order-time { font-size: 14px; color: #6c757d; }' +
+            '.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }' +
+            '.status-pending { background: #fff3cd; color: #856404; }' +
+            '.status-preparing { background: #d1ecf1; color: #0c5460; }' +
+            '.status-ready { background: #d4edda; color: #155724; }' +
+            '.status-served { background: #cce5ff; color: #004085; }' +
+            '.status-cancelled { background: #f8d7da; color: #721c24; }' +
+            '.status-payed { background: #cce5ff; color: #004085; }' +
+            '.order-body { margin-bottom: 15px; }' +
+            '.order-items { margin: 10px 0; padding-left: 15px; }' +
+            '.order-item { display: flex; justify-content: space-between; margin-bottom: 8px; }' +
+            '.item-name { font-weight: 500; }' +
+            '.item-price { color: #e63946; font-weight: 600; }' +
+            '.order-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 15px; font-weight: 600; }' +
+            '.order-total { font-size: 18px; color: #e63946; }' +
+            '.payment-info { font-size: 14px; color: #6c757d; }' +
+            '.order-actions { margin-top: 15px; display: flex; gap: 10px; align-items: center; }' +
+            '.order-actions select { padding: 8px; border-radius: 6px; border: 1px solid #ced4da; flex: 1; }' +
+            '.order-actions button { background: #457b9d; }' +
+            '.order-actions button:hover { background: #2c5a7a; }' +
+            '.order-actions button.danger { background: #dc3545; }' +
+            '.order-actions button.danger:hover { background: #c82333; }' +
+            '.no-orders { text-align: center; padding: 60px 20px; color: #6c757d; }' +
+            '.no-orders i { font-size: 60px; margin-bottom: 20px; opacity: 0.5; }' +
+        '</style>' +
+        '<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"><\/script>' +
+        '<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"><\/script>' +
+    '</head>' +
+    '<body>' +
+        '<div class="container">' +
+            '<h2><i class="fas fa-clipboard-list"></i> Vertical Orders View</h2>' +
+            '<div class="toolbar">' +
+                '<select id="statusFilter">' +
+                    '<option value="all">All Orders</option>' +
+                    '<option value="pending">Pending</option>' +
+                    '<option value="preparing">Preparing</option>' +
+                    '<option value="ready">Ready</option>' +
+                    '<option value="served">Served</option>' +
+                    '<option value="cancelled">Cancelled</option>' +
+                    '<option value="payed">Payed</option>' +
+                '</select>' +
+                '<select id="tableFilter">' +
+                    '<option value="all">All Tables</option>' +
+                '</select>' +
+                '<button id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>' +
+                '<button class="secondary" onclick="window.close()"><i class="fas fa-times"></i> Close</button>' +
+            '</div>' +
+            '<div id="ordersList" class="orders-list">' +
+                '<div class="no-orders"><i class="fas fa-spinner fa-pulse"></i><p>Loading orders...</p></div>' +
+            '</div>' +
+        '</div>' +
+        '<script>' +
+            'const firebaseConfig = {' +
+                'apiKey: "AIzaSyBOYqnY3hDTCjBJv97zn4_LlpfpA6Mnvk0",'+
+                'authDomain: "trytobereal-ce3f1.firebaseapp.com",'+
+                'projectId: "trytobereal-ce3f1",'+
+                'storageBucket: "trytobereal-ce3f1.firebasestorage.app",'+
+                'messagingSenderId: "53123319511",'+
+                'appId: "1:53123319511:web:78fb36d731b9e94b92d292"'+
+            '};' +
+            'firebase.initializeApp(firebaseConfig);' +
+            'const db = firebase.firestore();' +
+            '' +
+            'const businessId = \'' + businessId + '\';' + // embed businessId
+            'const ordersCollection = businessId === \'default\' ? db.collection(\'orders\') : db.collection(`business_${businessId}_orders`);' +
+            '' +
+            'function formatDate(iso) {' +
+                'const d = new Date(iso);' +
+                'return d.toLocaleString();' +
+            '}' +
+            '' +
+            'async function updateOrderStatus(orderId, newStatus) {' +
+                'try {' +
+                    'await ordersCollection.doc(orderId).update({ status: newStatus });' +
+                '} catch (err) {' +
+                    'console.error("Error updating order:", err);' +
+                    'alert("Failed to update order status.");' +
+                '}' +
+            '}' +
+            '' +
+            'async function deleteOrder(orderId) {' +
+                'if (!confirm("Are you sure you want to delete order #" + orderId + "?")) return;' +
+                'try {' +
+                    'await ordersCollection.doc(orderId).delete();' +
+                    'loadOrders(); // Refresh the list after deletion' +
+                '} catch (err) {' +
+                    'console.error("Error deleting order:", err);' +
+                    'alert("Failed to delete order.");' +
+                '}' +
+            '}' +
+            '' +
+            'let allOrders = [];' +
+            '' +
+            'function populateTableFilter(orders) {' +
+                'const tables = [...new Set(orders.map(o => o.table))].sort();' +
+                'const select = document.getElementById("tableFilter");' +
+                'select.innerHTML = \'<option value="all">All Tables</option>\';' +
+                'tables.forEach(t => {' +
+                    'const opt = document.createElement("option");' +
+                    'opt.value = t;' +
+                    'opt.textContent = t;' +
+                    'select.appendChild(opt);' +
+                '});' +
+            '}' +
+            '' +
+            'function renderOrders() {' +
+                'const list = document.getElementById("ordersList");' +
+                'const statusFilter = document.getElementById("statusFilter").value;' +
+                'const tableFilter = document.getElementById("tableFilter").value;' +
+                'let filtered = allOrders;' +
+                'if (statusFilter !== "all") {' +
+                    'filtered = filtered.filter(o => o.status === statusFilter);' +
+                '}' +
+                'if (tableFilter !== "all") {' +
+                    'filtered = filtered.filter(o => o.table === tableFilter);' +
+                '}' +
+                'if (filtered.length === 0) {' +
+                    'list.innerHTML = "<div class=\\"no-orders\\"><i class=\\"fas fa-clipboard-list\\"></i><p>No orders found.</p></div>";' +
+                    'return;' +
+                '}' +
+                'filtered.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));' + // ascending order
+                'let html = "";' +
+                'filtered.forEach(o => {' +
+                    'let badgeClass = "";' +
+                    'let badgeText = o.status;' +
+                    'if (o.status === "pending") badgeClass = "status-pending";' +
+                    'else if (o.status === "preparing") badgeClass = "status-preparing";' +
+                    'else if (o.status === "ready") badgeClass = "status-ready";' +
+                    'else if (o.status === "served") badgeClass = "status-served";' +
+                    'else if (o.status === "cancelled") badgeClass = "status-cancelled";' +
+                    'else if (o.status === "payed") badgeClass = "status-payed";' +
                     '' +
-                    'const businessId = \'' + businessId + '\';' + // embed businessId
-                    'const ordersCollection = businessId === \'default\' ? db.collection(\'orders\') : db.collection(`business_${businessId}_orders`);' +
-                    '' +
-                    'function formatDate(iso) {' +
-                        'const d = new Date(iso);' +
-                        'return d.toLocaleString();' +
-                    '}' +
-                    '' +
-                    'async function updateOrderStatus(orderId, newStatus) {' +
-                        'try {' +
-                            'await ordersCollection.doc(orderId).update({ status: newStatus });' +
-                        '} catch (err) {' +
-                            'console.error("Error updating order:", err);' +
-                            'alert("Failed to update order status.");' +
-                        '}' +
-                    '}' +
-                    '' +
-                    'let allOrders = [];' +
-                    '' +
-                    'function populateTableFilter(orders) {' +
-                        'const tables = [...new Set(orders.map(o => o.table))].sort();' +
-                        'const select = document.getElementById("tableFilter");' +
-                        'select.innerHTML = \'<option value="all">All Tables</option>\';' +
-                        'tables.forEach(t => {' +
-                            'const opt = document.createElement("option");' +
-                            'opt.value = t;' +
-                            'opt.textContent = t;' +
-                            'select.appendChild(opt);' +
-                        '});' +
-                    '}' +
-                    '' +
-                    'function renderOrders() {' +
-                        'const list = document.getElementById("ordersList");' +
-                        'const statusFilter = document.getElementById("statusFilter").value;' +
-                        'const tableFilter = document.getElementById("tableFilter").value;' +
-                        'let filtered = allOrders;' +
-                        'if (statusFilter !== "all") {' +
-                            'filtered = filtered.filter(o => o.status === statusFilter);' +
-                        '}' +
-                        'if (tableFilter !== "all") {' +
-                            'filtered = filtered.filter(o => o.table === tableFilter);' +
-                        '}' +
-                        'if (filtered.length === 0) {' +
-                            'list.innerHTML = "<div class=\\"no-orders\\"><i class=\\"fas fa-clipboard-list\\"></i><p>No orders found.</p></div>";' +
-                            'return;' +
-                        '}' +
-                        'filtered.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));' + // ascending order
-                        'let html = "";' +
-                        'filtered.forEach(o => {' +
-                            'let badgeClass = "";' +
-                            'let badgeText = o.status;' +
-                            'if (o.status === "pending") badgeClass = "status-pending";' +
-                            'else if (o.status === "preparing") badgeClass = "status-preparing";' +
-                            'else if (o.status === "ready") badgeClass = "status-ready";' +
-                            'else if (o.status === "served") badgeClass = "status-served";' +
-                            'else if (o.status === "cancelled") badgeClass = "status-cancelled";' +
-                            'else if (o.status === "payed") badgeClass = "status-payed";' +
-                            '' +
-                            'let itemsHtml = "";' +
-                            'o.items.forEach(item => {' +
-                                'let optionsHtml = "";' +
-                                'if (item.selectedOptions && item.selectedOptions.length) {' +
-                                    'optionsHtml = "<div style=\\"margin-left:20px; font-size:12px; color:#6c757d;\\">";' +
-                                    'item.selectedOptions.forEach(opt => {' +
-                                        'if (opt.isComment) {' +
-                                            'optionsHtml += "<i class=\\"fas fa-comment\\"></i> " + opt.groupName + ": \\"" + opt.choiceName + "\\"";' +
-                                        '} else {' +
-                                            'optionsHtml += "• " + opt.groupName + ": " + opt.choiceName;' +
-                                            'if (opt.price > 0) optionsHtml += " (+$" + opt.price.toFixed(2) + ")";' +
-                                            'else if (opt.price < 0) optionsHtml += " (-$" + Math.abs(opt.price).toFixed(2) + ")";' +
-                                        '}' +
-                                        'optionsHtml += "<br>";' +
-                                    '});' +
-                                    'optionsHtml += "</div>";' +
+                    'let itemsHtml = "";' +
+                    'o.items.forEach(item => {' +
+                        'let optionsHtml = "";' +
+                        'if (item.selectedOptions && item.selectedOptions.length) {' +
+                            'optionsHtml = "<div style=\\"margin-left:20px; font-size:12px; color:#6c757d;\\">";' +
+                            'item.selectedOptions.forEach(opt => {' +
+                                'if (opt.isComment) {' +
+                                    'optionsHtml += "<i class=\\"fas fa-comment\\"></i> " + opt.groupName + ": \\"" + opt.choiceName + "\\"";' +
+                                '} else {' +
+                                    'optionsHtml += "• " + opt.groupName + ": " + opt.choiceName;' +
+                                    'if (opt.price > 0) optionsHtml += " (+$" + opt.price.toFixed(2) + ")";' +
+                                    'else if (opt.price < 0) optionsHtml += " (-$" + Math.abs(opt.price).toFixed(2) + ")";' +
                                 '}' +
-                                'itemsHtml += "<div class=\\"order-item\\"><div><span class=\\"item-name\\">" + item.quantity + "x " + item.name + "</span>" + optionsHtml + "</div><span class=\\"item-price\\">$" + (item.price * item.quantity).toFixed(2) + "</span></div>";' +
+                                'optionsHtml += "<br>";' +
                             '});' +
-                            '' +
-                            'html += "<div class=\\"order-card\\">"' +
-                                '+ "<div class=\\"order-header\\"><div><span class=\\"order-title\\">Order #" + o.orderNumber + "</span> <span class=\\"order-time\\">" + formatDate(o.timestamp) + "</span></div><span class=\\"status-badge " + badgeClass + "\\">" + badgeText.charAt(0).toUpperCase() + badgeText.slice(1) + "</span></div>"' +
-                                '+ "<div class=\\"order-body\\"><div><strong>Table:</strong> " + o.table + "</div><div class=\\"order-items\\">" + itemsHtml + "</div></div>"' +
-                                '+ "<div class=\\"order-footer\\"><div class=\\"payment-info\\">" + (o.paymentMethod === "card" ? "Card" : "Cash") + " • " + (o.paymentTime === "now" ? "Pay Now" : "Pay Later") + "</div><div class=\\"order-total\\">Total: $" + o.total.toFixed(2) + "</div></div>"' +
-                                '+ "<div class=\\"order-actions\\"><select id=\\"status-" + o.orderNumber + "\\">"' +
-                                    '+ "<option value=\\"pending\\"" + (o.status === "pending" ? " selected" : "") + ">Pending</option>"' +
-                                    '+ "<option value=\\"preparing\\"" + (o.status === "preparing" ? " selected" : "") + ">Preparing</option>"' +
-                                    '+ "<option value=\\"ready\\"" + (o.status === "ready" ? " selected" : "") + ">Ready</option>"' +
-                                    '+ "<option value=\\"served\\"" + (o.status === "served" ? " selected" : "") + ">Served</option>"' +
-                                    '+ "<option value=\\"cancelled\\"" + (o.status === "cancelled" ? " selected" : "") + ">Cancelled</option>"' +
-                                    '+ "<option value=\\"payed\\"" + (o.status === "payed" ? " selected" : "") + ">Payed</option>"' +
-                                '+ "</select>"' +
-                                '+ "<button onclick=\\"updateOrderStatus(\'" + o.orderNumber + "\', document.getElementById(\'status-" + o.orderNumber + "\').value)\\"><i class=\\"fas fa-save\\"></i> Update</button>"' +
-                            '+ "</div>"' +
-                            '+ "</div>";' +
-                        '});' +
-                        'list.innerHTML = html;' +
-                    '}' +
+                            'optionsHtml += "</div>";' +
+                        '}' +
+                        'itemsHtml += "<div class=\\"order-item\\"><div><span class=\\"item-name\\">" + item.quantity + "x " + item.name + "</span>" + optionsHtml + "</div><span class=\\"item-price\\">$" + (item.price * item.quantity).toFixed(2) + "</span></div>";' +
+                    '});' +
                     '' +
-                    'function loadOrders() {' +
-                        'ordersCollection.onSnapshot(snap => {' +
-                            'allOrders = snap.docs.map(doc => ({ orderNumber: doc.id, ...doc.data() }));' +
-                            'populateTableFilter(allOrders);' +
-                            'renderOrders();' +
-                        '}, err => {' +
-                            'console.error("Firestore error", err);' +
-                            'document.getElementById("ordersList").innerHTML = "<div class=\\"no-orders\\"><i class=\\"fas fa-exclamation-triangle\\"></i><p>Error loading orders.</p></div>";' +
-                        '});' +
-                    '}' +
-                    '' +
-                    'document.getElementById("statusFilter").addEventListener("change", renderOrders);' +
-                    'document.getElementById("tableFilter").addEventListener("change", renderOrders);' +
-                    'document.getElementById("refreshBtn").addEventListener("click", () => { loadOrders(); });' +
-                    '' +
-                    'loadOrders();' +
-                '<\/script>' +
-            '</body>' +
-            '</html>';
-            const win = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
-            if (win) {
-                win.document.write(winHtml);
-                win.document.close();
-            } else {
-                showNotification('Pop‑up blocked. Please allow pop‑ups for this site.');
-            }
-        }
+                    'html += "<div class=\\"order-card\\">"' +
+                        '+ "<div class=\\"order-header\\"><div><span class=\\"order-title\\">Order #" + o.orderNumber + "</span> <span class=\\"order-time\\">" + formatDate(o.timestamp) + "</span></div><span class=\\"status-badge " + badgeClass + "\\">" + badgeText.charAt(0).toUpperCase() + badgeText.slice(1) + "</span></div>"' +
+                        '+ "<div class=\\"order-body\\"><div><strong>Table:</strong> " + o.table + "</div><div class=\\"order-items\\">" + itemsHtml + "</div></div>"' +
+                        '+ "<div class=\\"order-footer\\"><div class=\\"payment-info\\">" + (o.paymentMethod === "card" ? "Card" : "Cash") + " • " + (o.paymentTime === "now" ? "Pay Now" : "Pay Later") + "</div><div class=\\"order-total\\">Total: $" + o.total.toFixed(2) + "</div></div>"' +
+                        '+ "<div class=\\"order-actions\\"><select id=\\"status-" + o.orderNumber + "\\">"' +
+                            '+ "<option value=\\"pending\\"" + (o.status === "pending" ? " selected" : "") + ">Pending</option>"' +
+                            '+ "<option value=\\"preparing\\"" + (o.status === "preparing" ? " selected" : "") + ">Preparing</option>"' +
+                            '+ "<option value=\\"ready\\"" + (o.status === "ready" ? " selected" : "") + ">Ready</option>"' +
+                            '+ "<option value=\\"served\\"" + (o.status === "served" ? " selected" : "") + ">Served</option>"' +
+                            '+ "<option value=\\"cancelled\\"" + (o.status === "cancelled" ? " selected" : "") + ">Cancelled</option>"' +
+                            '+ "<option value=\\"payed\\"" + (o.status === "payed" ? " selected" : "") + ">Payed</option>"' +
+                        '+ "</select>"' +
+                        '+ "<button class=\\"btn btn-primary btn-small\\" onclick=\\"updateOrderStatus(\'" + o.orderNumber + "\', document.getElementById(\'status-" + o.orderNumber + "\').value)\\" style=\\"background: #457b9d;\\"><i class=\\"fas fa-save\\"></i> Update</button>"' +
+                        '+ "<button class=\\"btn btn-danger btn-small\\" onclick=\\"deleteOrder(\'" + o.orderNumber + "\')\\" style=\\"background: #dc3545;\\"><i class=\\"fas fa-trash\\"></i> Delete</button>"' +
+                    '+ "</div>"' +
+                    '+ "</div>";' +
+                '});' +
+                'list.innerHTML = html;' +
+            '}' +
+            '' +
+            'function loadOrders() {' +
+                'ordersCollection.onSnapshot(snap => {' +
+                    'allOrders = snap.docs.map(doc => ({ orderNumber: doc.id, ...doc.data() }));' +
+                    'populateTableFilter(allOrders);' +
+                    'renderOrders();' +
+                '}, err => {' +
+                    'console.error("Firestore error", err);' +
+                    'document.getElementById("ordersList").innerHTML = "<div class=\\"no-orders\\"><i class=\\"fas fa-exclamation-triangle\\"></i><p>Error loading orders.</p></div>";' +
+                '});' +
+            '}' +
+            '' +
+            'document.getElementById("statusFilter").addEventListener("change", renderOrders);' +
+            'document.getElementById("tableFilter").addEventListener("change", renderOrders);' +
+            'document.getElementById("refreshBtn").addEventListener("click", () => { loadOrders(); });' +
+            '' +
+            'loadOrders();' +
+        '<\/script>' +
+    '</body>' +
+    '</html>';
+    const win = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+    if (win) {
+        win.document.write(winHtml);
+        win.document.close();
+    } else {
+        showNotification('Pop‑up blocked. Please allow pop‑ups for this site.');
+    }
+}
 
         // ========== OPEN VERTICAL HELP REQUESTS VIEW (FIXED: BUSINESS-AWARE) ==========
         function openHelpVerticalView() {
@@ -4926,3 +4942,4 @@ VIP Table</textarea>
     </script>
 </body>
 </html>s
+
