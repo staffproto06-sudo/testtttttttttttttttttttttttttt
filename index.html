@@ -14,6 +14,8 @@
     <!-- QR & PDF generation libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- QR scanning library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
         /* ========== COMPLETE STYLES – UNCHANGED ========== */
         :root {
@@ -72,6 +74,9 @@
         .qr-placeholder::before { content: ""; position: absolute; width: 100%; height: 100%; background-image: linear-gradient(90deg, transparent 49%, rgba(0,0,0,0.05) 50%, transparent 51%), linear-gradient(transparent 49%, rgba(0,0,0,0.05) 50%, transparent 51%); background-size: 30px 30px; }
         .qr-placeholder i { font-size: 70px; color: var(--gray); margin-bottom: 15px; z-index: 1; }
         .qr-placeholder span { color: var(--gray); font-size: 16px; z-index: 1; }
+        /* QR scanner video */
+        #qr-video { width: 100%; max-width: 400px; border-radius: 12px; margin: 20px auto; display: none; }
+        #start-camera-btn, #stop-camera-btn { margin: 5px; }
         .demo-tables { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 30px; }
         .table-btn { padding: 12px 24px; background-color: var(--card-bg); border: 2px solid var(--light-gray); border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s; color: var(--text); }
         .table-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
@@ -448,10 +453,20 @@
             <div class="scanner-container">
                 <h2 class="section-title" data-i18n="scannerTitle">Σαρώστε το QR του τραπεζιού</h2>
                 <p class="section-subtitle" data-i18n="scannerSubtitle">Στρέψτε την κάμερα στο QR του τραπεζιού σας για να ξεκινήσετε</p>
-                <div class="qr-placeholder">
+                
+                <!-- QR Scanner Video -->
+                <video id="qr-video" playsinline></video>
+                <canvas id="qr-canvas" style="display:none;"></canvas>
+                <div style="display: flex; gap: 10px; justify-content: center; margin: 15px 0;">
+                    <button class="btn btn-primary" id="start-camera-btn"><i class="fas fa-camera"></i> Έναρξη κάμερας</button>
+                    <button class="btn btn-secondary" id="stop-camera-btn" style="display: none;"><i class="fas fa-stop"></i> Διακοπή</button>
+                </div>
+                
+                <div class="qr-placeholder" id="qr-placeholder">
                     <i class="fas fa-qrcode"></i>
                     <span data-i18n="qrPlaceholder">Περιοχή Σάρωσης QR</span>
                 </div>
+                
                 <p style="margin: 20px 0; color: var(--gray);" data-i18n="demoTablesInstruction">Για δοκιμή, επιλέξτε ένα τραπέζι:</p>
                 <div class="demo-tables">
                     <button class="table-btn" data-table="Table 1" data-i18n="table1">Τραπέζι 1</button>
@@ -1623,6 +1638,14 @@ VIP Table</textarea>
         const cancelAdminLoginBtn = document.getElementById('cancelAdminLoginBtn');
         const loginError = document.getElementById('loginError');
 
+        // QR scanner elements
+        const qrVideo = document.getElementById('qr-video');
+        const qrCanvas = document.getElementById('qr-canvas');
+        const startCameraBtn = document.getElementById('start-camera-btn');
+        const stopCameraBtn = document.getElementById('stop-camera-btn');
+        let scanning = false;
+        let videoStream = null;
+
         // ========== LANGUAGE HELPER FUNCTIONS (unchanged) ==========
         function getItemName(item) {
             if (state.currentLanguage === 'en' && item.nameEn && item.nameEn.trim() !== '') {
@@ -2323,6 +2346,66 @@ VIP Table</textarea>
                 selectTable(tableName, true);
             }
             // No default table - stay on scanner if no table parameter
+        }
+
+        // ========== QR SCANNER FUNCTIONS ==========
+        async function startCamera() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                qrVideo.srcObject = videoStream;
+                qrVideo.style.display = 'block';
+                qrVideo.play();
+                startCameraBtn.style.display = 'none';
+                stopCameraBtn.style.display = 'inline-block';
+                document.getElementById('qr-placeholder').style.display = 'none';
+                scanning = true;
+                requestAnimationFrame(scanQR);
+            } catch (err) {
+                console.error("Camera error:", err);
+                showNotification(state.currentLanguage === 'el' ? 'Δεν ήταν δυνατή η πρόσβαση στην κάμερα.' : 'Could not access camera.');
+            }
+        }
+
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            qrVideo.style.display = 'none';
+            startCameraBtn.style.display = 'inline-block';
+            stopCameraBtn.style.display = 'none';
+            document.getElementById('qr-placeholder').style.display = 'flex';
+            scanning = false;
+        }
+
+        function scanQR() {
+            if (!scanning || !qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
+                if (scanning) requestAnimationFrame(scanQR);
+                return;
+            }
+            const canvas = qrCanvas;
+            const context = canvas.getContext('2d');
+            canvas.width = qrVideo.videoWidth;
+            canvas.height = qrVideo.videoHeight;
+            context.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, canvas.width, canvas.height);
+            if (code) {
+                const url = code.data;
+                try {
+                    const urlObj = new URL(url);
+                    const tableParam = urlObj.searchParams.get('table');
+                    if (tableParam) {
+                        stopCamera();
+                        const tableName = decodeURIComponent(tableParam);
+                        selectTable(tableName, true);
+                        return;
+                    }
+                } catch (e) {
+                    // Not a valid URL
+                }
+            }
+            requestAnimationFrame(scanQR);
         }
 
         // ========== REQUEST PAY BUTTON (UPDATED LOGIC) ==========
@@ -4713,6 +4796,11 @@ VIP Table</textarea>
             await loadInitialData();
             setupListeners();
             autoLoginFromUrl();
+
+            // QR scanner buttons
+            startCameraBtn.addEventListener('click', startCamera);
+            stopCameraBtn.addEventListener('click', stopCamera);
+
             document.getElementById('languageToggleBtn').addEventListener('click', toggleLanguage);
             document.querySelectorAll('.table-btn').forEach(btn => btn.addEventListener('click', function() { selectTable(this.dataset.table, false); }));
             cartFloating.addEventListener('click', function() { if (!state.isAdminMode || (state.currentTable && state.currentTable !== "Admin")) showSection('cartSection'); });
@@ -4837,4 +4925,4 @@ VIP Table</textarea>
         }, 7000);
     </script>
 </body>
-</html>
+</html>s
