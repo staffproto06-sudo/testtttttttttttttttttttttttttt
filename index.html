@@ -2930,7 +2930,7 @@ VIP Table</textarea>
             '</div>' +
         '</div>' +
         '<script>' +
-        '// ---------- GLOBAL VARIABLES AND FUNCTIONS (must be first) ----------' +
+        '// ---------- GLOBAL VARIABLES ----------' +
         'let ordersCollection;' +
         'let lastOrders = [];' +
         '' +
@@ -2949,7 +2949,6 @@ VIP Table</textarea>
         '    if (!confirm("Are you sure you want to delete order #" + orderId + "?")) return;' +
         '    try {' +
         '        await ordersCollection.doc(orderId).delete();' +
-        '        // No need to refresh – snapshot will update automatically' +
         '    } catch (err) {' +
         '        console.error("Error deleting order:", err);' +
         '        alert("Failed to delete order.\\n" + err.message);' +
@@ -2958,18 +2957,24 @@ VIP Table</textarea>
         '' +
         '// ---------- INITIALIZE FIREBASE ----------' +
         'function initializeFirebase() {' +
-        '    const firebaseConfig = {' +
-        '        apiKey: "AIzaSyBOYqnY3hDTCjBJv97zn4_LlpfpA6Mnvk0",' +
-        '        authDomain: "trytobereal-ce3f1.firebaseapp.com",' +
-        '        projectId: "trytobereal-ce3f1",' +
-        '        storageBucket: "trytobereal-ce3f1.firebasestorage.app",' +
-        '        messagingSenderId: "53123319511",' +
-        '        appId: "1:53123319511:web:78fb36d731b9e94b92d292"' +
-        '    };' +
-        '    firebase.initializeApp(firebaseConfig);' +
-        '    const db = firebase.firestore();' +
-        '    const businessId = \'' + businessId + '\';' +
-        '    ordersCollection = businessId === \'default\' ? db.collection(\'orders\') : db.collection(`business_${businessId}_orders`);' +
+        '    try {' +
+        '        const firebaseConfig = {' +
+        '            apiKey: "AIzaSyBOYqnY3hDTCjBJv97zn4_LlpfpA6Mnvk0",' +
+        '            authDomain: "trytobereal-ce3f1.firebaseapp.com",' +
+        '            projectId: "trytobereal-ce3f1",' +
+        '            storageBucket: "trytobereal-ce3f1.firebasestorage.app",' +
+        '            messagingSenderId: "53123319511",' +
+        '            appId: "1:53123319511:web:78fb36d731b9e94b92d292"' +
+        '        };' +
+        '        firebase.initializeApp(firebaseConfig);' +
+        '        const db = firebase.firestore();' +
+        '        const businessId = \'' + businessId + '\';' +
+        '        ordersCollection = businessId === \'default\' ? db.collection(\'orders\') : db.collection(`business_${businessId}_orders`);' +
+        '        console.log("Firebase initialized, collection ready");' +
+        '    } catch (e) {' +
+        '        console.error("Firebase init error:", e);' +
+        '        document.getElementById("ordersList").innerHTML = "<div class=\\"no-orders\\"><i class=\\"fas fa-exclamation-triangle\\"></i><p>Firebase init error: " + e.message + "</p></div>";' +
+        '    }' +
         '}' +
         '' +
         '// ---------- HELPER FUNCTIONS ----------' +
@@ -3059,13 +3064,22 @@ VIP Table</textarea>
         '' +
         '// ---------- LOAD ORDERS WITH REAL‑TIME UPDATES ----------' +
         'function loadOrders() {' +
+        '    console.log("loadOrders called");' +
+        '    // Set a timeout to detect if snapshot never fires' +
+        '    const timeout = setTimeout(() => {' +
+        '        document.getElementById("ordersList").innerHTML = "<div class=\\"no-orders\\"><i class=\\"fas fa-exclamation-triangle\\"></i><p>Timeout: No response from Firestore. Check your connection and security rules.</p></div>";' +
+        '    }, 5000);' +
+        '' +
         '    ordersCollection.onSnapshot(snap => {' +
+        '        clearTimeout(timeout);' +
+        '        console.log("Snapshot received, docs:", snap.docs.length);' +
         '        lastOrders = snap.docs.map(doc => ({ orderNumber: doc.id, ...doc.data() }));' +
         '        populateTableFilter(lastOrders);' +
         '        renderOrders();' +
         '    }, err => {' +
+        '        clearTimeout(timeout);' +
+        '        console.error("Firestore error:", err);' +
         '        document.getElementById("ordersList").innerHTML = "<div class=\\"no-orders\\"><i class=\\"fas fa-exclamation-triangle\\"></i><p>Error loading orders: " + err.message + "</p></div>";' +
-        '        console.error(err);' +
         '    });' +
         '}' +
         '' +
@@ -5139,6 +5153,7 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
+
 
 
 
