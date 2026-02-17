@@ -2698,6 +2698,9 @@ VIP Table</textarea>
             const lang = state.currentLanguage;
             const restaurantName = state.restaurantInfo.name || 'Restaurant';
             
+            // Ορισμός font που υποστηρίζει Ελληνικά
+            doc.setFont('times', 'normal');
+            
             // Title
             doc.setFontSize(20);
             doc.setTextColor(230, 57, 70); // primary color
@@ -2714,13 +2717,13 @@ VIP Table</textarea>
             // Items header
             let y = 80;
             doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
+            doc.setFont('times', 'bold');
             doc.text(lang === 'el' ? 'Προϊόν' : 'Item', 20, y);
             doc.text(lang === 'el' ? 'Ποσ.' : 'Qty', 120, y);
             doc.text(lang === 'el' ? 'Τιμή' : 'Price', 160, y);
             doc.line(20, y+2, 190, y+2);
             y += 10;
-            doc.setFont(undefined, 'normal');
+            doc.setFont('times', 'normal');
             
             // Items
             order.items.forEach(item => {
@@ -2745,13 +2748,14 @@ VIP Table</textarea>
             
             // Total
             y += 5;
-            doc.setFont(undefined, 'bold');
+            doc.setFont('times', 'bold');
             doc.text(lang === 'el' ? 'Σύνολο:' : 'Total:', 120, y);
             doc.setTextColor(230, 57, 70);
             doc.text(`$${order.total.toFixed(2)}`, 160, y);
             
             // Payment info
             y += 15;
+            doc.setFont('times', 'normal');
             doc.setFontSize(11);
             doc.setTextColor(0, 0, 0);
             doc.text(`${lang === 'el' ? 'Τρόπος πληρωμής:' : 'Payment method:'} ${order.paymentMethod === 'card' ? (lang === 'el' ? 'Κάρτα' : 'Card') : (lang === 'el' ? 'Μετρητά' : 'Cash')}`, 20, y);
@@ -5092,4 +5096,5 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
+
 
