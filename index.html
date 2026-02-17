@@ -2863,7 +2863,45 @@ VIP Table</textarea>
                 '<title>Vertical Orders View</title>' +
                 '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">' +
                 '<style>' +
-                    // ... (keep existing styles) ...
+                    'body { font-family: "Poppins", sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }' +
+                    '.container { max-width: 1200px; margin: 0 auto; }' +
+                    'h2 { color: #e63946; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-top: 0; }' +
+                    '.toolbar { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }' +
+                    '.toolbar select { padding: 8px; border-radius: 6px; border: 1px solid #ced4da; flex: 0 0 200px; }' +
+                    'button { padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; background: #e63946; color: white; transition: 0.2s; }' +
+                    'button:hover { background: #c1121f; }' +
+                    'button.secondary { background: #6c757d; }' +
+                    'button.secondary:hover { background: #495057; }' +
+                    'button.danger { background: #dc3545; }' +
+                    'button.danger:hover { background: #c82333; }' +
+                    '.orders-list { display: flex; flex-direction: column; gap: 20px; }' +
+                    '.order-card { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 20px; border-left: 4px solid #e63946; }' +
+                    '.order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }' +
+                    '.order-title { font-size: 18px; font-weight: 600; color: #212529; }' +
+                    '.order-time { font-size: 14px; color: #6c757d; }' +
+                    '.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }' +
+                    '.status-pending { background: #fff3cd; color: #856404; }' +
+                    '.status-preparing { background: #d1ecf1; color: #0c5460; }' +
+                    '.status-ready { background: #d4edda; color: #155724; }' +
+                    '.status-served { background: #cce5ff; color: #004085; }' +
+                    '.status-cancelled { background: #f8d7da; color: #721c24; }' +
+                    '.status-payed { background: #cce5ff; color: #004085; }' +
+                    '.order-body { margin-bottom: 15px; }' +
+                    '.order-items { margin: 10px 0; padding-left: 15px; }' +
+                    '.order-item { display: flex; justify-content: space-between; margin-bottom: 8px; }' +
+                    '.item-name { font-weight: 500; }' +
+                    '.item-price { color: #e63946; font-weight: 600; }' +
+                    '.order-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 15px; font-weight: 600; }' +
+                    '.order-total { font-size: 18px; color: #e63946; }' +
+                    '.payment-info { font-size: 14px; color: #6c757d; }' +
+                    '.order-actions { margin-top: 15px; display: flex; gap: 10px; align-items: center; }' +
+                    '.order-actions select { padding: 8px; border-radius: 6px; border: 1px solid #ced4da; flex: 1; }' +
+                    '.order-actions button { background: #457b9d; }' +
+                    '.order-actions button:hover { background: #2c5a7a; }' +
+                    '.order-actions button.danger { background: #dc3545; }' +
+                    '.order-actions button.danger:hover { background: #c82333; }' +
+                    '.no-orders { text-align: center; padding: 60px 20px; color: #6c757d; }' +
+                    '.no-orders i { font-size: 60px; margin-bottom: 20px; opacity: 0.5; }' +
                 '</style>' +
                 '<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"><\/script>' +
                 '<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"><\/script>' +
@@ -2992,22 +3030,22 @@ VIP Table</textarea>
                 '               itemsHtml += "<div class=\\"order-item\\"><div><span class=\\"item-name\\">" + item.quantity + "x " + item.name + "</span>" + optionsHtml + "</div><span class=\\"item-price\\">$" + (item.price * item.quantity).toFixed(2) + "</span></div>";' +
                 '           });' +
                 '' +
-                '           html += "<div class=\\"order-card\\">"' +
-                '               + "<div class=\\"order-header\\"><div><span class=\\"order-title\\">Order #" + o.orderNumber + "</span> <span class=\\"order-time\\">" + formatDate(o.timestamp) + "</span></div><span class=\\"status-badge " + badgeClass + "\\">" + badgeText.charAt(0).toUpperCase() + badgeText.slice(1) + "</span></div>"' +
-                '               + "<div class=\\"order-body\\"><div><strong>Table:</strong> " + o.table + "</div><div class=\\"order-items\\">" + itemsHtml + "</div></div>"' +
-                '               + "<div class=\\"order-footer\\"><div class=\\"payment-info\\">" + (o.paymentMethod === "card" ? "Card" : "Cash") + " • " + (o.paymentTime === "now" ? "Pay Now" : "Pay Later") + "</div><div class=\\"order-total\\">Total: $" + o.total.toFixed(2) + "</div></div>"' +
-                '               + "<div class=\\"order-actions\\"><select id=\\"status-" + o.orderNumber + "\\">"' +
-                '                   + "<option value=\\"pending\\"" + (o.status === "pending" ? " selected" : "") + ">Pending</option>"' +
-                '                   + "<option value=\\"preparing\\"" + (o.status === "preparing" ? " selected" : "") + ">Preparing</option>"' +
-                '                   + "<option value=\\"ready\\"" + (o.status === "ready" ? " selected" : "") + ">Ready</option>"' +
-                '                   + "<option value=\\"served\\"" + (o.status === "served" ? " selected" : "") + ">Served</option>"' +
-                '                   + "<option value=\\"cancelled\\"" + (o.status === "cancelled" ? " selected" : "") + ">Cancelled</option>"' +
-                '                   + "<option value=\\"payed\\"" + (o.status === "payed" ? " selected" : "") + ">Payed</option>"' +
-                '               + "</select>"' +
-                '               + "<button class=\\"btn btn-primary btn-small\\" onclick=\\"updateOrderStatus(\'" + o.orderNumber + "\', document.getElementById(\'status-" + o.orderNumber + "\').value)\\" style=\\"background: #457b9d;\\"><i class=\\"fas fa-save\\"></i> Update</button>"' +
-                '               + "<button class=\\"btn btn-danger btn-small\\" onclick=\\"deleteOrder(\'" + o.orderNumber + "\')\\" style=\\"background: #dc3545;\\"><i class=\\"fas fa-trash\\"></i> Delete</button>"' +
-                '           + "</div>"' +
-                '           + "</div>";' +
+                '           html += "<div class=\\"order-card\\">" +' +
+                '               "<div class=\\"order-header\\"><div><span class=\\"order-title\\">Order #" + o.orderNumber + "</span> <span class=\\"order-time\\">" + formatDate(o.timestamp) + "</span></div><span class=\\"status-badge " + badgeClass + "\\">" + badgeText.charAt(0).toUpperCase() + badgeText.slice(1) + "</span></div>" +' +
+                '               "<div class=\\"order-body\\"><div><strong>Table:</strong> " + o.table + "</div><div class=\\"order-items\\">" + itemsHtml + "</div></div>" +' +
+                '               "<div class=\\"order-footer\\"><div class=\\"payment-info\\">" + (o.paymentMethod === "card" ? "Card" : "Cash") + " • " + (o.paymentTime === "now" ? "Pay Now" : "Pay Later") + "</div><div class=\\"order-total\\">Total: $" + o.total.toFixed(2) + "</div></div>" +' +
+                '               "<div class=\\"order-actions\\"><select id=\\"status-" + o.orderNumber + "\\">" +' +
+                '               "<option value=\\"pending\\"" + (o.status === "pending" ? " selected" : "") + ">Pending</option>" +' +
+                '               "<option value=\\"preparing\\"" + (o.status === "preparing" ? " selected" : "") + ">Preparing</option>" +' +
+                '               "<option value=\\"ready\\"" + (o.status === "ready" ? " selected" : "") + ">Ready</option>" +' +
+                '               "<option value=\\"served\\"" + (o.status === "served" ? " selected" : "") + ">Served</option>" +' +
+                '               "<option value=\\"cancelled\\"" + (o.status === "cancelled" ? " selected" : "") + ">Cancelled</option>" +' +
+                '               "<option value=\\"payed\\"" + (o.status === "payed" ? " selected" : "") + ">Payed</option>" +' +
+                '               "</select>" +' +
+                '               "<button class=\\"btn btn-primary btn-small\\" onclick=\\"updateOrderStatus(\'" + o.orderNumber + "\', document.getElementById(\'status-" + o.orderNumber + "\').value)\\" style=\\"background: #457b9d;\\"><i class=\\"fas fa-save\\"></i> Update</button>" +' +
+                '               "<button class=\\"btn btn-danger btn-small\\" onclick=\\"deleteOrder(\'" + o.orderNumber + "\')\\" style=\\"background: #dc3545;\\"><i class=\\"fas fa-trash\\"></i> Delete</button>" +' +
+                '               "</div>" +' +
+                '               "</div>";' +
                 '       });' +
                 '       list.innerHTML = html;' +
                 '   }' +
@@ -5094,6 +5132,7 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
+
 
 
 
