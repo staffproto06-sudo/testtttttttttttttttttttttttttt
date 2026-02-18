@@ -803,11 +803,15 @@
                 <!-- NEW PRINTER TAB CONTENT (dashboard) -->
                 <div class="admin-content" id="printerTab">
                     <h3 style="margin-bottom: 20px;"><i class="fas fa-print"></i> Printer Management</h3>
-                    <p style="margin-bottom: 25px; color: var(--gray);">Add network printers by IP address or hostname. Future orders can be printed automatically.</p>
+                    <p style="margin-bottom: 25px; color: var(--gray);">Add network printers manually or scan your local network. Use the system print dialog to print via your PC's default printer.</p>
                     <div class="categories-management">
                         <div class="categories-list">
-                            <h4 style="margin-bottom: 15px;">Configured Printers</h4>
+                            <h4 style="margin-bottom: 15px;">Configured Network Printers</h4>
                             <div class="categories-list-container" id="printersListContainer"></div>
+                            <div style="margin-top: 20px;">
+                                <button class="btn btn-secondary" id="printTestPageBtn"><i class="fas fa-print"></i> Print Test Page (System Dialog)</button>
+                                <p style="font-size: 12px; color: var(--gray); margin-top: 5px;">Uses your PC's default printer.</p>
+                            </div>
                         </div>
                         <div class="add-category-form">
                             <h4 style="margin-bottom: 15px;">Add New Printer</h4>
@@ -823,9 +827,13 @@
                                 <label class="admin-label">Port (optional)</label>
                                 <input type="number" class="admin-input" id="newPrinterPort" placeholder="e.g., 9100" value="9100">
                             </div>
-                            <div style="display: flex; gap: 10px;">
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                 <button class="btn btn-success" id="addPrinterBtn"><i class="fas fa-plus"></i> Add Printer</button>
-                                <!-- <button class="btn btn-secondary" id="discoverPrintersBtn"><i class="fas fa-search"></i> Discover</button> -->
+                                <button class="btn btn-info" id="scanPrintersBtn"><i class="fas fa-search"></i> Scan Network</button>
+                            </div>
+                            <div class="admin-form-group" style="margin-top: 15px;">
+                                <label class="admin-label">Scan Range (e.g., 192.168.1.1-254)</label>
+                                <input type="text" class="admin-input" id="scanRange" value="192.168.1.1-254" placeholder="e.g., 192.168.1.1-254">
                             </div>
                         </div>
                     </div>
@@ -1157,6 +1165,11 @@ VIP Table</textarea>
                         </div>
                         <div style="display: flex; gap: 10px;">
                             <button class="btn btn-success" id="addPrinterBtnModal"><i class="fas fa-plus"></i> Add Printer</button>
+                            <button class="btn btn-info" id="scanPrintersBtnModal"><i class="fas fa-search"></i> Scan</button>
+                        </div>
+                        <div class="admin-form-group" style="margin-top: 15px;">
+                            <label class="admin-label">Scan Range</label>
+                            <input type="text" class="admin-input" id="scanRangeModal" value="192.168.1.1-254">
                         </div>
                     </div>
                 </div>
@@ -3879,6 +3892,79 @@ function openVerticalOrdersView() {
             showNotification(`Printer "${name}" added.`);
         }
 
+        // NEW: Network printer scan function
+        async function scanNetworkPrinters() {
+            const rangeInput = document.getElementById('scanRange').value;
+            // Parse range like "192.168.1.1-254"
+            const match = rangeInput.match(/^(\d+\.\d+\.\d+)\.(\d+)-(\d+)$/);
+            if (!match) {
+                showNotification('Invalid range format. Use e.g., 192.168.1.1-254');
+                return;
+            }
+            const base = match[1];
+            const start = parseInt(match[2]);
+            const end = parseInt(match[3]);
+            if (start < 1 || end > 254 || start > end) {
+                showNotification('Invalid IP range.');
+                return;
+            }
+            showNotification(`Scanning ${base}.${start}-${end} ... this may take a while.`);
+            const ports = [80, 443, 9100]; // common printer ports
+            const found = [];
+            for (let i = start; i <= end; i++) {
+                const ip = `${base}.${i}`;
+                for (const port of ports) {
+                    try {
+                        const response = await fetch(`http://${ip}:${port}`, { mode: 'no-cors', signal: AbortSignal.timeout(1000) });
+                        // If we get here (even with error), it means the host responded
+                        found.push({ ip, port });
+                        // Add to printers if not already present
+                        if (!state.printers.some(p => p.ip === ip && p.port === port)) {
+                            const name = `Printer ${ip}`;
+                            const id = 'printer_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+                            const printer = { id, name, ip, port };
+                            state.printers.push(printer);
+                            await savePrinter(printer);
+                        }
+                        break; // stop scanning other ports for this IP
+                    } catch (err) {
+                        // no response, continue
+                    }
+                }
+                // Update UI periodically
+                if (i % 10 === 0) {
+                    loadPrintersForAdmin();
+                    if (adminPanel.style.display === 'flex') loadPrintersForAdminModal();
+                }
+            }
+            loadPrintersForAdmin();
+            if (adminPanel.style.display === 'flex') loadPrintersForAdminModal();
+            showNotification(`Scan complete. Found ${found.length} device(s).`);
+        }
+
+        function printTestPage() {
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                showNotification('Pop-up blocked. Please allow pop-ups to print.');
+                return;
+            }
+            const html = `
+                <html>
+                <head><title>Test Page</title></head>
+                <body>
+                    <h1>Restaurant Printer Test</h1>
+                    <p>If you see this, your system default printer is working.</p>
+                    <p>Date: ${new Date().toLocaleString()}</p>
+                </body>
+                </html>
+            `;
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            // No need to close; user can close after printing
+        }
+
         // ========== EDIT ORDER FUNCTIONS (unchanged) ==========
         function openEditOrderModal(order) {
             state.currentEditOrder = JSON.parse(JSON.stringify(order));
@@ -4062,8 +4148,10 @@ function openVerticalOrdersView() {
             // NEW: Vertical Orders Viewer button
             document.getElementById('openVerticalOrdersViewBtn').addEventListener('click', openVerticalOrdersView);
             document.getElementById('addTableBtn').addEventListener('click', ()=> showAdminChangePrompt(addTable));
-            // NEW: Add Printer button
+            // NEW: Add Printer button and scan button
             document.getElementById('addPrinterBtn').addEventListener('click', ()=> showAdminChangePrompt(addPrinter));
+            document.getElementById('scanPrintersBtn').addEventListener('click', ()=> showAdminChangePrompt(scanNetworkPrinters));
+            document.getElementById('printTestPageBtn').addEventListener('click', printTestPage);
             backToAdminBtn.addEventListener('click', function() {
                 state.currentTable = null;
                 showSection('adminDashboardSection');
@@ -5187,8 +5275,9 @@ function openVerticalOrdersView() {
             // NEW: Vertical Orders Viewer button in modal
             document.getElementById('openVerticalOrdersViewBtnModal').addEventListener('click', openVerticalOrdersView);
             document.getElementById('addTableBtnModal').addEventListener('click', ()=> showAdminChangePrompt(addTableModal));
-            // NEW: Add Printer button modal
+            // NEW: Add Printer button modal and scan
             document.getElementById('addPrinterBtnModal').addEventListener('click', ()=> showAdminChangePrompt(addPrinterModal));
+            document.getElementById('scanPrintersBtnModal').addEventListener('click', ()=> showAdminChangePrompt(scanNetworkPrinters));
         }
 
         function loadMenuItemsForAdminModal() {
