@@ -616,6 +616,8 @@
                     <button class="admin-tab" data-tab="orders">Order Management <span class="pending-badge" id="orderPendingBadge"><i class="fas fa-exclamation-circle"></i></span></button>
                     <button class="admin-tab" data-tab="helpRequests">🆘 Help Requests <span class="pending-badge" id="helpPendingBadge"><i class="fas fa-exclamation-circle"></i></span></button>
                     <button class="admin-tab" data-tab="tables">📋 Tables</button>
+                    <!-- NEW PRINTER TAB (dashboard) -->
+                    <button class="admin-tab" data-tab="printer">🖨️ Printer</button>
                     <button class="admin-tab" data-tab="customization">Visual Customization</button>
                     <button class="admin-tab" data-tab="sound">🔊 Sound Effects</button>
                     <button class="admin-tab" data-tab="qr">Table QR Codes</button>
@@ -798,6 +800,36 @@
                         </div>
                     </div>
                 </div>
+                <!-- NEW PRINTER TAB CONTENT (dashboard) -->
+                <div class="admin-content" id="printerTab">
+                    <h3 style="margin-bottom: 20px;"><i class="fas fa-print"></i> Printer Management</h3>
+                    <p style="margin-bottom: 25px; color: var(--gray);">Add network printers by IP address or hostname. Future orders can be printed automatically.</p>
+                    <div class="categories-management">
+                        <div class="categories-list">
+                            <h4 style="margin-bottom: 15px;">Configured Printers</h4>
+                            <div class="categories-list-container" id="printersListContainer"></div>
+                        </div>
+                        <div class="add-category-form">
+                            <h4 style="margin-bottom: 15px;">Add New Printer</h4>
+                            <div class="admin-form-group">
+                                <label class="admin-label">Printer Name</label>
+                                <input type="text" class="admin-input" id="newPrinterName" placeholder="e.g., Kitchen Printer">
+                            </div>
+                            <div class="admin-form-group">
+                                <label class="admin-label">IP Address / Hostname</label>
+                                <input type="text" class="admin-input" id="newPrinterIp" placeholder="e.g., 192.168.1.100 or printer.local">
+                            </div>
+                            <div class="admin-form-group">
+                                <label class="admin-label">Port (optional)</label>
+                                <input type="number" class="admin-input" id="newPrinterPort" placeholder="e.g., 9100" value="9100">
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-success" id="addPrinterBtn"><i class="fas fa-plus"></i> Add Printer</button>
+                                <!-- <button class="btn btn-secondary" id="discoverPrintersBtn"><i class="fas fa-search"></i> Discover</button> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <!-- Visual Customization -->
                 <div class="admin-content" id="customizationTab">
                     <div class="customization-panel">
@@ -969,6 +1001,8 @@ VIP Table</textarea>
                 <button class="admin-tab" data-tab="orders">Orders <span class="pending-badge" id="orderPendingBadgeModal"><i class="fas fa-exclamation-circle"></i></span></button>
                 <button class="admin-tab" data-tab="helpRequests">🆘 Help <span class="pending-badge" id="helpPendingBadgeModal"><i class="fas fa-exclamation-circle"></i></span></button>
                 <button class="admin-tab" data-tab="tablesModal">📋 Tables</button>
+                <!-- NEW PRINTER TAB (modal) -->
+                <button class="admin-tab" data-tab="printerModal">🖨️ Printer</button>
                 <button class="admin-tab" data-tab="customization">Visual</button>
                 <button class="admin-tab" data-tab="sound">🔊 Sound</button>
                 <button class="admin-tab" data-tab="qr">QR Codes</button>
@@ -1096,6 +1130,34 @@ VIP Table</textarea>
                             <input type="text" class="admin-input" id="newTableNameModal" placeholder="e.g., Table 6">
                         </div>
                         <button class="btn btn-success" id="addTableBtnModal"><i class="fas fa-plus"></i> Add Table</button>
+                    </div>
+                </div>
+            </div>
+            <!-- NEW PRINTER TAB CONTENT (modal) -->
+            <div class="admin-content" id="printerTabModal">
+                <h3 style="margin-bottom: 20px;"><i class="fas fa-print"></i> Printer Management</h3>
+                <div class="categories-management">
+                    <div class="categories-list">
+                        <h4 style="margin-bottom: 15px;">Configured Printers</h4>
+                        <div class="categories-list-container" id="printersListContainerModal"></div>
+                    </div>
+                    <div class="add-category-form">
+                        <h4 style="margin-bottom: 15px;">Add New Printer</h4>
+                        <div class="admin-form-group">
+                            <label class="admin-label">Printer Name</label>
+                            <input type="text" class="admin-input" id="newPrinterNameModal" placeholder="e.g., Kitchen Printer">
+                        </div>
+                        <div class="admin-form-group">
+                            <label class="admin-label">IP Address / Hostname</label>
+                            <input type="text" class="admin-input" id="newPrinterIpModal" placeholder="e.g., 192.168.1.100">
+                        </div>
+                        <div class="admin-form-group">
+                            <label class="admin-label">Port (optional)</label>
+                            <input type="number" class="admin-input" id="newPrinterPortModal" placeholder="e.g., 9100" value="9100">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-success" id="addPrinterBtnModal"><i class="fas fa-plus"></i> Add Printer</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1421,6 +1483,11 @@ VIP Table</textarea>
             if (businessId === 'default') return db.collection('tables');
             return db.collection(`business_${businessId}_tables`);
         }
+        // NEW: Printer collection
+        function getPrintersCollection() {
+            if (businessId === 'default') return db.collection('printers');
+            return db.collection(`business_${businessId}_printers`);
+        }
         // Helper to get the business document (stores adminEmail etc.)
         function getBusinessDoc() {
             return db.collection('businesses').doc(businessId);
@@ -1440,6 +1507,13 @@ VIP Table</textarea>
         async function saveCumulativeStats() { try { await getCumulativeStatsDoc().set(state.cumulativeStats); } catch (e) { console.error(e); } }
         async function saveTable(tableName) { try { await getTablesCollection().doc(tableName).set({ name: tableName }); } catch (e) { console.error(e); } }
         async function deleteTableFirestore(tableName) { try { await getTablesCollection().doc(tableName).delete(); } catch (e) { console.error(e); } }
+        // NEW: Printer Firestore functions
+        async function savePrinter(printer) {
+            try { await getPrintersCollection().doc(printer.id).set(printer); } catch (e) { console.error(e); }
+        }
+        async function deletePrinterFirestore(id) {
+            try { await getPrintersCollection().doc(id).delete(); } catch (e) { console.error(e); }
+        }
 
         // ========== STATE (with obfuscated admin codes) ==========
         const state = {
@@ -1460,6 +1534,8 @@ VIP Table</textarea>
             orders: [],
             helpRequests: [],
             tables: [],
+            // NEW: printers array
+            printers: [],
             seenHelpRequests: new Set(),
             adminAccessCode: decodeCode("gege"),  // decodes to "3232"
             adminChangeCode: decodeCode("lele"),  // decodes to "6262"
@@ -1846,10 +1922,12 @@ VIP Table</textarea>
         async function saveTable(tableName) { try { await getTablesCollection().doc(tableName).set({ name: tableName }); } catch (e) { console.error(e); } }
         async function deleteTableFirestore(tableName) { try { await getTablesCollection().doc(tableName).delete(); } catch (e) { console.error(e); } }
 
+        // NEW: Printer Firestore functions (save/delete already defined above)
+
         // ========== INITIAL LOAD (unchanged, but uses helpers) ==========
         async function loadInitialData() {
             try {
-                const [restDoc, menuSnap, ordersSnap, catDoc, customDoc, soundDoc, helpSnap, statsDoc, tablesSnap] = await Promise.all([
+                const [restDoc, menuSnap, ordersSnap, catDoc, customDoc, soundDoc, helpSnap, statsDoc, tablesSnap, printersSnap] = await Promise.all([
                     getSettingsDoc().get(),
                     getMenuItemsCollection().get(),
                     getOrdersCollection().get(),
@@ -1858,7 +1936,8 @@ VIP Table</textarea>
                     getSoundEffectsDoc().get(),
                     getHelpRequestsCollection().get(),
                     getCumulativeStatsDoc().get(),
-                    getTablesCollection().get()
+                    getTablesCollection().get(),
+                    getPrintersCollection().get()
                 ]);
                 if (restDoc.exists) state.restaurantInfo = restDoc.data();
                 else await getSettingsDoc().set(state.restaurantInfo);
@@ -1931,6 +2010,13 @@ VIP Table</textarea>
                     await Promise.all(state.tables.map(t => saveTable(t)));
                 } else {
                     state.tables = tablesSnap.docs.map(doc => doc.data().name);
+                }
+
+                // NEW: Load printers
+                if (!printersSnap.empty) {
+                    state.printers = printersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                } else {
+                    state.printers = [];
                 }
                 
                 determineCurrentTheme();
@@ -2120,6 +2206,18 @@ VIP Table</textarea>
                 if (adminPanel.style.display === 'flex') {
                     const modalActive = document.querySelector('#adminPanel .admin-tab.active')?.dataset?.tab;
                     if (modalActive === 'tablesModal') loadTablesForAdminModal();
+                }
+            });
+            // NEW: Printer listener
+            getPrintersCollection().onSnapshot(snap => {
+                state.printers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (state.isAdminMode && document.querySelector('#adminDashboardSection.active-section')) {
+                    const activeTab = document.querySelector('#adminDashboardSection .admin-tab.active')?.dataset?.tab;
+                    if (activeTab === 'printer') loadPrintersForAdmin();
+                }
+                if (adminPanel.style.display === 'flex') {
+                    const modalActive = document.querySelector('#adminPanel .admin-tab.active')?.dataset?.tab;
+                    if (modalActive === 'printerModal') loadPrintersForAdminModal();
                 }
             });
         }
@@ -3658,6 +3756,129 @@ function openVerticalOrdersView() {
             showNotification(`Table "${name}" added.`);
         }
 
+        // ========== NEW PRINTER FUNCTIONS ==========
+        function loadPrintersForAdmin() {
+            const container = document.getElementById('printersListContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            if (state.printers.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">No printers added yet.</p>';
+                return;
+            }
+            state.printers.sort((a,b) => (a.name || '').localeCompare(b.name || '')).forEach(printer => {
+                const el = document.createElement('div'); el.className = 'category-item';
+                el.innerHTML = `
+                    <div style="display:flex; align-items:center;">
+                        <i class="fas fa-print"></i>
+                        <span class="category-item-name">${printer.name} (${printer.ip}${printer.port ? ':'+printer.port : ''})</span>
+                    </div>
+                    <div class="admin-card-actions">
+                        <button class="admin-small-btn btn-primary test-printer" data-id="${printer.id}" data-ip="${printer.ip}" data-port="${printer.port || 9100}"><i class="fas fa-play"></i> Test</button>
+                        <button class="admin-small-btn btn-danger delete-printer" data-id="${printer.id}"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+            document.querySelectorAll('.test-printer').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const ip = this.dataset.ip;
+                    const port = this.dataset.port;
+                    // Simple test: try to fetch a simple page (only works if printer has HTTP interface)
+                    showNotification(`Testing printer at ${ip}:${port}...`);
+                    fetch(`http://${ip}:${port}`, { mode: 'no-cors' })
+                        .then(() => showNotification(`Printer at ${ip}:${port} responded.`))
+                        .catch(() => showNotification(`Printer at ${ip}:${port} did not respond (might still work for printing).`));
+                });
+            });
+            document.querySelectorAll('.delete-printer').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    if (confirm('Delete this printer?')) {
+                        state.printers = state.printers.filter(p => p.id !== id);
+                        deletePrinterFirestore(id);
+                        loadPrintersForAdmin();
+                        if (adminPanel.style.display === 'flex') loadPrintersForAdminModal();
+                        showNotification('Printer deleted.');
+                    }
+                });
+            });
+        }
+
+        function loadPrintersForAdminModal() {
+            const container = document.getElementById('printersListContainerModal');
+            if (!container) return;
+            container.innerHTML = '';
+            if (state.printers.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">No printers added yet.</p>';
+                return;
+            }
+            state.printers.sort((a,b) => (a.name || '').localeCompare(b.name || '')).forEach(printer => {
+                const el = document.createElement('div'); el.className = 'category-item';
+                el.innerHTML = `
+                    <div style="display:flex; align-items:center;">
+                        <i class="fas fa-print"></i>
+                        <span class="category-item-name">${printer.name} (${printer.ip}${printer.port ? ':'+printer.port : ''})</span>
+                    </div>
+                    <div class="admin-card-actions">
+                        <button class="admin-small-btn btn-danger delete-printer-modal" data-id="${printer.id}"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+            document.querySelectorAll('.delete-printer-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    if (confirm('Delete this printer?')) {
+                        state.printers = state.printers.filter(p => p.id !== id);
+                        deletePrinterFirestore(id);
+                        loadPrintersForAdmin();
+                        loadPrintersForAdminModal();
+                        showNotification('Printer deleted.');
+                    }
+                });
+            });
+        }
+
+        async function addPrinter() {
+            const name = document.getElementById('newPrinterName').value.trim();
+            const ip = document.getElementById('newPrinterIp').value.trim();
+            const port = parseInt(document.getElementById('newPrinterPort').value) || 9100;
+            if (!name || !ip) {
+                showNotification('Please enter both printer name and IP address.');
+                return;
+            }
+            const id = 'printer_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+            const printer = { id, name, ip, port };
+            state.printers.push(printer);
+            await savePrinter(printer);
+            document.getElementById('newPrinterName').value = '';
+            document.getElementById('newPrinterIp').value = '';
+            document.getElementById('newPrinterPort').value = '9100';
+            loadPrintersForAdmin();
+            if (adminPanel.style.display === 'flex') loadPrintersForAdminModal();
+            showNotification(`Printer "${name}" added.`);
+        }
+
+        async function addPrinterModal() {
+            const name = document.getElementById('newPrinterNameModal').value.trim();
+            const ip = document.getElementById('newPrinterIpModal').value.trim();
+            const port = parseInt(document.getElementById('newPrinterPortModal').value) || 9100;
+            if (!name || !ip) {
+                showNotification('Please enter both printer name and IP address.');
+                return;
+            }
+            const id = 'printer_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+            const printer = { id, name, ip, port };
+            state.printers.push(printer);
+            await savePrinter(printer);
+            document.getElementById('newPrinterNameModal').value = '';
+            document.getElementById('newPrinterIpModal').value = '';
+            document.getElementById('newPrinterPortModal').value = '9100';
+            loadPrintersForAdmin();
+            loadPrintersForAdminModal();
+            showNotification(`Printer "${name}" added.`);
+        }
+
         // ========== EDIT ORDER FUNCTIONS (unchanged) ==========
         function openEditOrderModal(order) {
             state.currentEditOrder = JSON.parse(JSON.stringify(order));
@@ -3768,6 +3989,8 @@ function openVerticalOrdersView() {
             loadSoundSettingsUI();
             loadHelpRequestsForAdmin();
             loadTablesForAdmin();
+            // NEW: load printers
+            loadPrintersForAdmin();
 
             document.querySelectorAll('#adminDashboardSection .admin-tab').forEach(tab => {
                 tab.addEventListener('click', function() {
@@ -3784,6 +4007,7 @@ function openVerticalOrdersView() {
                     if (tid==='sound') setTimeout(loadSoundSettingsUI,50);
                     if (tid==='menuEn') setTimeout(()=>{ loadMenuItemsForAdminEn(); makeAdminGridDraggable('menuItemsListEn'); },50);
                     if (tid==='tables') setTimeout(loadTablesForAdmin,50);
+                    if (tid==='printer') setTimeout(loadPrintersForAdmin,50); // NEW
                 });
             });
             document.getElementById('uploadLogoBtn').addEventListener('click', ()=>document.getElementById('logoUpload').click());
@@ -3838,6 +4062,8 @@ function openVerticalOrdersView() {
             // NEW: Vertical Orders Viewer button
             document.getElementById('openVerticalOrdersViewBtn').addEventListener('click', openVerticalOrdersView);
             document.getElementById('addTableBtn').addEventListener('click', ()=> showAdminChangePrompt(addTable));
+            // NEW: Add Printer button
+            document.getElementById('addPrinterBtn').addEventListener('click', ()=> showAdminChangePrompt(addPrinter));
             backToAdminBtn.addEventListener('click', function() {
                 state.currentTable = null;
                 showSection('adminDashboardSection');
@@ -4531,7 +4757,7 @@ function openVerticalOrdersView() {
             stats.innerHTML = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:15px;"><div style="background-color:var(--light); padding:15px; border-radius:8px;"><div style="font-size:24px; font-weight:600; color:var(--primary);">${total}</div><div style="font-size:14px; color:var(--gray);">Total Orders (Lifetime)</div></div><div style="background-color:var(--light); padding:15px; border-radius:8px;"><div style="font-size:24px; font-weight:600; color:var(--primary);">$${revenue.toFixed(2)}</div><div style="font-size:14px; color:var(--gray);">Total Revenue (Lifetime)</div></div><div style="background-color:var(--light); padding:15px; border-radius:8px;"><div style="font-size:24px; font-weight:600; color:var(--primary);">$${avg.toFixed(2)}</div><div style="font-size:14px; color:var(--gray);">Average Order</div></div><div style="background-color:var(--light); padding:15px; border-radius:8px;"><div style="font-size:24px; font-weight:600; color:var(--primary);">${state.menuItems.length}</div><div style="font-size:14px; color:var(--gray);">Menu Items</div></div><div style="background-color:var(--light); padding:15px; border-radius:8px;"><div style="font-size:24px; font-weight:600; color:var(--primary);">${state.categories.length}</div><div style="font-size:14px; color:var(--gray);">Categories</div></div></div><div style="margin-top:20px;"><h5 style="margin-bottom:10px;">Order Status Distribution (Current Orders)</h5><div style="display:flex; gap:10px; flex-wrap:wrap;"><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#fff3cd; border-radius:2px;"></div><span>Pending: ${pending}</span></div><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#d1ecf1; border-radius:2px;"></div><span>Preparing: ${prep}</span></div><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#d4edda; border-radius:2px;"></div><span>Ready: ${ready}</span></div><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#cce5ff; border-radius:2px;"></div><span>Served: ${served}</span></div><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#f8d7da; border-radius:2px;"></div><span>Cancelled: ${cancelled}</span></div><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#cce5ff; border-radius:2px;"></div><span>Payed: ${payed}</span></div></div></div>`;
         }
         function exportData() {
-            const data = { restaurantInfo: state.restaurantInfo, menuItems: state.menuItems, orders: state.orders, categories: state.categories, customization: state.customization, soundEffects: state.soundEffects, helpRequests: state.helpRequests, cumulativeStats: state.cumulativeStats, tables: state.tables, exportDate: new Date().toISOString() };
+            const data = { restaurantInfo: state.restaurantInfo, menuItems: state.menuItems, orders: state.orders, categories: state.categories, customization: state.customization, soundEffects: state.soundEffects, helpRequests: state.helpRequests, cumulativeStats: state.cumulativeStats, tables: state.tables, printers: state.printers, exportDate: new Date().toISOString() };
             const str = JSON.stringify(data,null,2); const uri = 'data:application/json;charset=utf-8,'+encodeURIComponent(str);
             const a = document.createElement('a'); a.href = uri; a.download = `dineeasy-backup-${new Date().toISOString().split('T')[0]}.json`; a.click(); showNotification("Data exported successfully.");
         }
@@ -4551,6 +4777,7 @@ function openVerticalOrdersView() {
                         if (d.helpRequests) state.helpRequests = d.helpRequests;
                         if (d.cumulativeStats) state.cumulativeStats = d.cumulativeStats;
                         if (d.tables) state.tables = d.tables;
+                        if (d.printers) state.printers = d.printers;
                         await Promise.all(state.menuItems.map(i=>saveMenuItem(i)));
                         await saveCategories();
                         await Promise.all(state.orders.map(o=>saveOrder(o)));
@@ -4560,8 +4787,9 @@ function openVerticalOrdersView() {
                         await Promise.all(state.helpRequests.map(r=>saveHelpRequest(r)));
                         await saveCumulativeStats();
                         await Promise.all(state.tables.map(t=>saveTable(t)));
+                        await Promise.all(state.printers.map(p=>savePrinter(p)));
                         updateRestaurantUI(); displayMenuItems('all'); updateCategoryTabs(); applyCustomization();
-                        loadMenuItemsForAdmin(); loadMenuItemsForAdminEn(); loadCategoriesForAdmin(); loadCategoriesForAdminEn(); loadOrdersForAdmin(); loadSystemStats(); loadHelpRequestsForAdmin(); loadTablesForAdmin();
+                        loadMenuItemsForAdmin(); loadMenuItemsForAdminEn(); loadCategoriesForAdmin(); loadCategoriesForAdminEn(); loadOrdersForAdmin(); loadSystemStats(); loadHelpRequestsForAdmin(); loadTablesForAdmin(); loadPrintersForAdmin();
                         showNotification("Data imported successfully.");
                     }
                 } catch { showNotification("Error importing data. Invalid file format."); }
@@ -4923,6 +5151,7 @@ function openVerticalOrdersView() {
                     if (tid==='orders') { loadOrdersForAdminModal(); populateTableSelect('tableSelectForDeleteModal'); }
                     if (tid==='helpRequests') { loadHelpRequestsForAdminModal(); }
                     if (tid==='tablesModal') { loadTablesForAdminModal(); }
+                    if (tid==='printerModal') { loadPrintersForAdminModal(); } // NEW
                     if (tid==='sound') { 
                         const modalEnabled = document.getElementById('soundEffectsEnabledModal');
                         if (modalEnabled) modalEnabled.checked = state.soundEffects.enabled;
@@ -4958,6 +5187,8 @@ function openVerticalOrdersView() {
             // NEW: Vertical Orders Viewer button in modal
             document.getElementById('openVerticalOrdersViewBtnModal').addEventListener('click', openVerticalOrdersView);
             document.getElementById('addTableBtnModal').addEventListener('click', ()=> showAdminChangePrompt(addTableModal));
+            // NEW: Add Printer button modal
+            document.getElementById('addPrinterBtnModal').addEventListener('click', ()=> showAdminChangePrompt(addPrinterModal));
         }
 
         function loadMenuItemsForAdminModal() {
@@ -5416,6 +5647,3 @@ function openVerticalOrdersView() {
     </script>
 </body>
 </html>
-
-
-
