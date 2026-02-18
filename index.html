@@ -4200,7 +4200,7 @@ function openVerticalOrdersView() {
             },500);
         }
 
-        // ========== PRINT ORDER FUNCTION (NEW) ==========
+        // ========== PRINT ORDER FUNCTION (MODIFIED – NO PRICES, NO RESTAURANT, ONLY TABLE, ORDER#, TIME, ITEMS WITH OPTIONS) ==========
         function printOrderToPrinter(orderId) {
             const order = state.orders.find(o => o.orderNumber === orderId);
             if (!order) {
@@ -4208,7 +4208,10 @@ function openVerticalOrdersView() {
                 return;
             }
 
-            // Build HTML for the print window
+            // Format the time nicely
+            const orderTime = new Date(order.timestamp).toLocaleString();
+
+            // Build HTML for the print window – only table, order number, time, items with subcategories/comments
             const printContent = `
                 <!DOCTYPE html>
                 <html>
@@ -4217,55 +4220,41 @@ function openVerticalOrdersView() {
                     <title>Order #${order.orderNumber}</title>
                     <style>
                         body { font-family: Arial, sans-serif; margin: 20px; }
-                        h1 { color: #e63946; }
-                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background-color: #f2f2f2; }
-                        .total { font-weight: bold; font-size: 1.2em; }
-                        .payment-info { margin-top: 20px; }
+                        h2 { margin-bottom: 5px; }
+                        .order-info { margin-bottom: 20px; }
+                        .item { margin-bottom: 15px; }
+                        .item-name { font-weight: bold; }
+                        .options { margin-left: 20px; font-size: 0.9em; color: #555; }
+                        .comment { margin-left: 20px; font-size: 0.9em; color: #2a7f62; font-style: italic; }
+                        hr { border: 0; border-top: 1px solid #ccc; margin: 15px 0; }
                     </style>
                 </head>
                 <body>
-                    <h1>${state.restaurantInfo.name || 'Restaurant'}</h1>
-                    <h2>Order #${order.orderNumber}</h2>
-                    <p><strong>Table:</strong> ${order.table}</p>
-                    <p><strong>Date:</strong> ${new Date(order.timestamp).toLocaleString()}</p>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Qty</th>
-                                <th>Price</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${order.items.map(item => {
-                                let optionsHtml = '';
-                                if (item.selectedOptions && item.selectedOptions.length) {
-                                    optionsHtml = '<div style="margin-left:15px; font-size:0.9em; color:#666;">';
-                                    item.selectedOptions.forEach(opt => {
-                                        if (opt.isComment) optionsHtml += `<div>📝 ${opt.groupName}: "${opt.choiceName}"</div>`;
-                                        else optionsHtml += `<div>• ${opt.groupName}: ${opt.choiceName} ${opt.price ? (opt.price > 0 ? `(+$${opt.price.toFixed(2)})` : opt.price < 0 ? `(-$${Math.abs(opt.price).toFixed(2)})` : '') : ''}</div>`;
-                                    });
-                                    optionsHtml += '</div>';
-                                }
-                                return `
-                                    <tr>
-                                        <td>${item.name}${optionsHtml}</td>
-                                        <td>${item.quantity}</td>
-                                        <td>$${item.price.toFixed(2)}</td>
-                                        <td>$${(item.price * item.quantity).toFixed(2)}</td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                    <p class="total">Total: $${order.total.toFixed(2)}</p>
-                    <div class="payment-info">
-                        <p><strong>Payment Method:</strong> ${order.paymentMethod === 'card' ? 'Card' : 'Cash'}</p>
-                        <p><strong>Payment Time:</strong> ${order.paymentTime === 'now' ? 'Pay Now' : 'Pay Later'}</p>
+                    <div class="order-info">
+                        <h2>Order #${order.orderNumber}</h2>
+                        <p><strong>Table:</strong> ${order.table}</p>
+                        <p><strong>Time:</strong> ${orderTime}</p>
                     </div>
+                    <hr>
+                    ${order.items.map(item => {
+                        // Start with the main item line (quantity + name)
+                        let itemHtml = `<div class="item"><div class="item-name">${item.quantity} × ${item.name}</div>`;
+                        // Add subcategories/options if they exist
+                        if (item.selectedOptions && item.selectedOptions.length) {
+                            itemHtml += '<div class="options">';
+                            item.selectedOptions.forEach(opt => {
+                                if (opt.isComment) {
+                                    itemHtml += `<div class="comment">📝 ${opt.groupName}: "${opt.choiceName}"</div>`;
+                                } else {
+                                    itemHtml += `<div>• ${opt.groupName}: ${opt.choiceName}</div>`;
+                                }
+                            });
+                            itemHtml += '</div>';
+                        }
+                        itemHtml += '</div>';
+                        return itemHtml;
+                    }).join('')}
+                    <hr>
                 </body>
                 </html>
             `;
