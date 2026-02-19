@@ -1540,28 +1540,128 @@ VIP Table</textarea>
         }
 
         // Update all Firestore save/load functions to use these helpers
-        async function saveRestaurantInfo() { try { await getSettingsDoc().set(state.restaurantInfo); } catch (e) { console.error(e); } }
-        async function saveMenuItem(item) { try { await getMenuItemsCollection().doc(item.id.toString()).set(item); } catch (e) { console.error(e); } }
-        async function deleteMenuItemFirestore(id) { try { await getMenuItemsCollection().doc(id.toString()).delete(); } catch (e) { console.error(e); } }
-        async function saveCategories() { try { const sorted = [...state.categories].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0)); await getCategoriesDoc().set({ list: sorted }); } catch (e) { console.error(e); } }
-        async function saveOrder(order) { try { await getOrdersCollection().doc(order.orderNumber).set(order); } catch (e) { console.error(e); } }
-        async function deleteOrderFirestore(orderId) { try { await getOrdersCollection().doc(orderId).delete(); } catch (e) { console.error(e); } }
-        async function saveCustomization() { try { await getCustomizationDoc().set(state.customization); } catch (e) { console.error(e); } }
-        async function saveSoundEffects() { try { await getSoundEffectsDoc().set(state.soundEffects); } catch (e) { console.error(e); } }
-        async function saveHelpRequest(request) { try { await getHelpRequestsCollection().doc(request.id).set(request); } catch (e) { console.error(e); } }
-        async function deleteHelpRequestFirestore(id) { try { await getHelpRequestsCollection().doc(id).delete(); } catch (e) { console.error(e); } }
-        async function saveCumulativeStats() { try { await getCumulativeStatsDoc().set(state.cumulativeStats); } catch (e) { console.error(e); } }
+        async function saveRestaurantInfo() {
+            try {
+                await getSettingsDoc().set(state.restaurantInfo);
+            } catch (e) {
+                console.error('Error saving restaurant info:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
+        async function saveMenuItem(item) {
+            try {
+                await getMenuItemsCollection().doc(item.id.toString()).set(item);
+            } catch (e) {
+                console.error('Error saving menu item:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
+        async function deleteMenuItemFirestore(id) {
+            try {
+                await getMenuItemsCollection().doc(id.toString()).delete();
+            } catch (e) {
+                console.error('Error deleting menu item:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
+        async function saveCategories() {
+            try {
+                const sorted = [...state.categories].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
+                await getCategoriesDoc().set({ list: sorted });
+            } catch (e) {
+                console.error('Error saving categories:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
+        async function saveOrder(order) {
+            try {
+                await getOrdersCollection().doc(order.orderNumber).set(order);
+            } catch (e) {
+                console.error('Error saving order:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
+        async function deleteOrderFirestore(orderId) {
+            try {
+                await getOrdersCollection().doc(orderId).delete();
+            } catch (e) {
+                console.error('Error deleting order:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
+        async function saveCustomization() {
+            try {
+                await getCustomizationDoc().set(state.customization);
+            } catch (e) {
+                console.error('Error saving customization:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
+        async function saveSoundEffects() {
+            try {
+                await getSoundEffectsDoc().set(state.soundEffects);
+            } catch (e) {
+                console.error('Error saving sound effects:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
+        async function saveHelpRequest(request) {
+            try {
+                await getHelpRequestsCollection().doc(request.id).set(request);
+            } catch (e) {
+                console.error('Error saving help request:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
+        async function deleteHelpRequestFirestore(id) {
+            try {
+                await getHelpRequestsCollection().doc(id).delete();
+            } catch (e) {
+                console.error('Error deleting help request:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
+        async function saveCumulativeStats() {
+            try {
+                await getCumulativeStatsDoc().set(state.cumulativeStats);
+            } catch (e) {
+                console.error('Error saving cumulative stats:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
         // UPDATED: saveTable now expects an object {name, settings}
         async function saveTable(tableObj) {
-            try { await getTablesCollection().doc(tableObj.name).set(tableObj); } catch (e) { console.error(e); }
+            try {
+                await getTablesCollection().doc(tableObj.name).set(tableObj);
+            } catch (e) {
+                console.error('Error saving table:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
         }
-        async function deleteTableFirestore(tableName) { try { await getTablesCollection().doc(tableName).delete(); } catch (e) { console.error(e); } }
+        async function deleteTableFirestore(tableName) {
+            try {
+                await getTablesCollection().doc(tableName).delete();
+            } catch (e) {
+                console.error('Error deleting table:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
+        }
         // NEW: Printer Firestore functions
         async function savePrinter(printer) {
-            try { await getPrintersCollection().doc(printer.id).set(printer); } catch (e) { console.error(e); }
+            try {
+                await getPrintersCollection().doc(printer.id).set(printer);
+            } catch (e) {
+                console.error('Error saving printer:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
         }
         async function deletePrinterFirestore(id) {
-            try { await getPrintersCollection().doc(id).delete(); } catch (e) { console.error(e); }
+            try {
+                await getPrintersCollection().doc(id).delete();
+            } catch (e) {
+                console.error('Error deleting printer:', e);
+                showNotification('Permission denied: ' + e.message);
+            }
         }
 
         // ========== STATE (with obfuscated admin codes) ==========
@@ -2904,6 +3004,7 @@ VIP Table</textarea>
         }
 
         auth.onAuthStateChanged(async user => {
+            console.log('Auth state changed:', user ? user.email : 'null');
             // If user is logged in and current table is Admin, and not already in admin mode, verify business email
             if (user && state.currentTable && state.currentTable.toLowerCase() === "admin" && !state.isAdminMode) {
                 try {
@@ -3208,8 +3309,7 @@ VIP Table</textarea>
             showNotification(`PDF generated with ${tableNamesArray.length} QR code(s).`);
         }
 
-        // ========== OPEN VERTICAL ORDERS VIEW (FIXED) ==========
-       // ========== OPEN VERTICAL ORDERS VIEW (FIXED PERMISSIONS) ==========
+        // ========== OPEN VERTICAL ORDERS VIEW (FIXED PERMISSIONS) ==========
 function openVerticalOrdersView() {
     const winHtml = `<!DOCTYPE html>
 <html>
