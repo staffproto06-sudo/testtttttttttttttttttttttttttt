@@ -2052,14 +2052,15 @@ VIP Table</textarea>
                     return req;
                 });
 
-                // Load tables – now objects with name and settings
+                // Load tables – now objects with name and settings, and we ensure the "Admin" table exists by default
                 if (tablesSnap.empty) {
-                    // default tables
+                    // default tables including Admin
                     state.tables = [
                         { name: 'Table 1', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } },
                         { name: 'Table 2', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } },
                         { name: 'Table 3', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } },
-                        { name: 'VIP Table', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } }
+                        { name: 'VIP Table', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } },
+                        { name: 'Admin', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } }  // <-- ADDED ADMIN TABLE
                     ];
                     await Promise.all(state.tables.map(t => saveTable(t)));
                 } else {
@@ -2074,6 +2075,11 @@ VIP Table</textarea>
                             return { name: doc.id, ...data };
                         }
                     });
+                    // Ensure Admin exists (in case it was deleted, we re-add it automatically)
+                    if (!state.tables.some(t => t.name === 'Admin')) {
+                        state.tables.push({ name: 'Admin', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } });
+                        await saveTable({ name: 'Admin', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } });
+                    }
                 }
 
                 // NEW: Load printers
@@ -2631,8 +2637,15 @@ VIP Table</textarea>
             myOrdersSubtitle.textContent = state.currentLanguage === 'el' ? `Έχετε ${tableOrders.length} παραγγελ${tableOrders.length!==1?'ίες':'ία'} για ${state.currentTable}` : `You have ${tableOrders.length} order${tableOrders.length!==1?'s':''} for ${state.currentTable}`;
         }
 
-        // ========== SELECT TABLE ==========
+        // ========== SELECT TABLE (WITH VALIDATION) ==========
         function selectTable(name, isAutoLogin = false) {
+            // Check if the table exists in the tables list
+            const tableExists = state.tables.some(t => t.name === name);
+            if (!tableExists) {
+                showNotification(state.currentLanguage === 'el' ? `Το τραπέζι "${name}" δεν υπάρχει.` : `Table "${name}" does not exist.`);
+                return;
+            }
+
             state.currentTable = name;
             tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${name}`;
             menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${name}` : `Select items to add to your order for ${name}`;
@@ -2694,6 +2707,7 @@ VIP Table</textarea>
             const tableParam = urlParams.get('table');
             if (tableParam) {
                 const tableName = decodeURIComponent(tableParam);
+                // Validate table before selecting
                 selectTable(tableName, true);
             }
             // No default table - stay on scanner if no table parameter
@@ -2749,6 +2763,7 @@ VIP Table</textarea>
                     if (tableParam) {
                         stopCamera();
                         const tableName = decodeURIComponent(tableParam);
+                        // Validate table before selecting
                         selectTable(tableName, true);
                         return;
                     }
@@ -3783,6 +3798,10 @@ function openVerticalOrdersView() {
             document.querySelectorAll('.delete-table').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
+                    if (table === 'Admin') {
+                        showNotification('The Admin table cannot be deleted.');
+                        return;
+                    }
                     if (confirm(`Delete table "${table}"?`)) {
                         state.tables = state.tables.filter(t => t.name !== table);
                         deleteTableFirestore(table);
@@ -3847,6 +3866,10 @@ function openVerticalOrdersView() {
             document.querySelectorAll('.delete-table-modal').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
+                    if (table === 'Admin') {
+                        showNotification('The Admin table cannot be deleted.');
+                        return;
+                    }
                     if (confirm(`Delete table "${table}"?`)) {
                         state.tables = state.tables.filter(t => t.name !== table);
                         deleteTableFirestore(table);
