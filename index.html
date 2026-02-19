@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
+    <link rel="icon" type="image/x-icon" href="https://github.com/staffproto06-sudo/testtttttttttttttttttttttttttt/tree/main/favicon_io">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="appTitle">Εφαρμογή Εστιατορίου - PERFECT + SOUNDS</title>
@@ -14,6 +15,10 @@
     <!-- QR & PDF generation libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- QR scanning library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.min.js"></script>
     <style>
         /* ========== COMPLETE STYLES – UNCHANGED ========== */
         :root {
@@ -64,7 +69,7 @@
         .request-pay-button:hover { background-color: #c82333; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(220,53,69,0.3); }
         .back-to-admin { background-color: var(--dark); color: white; border: none; padding: 8px 16px; border-radius: 50px; font-weight: 500; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 15px; }
         .back-to-admin:hover { background-color: #343a40; }
-        .app-section { display: none; padding: 30px 0; min-height: calc(100vh - 80px); background-color: var(--background); }
+        .app-section { display: none; padding: 30px 0; min-height: calc(100vh - 80px); }
         .active-section { display: block; }
         .scanner-section { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .scanner-container { background-color: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 40px; width: 100%; max-width: 500px; margin: 20px auto; }
@@ -72,6 +77,9 @@
         .qr-placeholder::before { content: ""; position: absolute; width: 100%; height: 100%; background-image: linear-gradient(90deg, transparent 49%, rgba(0,0,0,0.05) 50%, transparent 51%), linear-gradient(transparent 49%, rgba(0,0,0,0.05) 50%, transparent 51%); background-size: 30px 30px; }
         .qr-placeholder i { font-size: 70px; color: var(--gray); margin-bottom: 15px; z-index: 1; }
         .qr-placeholder span { color: var(--gray); font-size: 16px; z-index: 1; }
+        /* QR scanner video */
+        #qr-video { width: 100%; max-width: 400px; border-radius: 12px; margin: 20px auto; display: none; }
+        #start-camera-btn, #stop-camera-btn { margin: 5px; }
         .demo-tables { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 30px; }
         .table-btn { padding: 12px 24px; background-color: var(--card-bg); border: 2px solid var(--light-gray); border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s; color: var(--text); }
         .table-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
@@ -269,7 +277,6 @@
         .preview-menu-item { display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); }
         .preview-button-group { display: flex; gap: 10px; flex-wrap: wrap; }
         .preview-btn { padding: 8px 16px; border-radius: 6px; font-weight: 500; border: none; }
-        .customization-actions { display: flex; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--light-gray); }
         .image-upload-container { margin-bottom: 20px; }
         .image-preview { width: 100%; height: 200px; background-color: var(--light-gray); border-radius: 8px; margin-top: 10px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
         .image-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -448,10 +455,20 @@
             <div class="scanner-container">
                 <h2 class="section-title" data-i18n="scannerTitle">Σαρώστε το QR του τραπεζιού</h2>
                 <p class="section-subtitle" data-i18n="scannerSubtitle">Στρέψτε την κάμερα στο QR του τραπεζιού σας για να ξεκινήσετε</p>
-                <div class="qr-placeholder">
+                
+                <!-- QR Scanner Video -->
+                <video id="qr-video" playsinline></video>
+                <canvas id="qr-canvas" style="display:none;"></canvas>
+                <div style="display: flex; gap: 10px; justify-content: center; margin: 15px 0;">
+                    <button class="btn btn-primary" id="start-camera-btn"><i class="fas fa-camera"></i> Έναρξη κάμερας</button>
+                    <button class="btn btn-secondary" id="stop-camera-btn" style="display: none;"><i class="fas fa-stop"></i> Διακοπή</button>
+                </div>
+                
+                <div class="qr-placeholder" id="qr-placeholder">
                     <i class="fas fa-qrcode"></i>
                     <span data-i18n="qrPlaceholder">Περιοχή Σάρωσης QR</span>
                 </div>
+                
                 <p style="margin: 20px 0; color: var(--gray);" data-i18n="demoTablesInstruction">Για δοκιμή, επιλέξτε ένα τραπέζι:</p>
                 <div class="demo-tables">
                     <button class="table-btn" data-table="Table 1" data-i18n="table1">Τραπέζι 1</button>
@@ -561,6 +578,8 @@
                 <div class="payment-actions" style="justify-content: center; gap: 15px;">
                     <button class="btn btn-success" id="newOrderBtn"><i class="fas fa-utensils"></i> <span data-i18n="newOrder">Νέα Παραγγελία</span></button>
                     <button class="btn btn-secondary" id="viewMyOrdersBtn"><i class="fas fa-clipboard-list"></i> <span data-i18n="viewMyOrders">Προβολή των Παραγγελιών μου</span></button>
+                    <!-- NEW DOWNLOAD PDF BUTTON (hidden by default) -->
+                    <button class="btn btn-primary" id="downloadOrderPdfBtn" style="display: none;"><i class="fas fa-file-pdf"></i> Λήψη PDF</button>
                 </div>
             </div>
             <div class="order-details">
@@ -596,6 +615,8 @@
                     <button class="admin-tab" data-tab="orders">Order Management <span class="pending-badge" id="orderPendingBadge"><i class="fas fa-exclamation-circle"></i></span></button>
                     <button class="admin-tab" data-tab="helpRequests">🆘 Help Requests <span class="pending-badge" id="helpPendingBadge"><i class="fas fa-exclamation-circle"></i></span></button>
                     <button class="admin-tab" data-tab="tables">📋 Tables</button>
+                    <!-- NEW PRINTER TAB (dashboard) -->
+                    <button class="admin-tab" data-tab="printer">🖨️ Printer</button>
                     <button class="admin-tab" data-tab="customization">Visual Customization</button>
                     <button class="admin-tab" data-tab="sound">🔊 Sound Effects</button>
                     <button class="admin-tab" data-tab="qr">Table QR Codes</button>
@@ -733,11 +754,12 @@
                         <p style="margin-top: 10px; font-size: 13px; color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> This action cannot be undone. Orders will be permanently deleted from the database.</p>
                     </div>
                     <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
-                        <button class="btn btn-secondary" id="openOrdersVerticalBtn">
-                            <i class="fas fa-external-link-alt"></i> Open Vertical Orders View
-                        </button>
                         <button class="btn btn-primary" id="openCustomerOrderViewBtn">
                             <i class="fas fa-eye"></i> Order View (Take Away)
+                        </button>
+                        <!-- NEW BUTTON: Vertical Orders Viewer -->
+                        <button class="btn btn-secondary" id="openVerticalOrdersViewBtn">
+                            <i class="fas fa-list-ul"></i> Vertical Orders Viewer
                         </button>
                     </div>
                 </div>
@@ -758,10 +780,10 @@
                         <button class="btn btn-danger" id="deleteAllResolvedHelpBtn"><i class="fas fa-trash"></i> Delete All Resolved</button>
                     </div>
                 </div>
-                <!-- Tables Management -->
+                <!-- Tables Management (UPDATED with Settings button) -->
                 <div class="admin-content" id="tablesTab">
                     <h3 style="margin-bottom: 20px;"><i class="fas fa-chair"></i> Table Management</h3>
-                    <p style="margin-bottom: 25px; color: var(--gray);">Add, edit, or remove restaurant tables. Click "Order for this table" to place an order on behalf of that table.</p>
+                    <p style="margin-bottom: 25px; color: var(--gray);">Add, edit, or remove restaurant tables. Click "Settings" to enable/disable buttons per table.</p>
                     <div class="categories-management">
                         <div class="categories-list">
                             <h4 style="margin-bottom: 15px;">Existing Tables</h4>
@@ -774,6 +796,44 @@
                                 <input type="text" class="admin-input" id="newTableName" placeholder="e.g., Table 6, Outdoor 2">
                             </div>
                             <button class="btn btn-success" id="addTableBtn"><i class="fas fa-plus"></i> Add Table</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- NEW PRINTER TAB CONTENT (dashboard) -->
+                <div class="admin-content" id="printerTab">
+                    <h3 style="margin-bottom: 20px;"><i class="fas fa-print"></i> Printer Management</h3>
+                    <p style="margin-bottom: 25px; color: var(--gray);">Add network printers manually or scan your local network. Use the system print dialog to print via your PC's default printer.</p>
+                    <div class="categories-management">
+                        <div class="categories-list">
+                            <h4 style="margin-bottom: 15px;">Configured Network Printers</h4>
+                            <div class="categories-list-container" id="printersListContainer"></div>
+                            <div style="margin-top: 20px;">
+                                <button class="btn btn-secondary" id="printTestPageBtn"><i class="fas fa-print"></i> Print Test Page (System Dialog)</button>
+                                <p style="font-size: 12px; color: var(--gray); margin-top: 5px;">Uses your PC's default printer.</p>
+                            </div>
+                        </div>
+                        <div class="add-category-form">
+                            <h4 style="margin-bottom: 15px;">Add New Printer</h4>
+                            <div class="admin-form-group">
+                                <label class="admin-label">Printer Name</label>
+                                <input type="text" class="admin-input" id="newPrinterName" placeholder="e.g., Kitchen Printer">
+                            </div>
+                            <div class="admin-form-group">
+                                <label class="admin-label">IP Address / Hostname</label>
+                                <input type="text" class="admin-input" id="newPrinterIp" placeholder="e.g., 192.168.1.100 or printer.local">
+                            </div>
+                            <div class="admin-form-group">
+                                <label class="admin-label">Port (optional)</label>
+                                <input type="number" class="admin-input" id="newPrinterPort" placeholder="e.g., 9100" value="9100">
+                            </div>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn btn-success" id="addPrinterBtn"><i class="fas fa-plus"></i> Add Printer</button>
+                                <button class="btn btn-info" id="scanPrintersBtn"><i class="fas fa-search"></i> Scan Network</button>
+                            </div>
+                            <div class="admin-form-group" style="margin-top: 15px;">
+                                <label class="admin-label">Scan Range (e.g., 192.168.1.1-254)</label>
+                                <input type="text" class="admin-input" id="scanRange" value="192.168.1.1-254" placeholder="e.g., 192.168.1.1-254">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -948,6 +1008,8 @@ VIP Table</textarea>
                 <button class="admin-tab" data-tab="orders">Orders <span class="pending-badge" id="orderPendingBadgeModal"><i class="fas fa-exclamation-circle"></i></span></button>
                 <button class="admin-tab" data-tab="helpRequests">🆘 Help <span class="pending-badge" id="helpPendingBadgeModal"><i class="fas fa-exclamation-circle"></i></span></button>
                 <button class="admin-tab" data-tab="tablesModal">📋 Tables</button>
+                <!-- NEW PRINTER TAB (modal) -->
+                <button class="admin-tab" data-tab="printerModal">🖨️ Printer</button>
                 <button class="admin-tab" data-tab="customization">Visual</button>
                 <button class="admin-tab" data-tab="sound">🔊 Sound</button>
                 <button class="admin-tab" data-tab="qr">QR Codes</button>
@@ -1033,11 +1095,12 @@ VIP Table</textarea>
                     </div>
                 </div>
                 <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
-                    <button class="btn btn-secondary" id="openOrdersVerticalBtnModal">
-                        <i class="fas fa-external-link-alt"></i> Open Vertical Orders View
-                    </button>
                     <button class="btn btn-primary" id="openCustomerOrderViewBtnModal">
                         <i class="fas fa-eye"></i> Order View (Take Away)
+                    </button>
+                    <!-- NEW BUTTON: Vertical Orders Viewer (Modal) -->
+                    <button class="btn btn-secondary" id="openVerticalOrdersViewBtnModal">
+                        <i class="fas fa-list-ul"></i> Vertical Orders Viewer
                     </button>
                 </div>
             </div>
@@ -1059,7 +1122,7 @@ VIP Table</textarea>
                 </div>
                 <div id="adminHelpRequestsListModal" style="margin-top: 20px;"></div>
             </div>
-            <!-- Tables Modal -->
+            <!-- Tables Modal (UPDATED with Settings button) -->
             <div class="admin-content" id="tablesTabModal">
                 <h3 style="margin-bottom: 20px;"><i class="fas fa-chair"></i> Tables</h3>
                 <div class="categories-management">
@@ -1074,6 +1137,39 @@ VIP Table</textarea>
                             <input type="text" class="admin-input" id="newTableNameModal" placeholder="e.g., Table 6">
                         </div>
                         <button class="btn btn-success" id="addTableBtnModal"><i class="fas fa-plus"></i> Add Table</button>
+                    </div>
+                </div>
+            </div>
+            <!-- NEW PRINTER TAB CONTENT (modal) -->
+            <div class="admin-content" id="printerTabModal">
+                <h3 style="margin-bottom: 20px;"><i class="fas fa-print"></i> Printer Management</h3>
+                <div class="categories-management">
+                    <div class="categories-list">
+                        <h4 style="margin-bottom: 15px;">Configured Printers</h4>
+                        <div class="categories-list-container" id="printersListContainerModal"></div>
+                    </div>
+                    <div class="add-category-form">
+                        <h4 style="margin-bottom: 15px;">Add New Printer</h4>
+                        <div class="admin-form-group">
+                            <label class="admin-label">Printer Name</label>
+                            <input type="text" class="admin-input" id="newPrinterNameModal" placeholder="e.g., Kitchen Printer">
+                        </div>
+                        <div class="admin-form-group">
+                            <label class="admin-label">IP Address / Hostname</label>
+                            <input type="text" class="admin-input" id="newPrinterIpModal" placeholder="e.g., 192.168.1.100">
+                        </div>
+                        <div class="admin-form-group">
+                            <label class="admin-label">Port (optional)</label>
+                            <input type="number" class="admin-input" id="newPrinterPortModal" placeholder="e.g., 9100" value="9100">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-success" id="addPrinterBtnModal"><i class="fas fa-plus"></i> Add Printer</button>
+                            <button class="btn btn-info" id="scanPrintersBtnModal"><i class="fas fa-search"></i> Scan</button>
+                        </div>
+                        <div class="admin-form-group" style="margin-top: 15px;">
+                            <label class="admin-label">Scan Range</label>
+                            <input type="text" class="admin-input" id="scanRangeModal" value="192.168.1.1-254">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1143,6 +1239,40 @@ VIP Table</textarea>
             <div style="display: flex; gap: 10px;">
                 <button class="btn btn-secondary" id="cancelChangeBtn" style="flex: 1;" data-i18n="cancel">Ακύρωση</button>
                 <button class="btn btn-primary" id="submitChangeCodeBtn" style="flex: 1;" data-i18n="confirm">Επιβεβαίωση</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== TABLE SETTINGS MODAL (NEW) ========== -->
+    <div class="admin-code-prompt" id="tableSettingsModal">
+        <div class="admin-code-container" style="max-width: 600px; text-align: left;">
+            <div class="admin-code-icon"><i class="fas fa-sliders-h"></i></div>
+            <h3 class="admin-code-title" id="tableSettingsTitle">Settings for Table <span id="tableSettingsName"></span></h3>
+            <div style="margin: 20px 0;">
+                <label style="display: block; margin-bottom: 10px;">
+                    <input type="checkbox" id="tableSettingHelp"> Enable Help Button
+                </label>
+                <label style="display: block; margin-bottom: 10px;">
+                    <input type="checkbox" id="tableSettingPayRequest"> Enable Payment Request Button
+                </label>
+                <hr style="margin: 15px 0;">
+                <label style="display: block; margin-bottom: 10px;">
+                    <input type="checkbox" id="tableSettingCard"> Enable Card Payment
+                </label>
+                <label style="display: block; margin-bottom: 10px;">
+                    <input type="checkbox" id="tableSettingCash"> Enable Cash Payment
+                </label>
+                <hr style="margin: 15px 0;">
+                <label style="display: block; margin-bottom: 10px;">
+                    <input type="checkbox" id="tableSettingPayNow"> Enable Pay Now
+                </label>
+                <label style="display: block; margin-bottom: 10px;">
+                    <input type="checkbox" id="tableSettingPayLater"> Enable Pay Later
+                </label>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" id="cancelTableSettingsBtn" style="flex: 1;">Cancel</button>
+                <button class="btn btn-primary" id="saveTableSettingsBtn" style="flex: 1;">Save Settings</button>
             </div>
         </div>
     </div>
@@ -1399,6 +1529,15 @@ VIP Table</textarea>
             if (businessId === 'default') return db.collection('tables');
             return db.collection(`business_${businessId}_tables`);
         }
+        // NEW: Printer collection
+        function getPrintersCollection() {
+            if (businessId === 'default') return db.collection('printers');
+            return db.collection(`business_${businessId}_printers`);
+        }
+        // Helper to get the business document (stores adminEmail etc.)
+        function getBusinessDoc() {
+            return db.collection('businesses').doc(businessId);
+        }
 
         // Update all Firestore save/load functions to use these helpers
         async function saveRestaurantInfo() { try { await getSettingsDoc().set(state.restaurantInfo); } catch (e) { console.error(e); } }
@@ -1412,8 +1551,18 @@ VIP Table</textarea>
         async function saveHelpRequest(request) { try { await getHelpRequestsCollection().doc(request.id).set(request); } catch (e) { console.error(e); } }
         async function deleteHelpRequestFirestore(id) { try { await getHelpRequestsCollection().doc(id).delete(); } catch (e) { console.error(e); } }
         async function saveCumulativeStats() { try { await getCumulativeStatsDoc().set(state.cumulativeStats); } catch (e) { console.error(e); } }
-        async function saveTable(tableName) { try { await getTablesCollection().doc(tableName).set({ name: tableName }); } catch (e) { console.error(e); } }
+        // UPDATED: saveTable now expects an object {name, settings}
+        async function saveTable(tableObj) {
+            try { await getTablesCollection().doc(tableObj.name).set(tableObj); } catch (e) { console.error(e); }
+        }
         async function deleteTableFirestore(tableName) { try { await getTablesCollection().doc(tableName).delete(); } catch (e) { console.error(e); } }
+        // NEW: Printer Firestore functions
+        async function savePrinter(printer) {
+            try { await getPrintersCollection().doc(printer.id).set(printer); } catch (e) { console.error(e); }
+        }
+        async function deletePrinterFirestore(id) {
+            try { await getPrintersCollection().doc(id).delete(); } catch (e) { console.error(e); }
+        }
 
         // ========== STATE (with obfuscated admin codes) ==========
         const state = {
@@ -1433,7 +1582,9 @@ VIP Table</textarea>
             menuItems: [],
             orders: [],
             helpRequests: [],
-            tables: [],
+            tables: [],   // now array of objects { name, settings }
+            // NEW: printers array
+            printers: [],
             seenHelpRequests: new Set(),
             adminAccessCode: decodeCode("gege"),  // decodes to "3232"
             adminChangeCode: decodeCode("lele"),  // decodes to "6262"
@@ -1464,7 +1615,9 @@ VIP Table</textarea>
                 paymentBg: "#ffffff",
                 buttonText: "#ffffff",
                 fontPrimary: "'Poppins', sans-serif",
-                fontSecondary: "'Playfair Display', serif"
+                fontSecondary: "'Playfair Display', serif",
+                backgroundGradient: null,
+                backgroundBlur: 0
             },
             currentTheme: "default",
             currentFont: "poppins",
@@ -1478,9 +1631,9 @@ VIP Table</textarea>
             helpSoundInterval: null,
             cumulativeStats: { totalOrders: 0, totalRevenue: 0 },
             currentEditOrder: null,
-            // Cooldown timestamps
-            lastHelpRequestTime: 0,
-            lastPayRequestTime: 0
+            // Cooldown timestamps per table
+            lastHelpRequestTimeByTable: {},
+            lastPayRequestTimeByTable: {}
         };
 
         // ========== DEFAULT DATA (unchanged) ==========
@@ -1554,6 +1707,83 @@ VIP Table</textarea>
             muli: { name: "Muli", primary: "'Muli', sans-serif", secondary: "'Merriweather', serif" },
             abel: { name: "Abel", primary: "'Abel', sans-serif", secondary: "'Playfair Display', serif" }
         };
+
+        // ========== GRADIENT LIBRARY (60 PREMIUM GRADIENTS) ==========
+        const gradientLibrary = [
+            // Soft pastels
+            { id: 'pastel1', name: 'Soft Peach', gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' },
+            { id: 'pastel2', name: 'Mint Breeze', gradient: 'linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%)' },
+            { id: 'pastel3', name: 'Lavender Mist', gradient: 'linear-gradient(135deg, #e1bee7 0%, #ba68c8 100%)' },
+            { id: 'pastel4', name: 'Buttercream', gradient: 'linear-gradient(135deg, #fff9c4 0%, #fff176 100%)' },
+            { id: 'pastel5', name: 'Powder Blue', gradient: 'linear-gradient(135deg, #bbdefb 0%, #64b5f6 100%)' },
+            // Rich jewel tones
+            { id: 'jewel1', name: 'Sapphire', gradient: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)' },
+            { id: 'jewel2', name: 'Amethyst', gradient: 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)' },
+            { id: 'jewel3', name: 'Emerald', gradient: 'linear-gradient(135deg, #16a085 0%, #27ae60 100%)' },
+            { id: 'jewel4', name: 'Ruby', gradient: 'linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)' },
+            { id: 'jewel5', name: 'Citrine', gradient: 'linear-gradient(135deg, #f39c12 0%, #f1c40f 100%)' },
+            // Warm earth tones
+            { id: 'earth1', name: 'Desert Sand', gradient: 'linear-gradient(135deg, #edc9ab 0%, #c38e6b 100%)' },
+            { id: 'earth2', name: 'Terra Cotta', gradient: 'linear-gradient(135deg, #cb7e5b 0%, #a75b3a 100%)' },
+            { id: 'earth3', name: 'Olive Grove', gradient: 'linear-gradient(135deg, #a8b68a 0%, #7e8d68 100%)' },
+            { id: 'earth4', name: 'Cocoa', gradient: 'linear-gradient(135deg, #8b6b4d 0%, #6b4f3a 100%)' },
+            { id: 'earth5', name: 'Sienna', gradient: 'linear-gradient(135deg, #e0a07c 0%, #b86b4c 100%)' },
+            // Cool moods
+            { id: 'cool1', name: 'Arctic Dawn', gradient: 'linear-gradient(135deg, #a8ede0 0%, #80d0c7 100%)' },
+            { id: 'cool2', name: 'Frost', gradient: 'linear-gradient(135deg, #d3e0f0 0%, #a0b9d9 100%)' },
+            { id: 'cool3', name: 'Stormy Sea', gradient: 'linear-gradient(135deg, #4b6cb0 0%, #182848 100%)' },
+            { id: 'cool4', name: 'Glacier', gradient: 'linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%)' },
+            { id: 'cool5', name: 'Misty Morning', gradient: 'linear-gradient(135deg, #c9d6ff 0%, #e2e2e2 100%)' },
+            // Vibrant hues
+            { id: 'vibrant1', name: 'Electric', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+            { id: 'vibrant2', name: 'Fusion', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+            { id: 'vibrant3', name: 'Coral', gradient: 'linear-gradient(135deg, #f78ca0 0%, #f9748f 100%)' },
+            { id: 'vibrant4', name: 'Mango', gradient: 'linear-gradient(135deg, #f5af19 0%, #f12711 100%)' },
+            { id: 'vibrant5', name: 'Lime', gradient: 'linear-gradient(135deg, #c6ffdd 0%, #fbd786 100%)' },
+            // Elegant neutrals
+            { id: 'neutral1', name: 'Pearly White', gradient: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' },
+            { id: 'neutral2', name: 'Grey Whisper', gradient: 'linear-gradient(135deg, #e0e0e0 0%, #b0b0b0 100%)' },
+            { id: 'neutral3', name: 'Beige Elegance', gradient: 'linear-gradient(135deg, #f4e3d1 0%, #d6c2aa 100%)' },
+            { id: 'neutral4', name: 'Stone', gradient: 'linear-gradient(135deg, #b8b8b8 0%, #7a7a7a 100%)' },
+            { id: 'neutral5', name: 'Sand Dune', gradient: 'linear-gradient(135deg, #eacda3 0%, #d6ae7b 100%)' },
+            // Deep drama
+            { id: 'drama1', name: 'Midnight', gradient: 'linear-gradient(135deg, #141e30 0%, #243b55 100%)' },
+            { id: 'drama2', name: 'Charcoal', gradient: 'linear-gradient(135deg, #283048 0%, #434343 100%)' },
+            { id: 'drama3', name: 'Royal', gradient: 'linear-gradient(135deg, #4b134f 0%, #2c0a2e 100%)' },
+            { id: 'drama4', name: 'Deep Purple', gradient: 'linear-gradient(135deg, #673ab7 0%, #512da8 100%)' },
+            { id: 'drama5', name: 'Oil Spill', gradient: 'linear-gradient(135deg, #0f2027 0%, #203a43 100%)' },
+            // Sunsets
+            { id: 'sunset1', name: 'Golden Hour', gradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)' },
+            { id: 'sunset2', name: 'Twilight', gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)' },
+            { id: 'sunset3', name: 'Sunset Boulevard', gradient: 'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)' },
+            { id: 'sunset4', name: 'Dusk', gradient: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)' },
+            { id: 'sunset5', name: 'Horizon', gradient: 'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)' },
+            // Ocean skies
+            { id: 'ocean1', name: 'Pacific', gradient: 'linear-gradient(135deg, #1c92d2 0%, #f2fcfe 100%)' },
+            { id: 'ocean2', name: 'Lagoon', gradient: 'linear-gradient(135deg, #00b4db 0%, #0083b0 100%)' },
+            { id: 'ocean3', name: 'Deep Blue', gradient: 'linear-gradient(135deg, #0c3483 0%, #6b8cce 100%)' },
+            { id: 'ocean4', name: 'Caribbean', gradient: 'linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%)' },
+            { id: 'ocean5', name: 'Wave', gradient: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)' },
+            // Forest greens
+            { id: 'forest1', name: 'Pine', gradient: 'linear-gradient(135deg, #134e5e 0%, #71b280 100%)' },
+            { id: 'forest2', name: 'Moss', gradient: 'linear-gradient(135deg, #4ac29a 0%, #bdfff3 100%)' },
+            { id: 'forest3', name: 'Jungle', gradient: 'linear-gradient(135deg, #1d976c 0%, #93f9b9 100%)' },
+            { id: 'forest4', name: 'Fern', gradient: 'linear-gradient(135deg, #2c7744 0%, #5fa06d 100%)' },
+            { id: 'forest5', name: 'Evergreen', gradient: 'linear-gradient(135deg, #0b3b2c 0%, #2b7a4b 100%)' },
+            // Luxurious metallics
+            { id: 'metallic1', name: 'Gold', gradient: 'linear-gradient(135deg, #d4af37 0%, #aa8c30 100%)' },
+            { id: 'metallic2', name: 'Silver', gradient: 'linear-gradient(135deg, #bdc3c7 0%, #8e9eab 100%)' },
+            { id: 'metallic3', name: 'Bronze', gradient: 'linear-gradient(135deg, #cd7f32 0%, #b06d2b 100%)' },
+            { id: 'metallic4', name: 'Rose Gold', gradient: 'linear-gradient(135deg, #f7cac9 0%, #d4a5a5 100%)' },
+            { id: 'metallic5', name: 'Copper', gradient: 'linear-gradient(135deg, #b87333 0%, #9c5e2b 100%)' },
+            // Abstract blends
+            { id: 'abstract1', name: 'Neon', gradient: 'linear-gradient(135deg, #00f260 0%, #0575e6 100%)' },
+            { id: 'abstract2', name: 'Aurora', gradient: 'linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)' },
+            { id: 'abstract3', name: 'Cosmic', gradient: 'linear-gradient(135deg, #ff0080 0%, #ff8c00 100%)' },
+            { id: 'abstract4', name: 'Pastel Dream', gradient: 'linear-gradient(135deg, #a8ede0 0%, #fed6e3 100%)' },
+            { id: 'abstract5', name: 'Pixel', gradient: 'linear-gradient(135deg, #83a4d4 0%, #b6fbff 100%)' }
+        ];
+        
         const importantColors = [
             { id: "primary", label: "Primary Color" },
             { id: "secondary", label: "Secondary Color" },
@@ -1622,6 +1852,30 @@ VIP Table</textarea>
         const submitAdminLoginBtn = document.getElementById('submitAdminLoginBtn');
         const cancelAdminLoginBtn = document.getElementById('cancelAdminLoginBtn');
         const loginError = document.getElementById('loginError');
+
+        // Table settings modal
+        const tableSettingsModal = document.getElementById('tableSettingsModal');
+        const tableSettingsName = document.getElementById('tableSettingsName');
+        const tableSettingHelp = document.getElementById('tableSettingHelp');
+        const tableSettingPayRequest = document.getElementById('tableSettingPayRequest');
+        const tableSettingCard = document.getElementById('tableSettingCard');
+        const tableSettingCash = document.getElementById('tableSettingCash');
+        const tableSettingPayNow = document.getElementById('tableSettingPayNow');
+        const tableSettingPayLater = document.getElementById('tableSettingPayLater');
+        const cancelTableSettingsBtn = document.getElementById('cancelTableSettingsBtn');
+        const saveTableSettingsBtn = document.getElementById('saveTableSettingsBtn');
+        let currentTableForSettings = null;
+
+        // QR scanner elements
+        const qrVideo = document.getElementById('qr-video');
+        const qrCanvas = document.getElementById('qr-canvas');
+        const startCameraBtn = document.getElementById('start-camera-btn');
+        const stopCameraBtn = document.getElementById('stop-camera-btn');
+        let scanning = false;
+        let videoStream = null;
+
+        // New PDF download button
+        const downloadOrderPdfBtn = document.getElementById('downloadOrderPdfBtn');
 
         // ========== LANGUAGE HELPER FUNCTIONS (unchanged) ==========
         function getItemName(item) {
@@ -1716,24 +1970,12 @@ VIP Table</textarea>
         }
 
         // ========== FIRESTORE SAVE / LOAD (now using helpers) ==========
-        async function saveRestaurantInfo() { try { await getSettingsDoc().set(state.restaurantInfo); } catch (e) { console.error(e); } }
-        async function saveMenuItem(item) { try { await getMenuItemsCollection().doc(item.id.toString()).set(item); } catch (e) { console.error(e); } }
-        async function deleteMenuItemFirestore(id) { try { await getMenuItemsCollection().doc(id.toString()).delete(); } catch (e) { console.error(e); } }
-        async function saveCategories() { try { const sorted = [...state.categories].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0)); await getCategoriesDoc().set({ list: sorted }); } catch (e) { console.error(e); } }
-        async function saveOrder(order) { try { await getOrdersCollection().doc(order.orderNumber).set(order); } catch (e) { console.error(e); } }
-        async function deleteOrderFirestore(orderId) { try { await getOrdersCollection().doc(orderId).delete(); } catch (e) { console.error(e); } }
-        async function saveCustomization() { try { await getCustomizationDoc().set(state.customization); } catch (e) { console.error(e); } }
-        async function saveSoundEffects() { try { await getSoundEffectsDoc().set(state.soundEffects); } catch (e) { console.error(e); } }
-        async function saveHelpRequest(request) { try { await getHelpRequestsCollection().doc(request.id).set(request); } catch (e) { console.error(e); } }
-        async function deleteHelpRequestFirestore(id) { try { await getHelpRequestsCollection().doc(id).delete(); } catch (e) { console.error(e); } }
-        async function saveCumulativeStats() { try { await getCumulativeStatsDoc().set(state.cumulativeStats); } catch (e) { console.error(e); } }
-        async function saveTable(tableName) { try { await getTablesCollection().doc(tableName).set({ name: tableName }); } catch (e) { console.error(e); } }
-        async function deleteTableFirestore(tableName) { try { await getTablesCollection().doc(tableName).delete(); } catch (e) { console.error(e); } }
+        // (already defined above)
 
         // ========== INITIAL LOAD (unchanged, but uses helpers) ==========
         async function loadInitialData() {
             try {
-                const [restDoc, menuSnap, ordersSnap, catDoc, customDoc, soundDoc, helpSnap, statsDoc, tablesSnap] = await Promise.all([
+                const [restDoc, menuSnap, ordersSnap, catDoc, customDoc, soundDoc, helpSnap, statsDoc, tablesSnap, printersSnap] = await Promise.all([
                     getSettingsDoc().get(),
                     getMenuItemsCollection().get(),
                     getOrdersCollection().get(),
@@ -1742,7 +1984,8 @@ VIP Table</textarea>
                     getSoundEffectsDoc().get(),
                     getHelpRequestsCollection().get(),
                     getCumulativeStatsDoc().get(),
-                    getTablesCollection().get()
+                    getTablesCollection().get(),
+                    getPrintersCollection().get()
                 ]);
                 if (restDoc.exists) state.restaurantInfo = restDoc.data();
                 else await getSettingsDoc().set(state.restaurantInfo);
@@ -1783,8 +2026,14 @@ VIP Table</textarea>
                     await getCategoriesDoc().set({ list: state.categories });
                 }
                 
-                if (customDoc.exists) state.customization = customDoc.data();
-                else await getCustomizationDoc().set(state.customization);
+                if (customDoc.exists) {
+                    state.customization = customDoc.data();
+                    // Ensure new properties exist
+                    if (state.customization.backgroundGradient === undefined) state.customization.backgroundGradient = null;
+                    if (state.customization.backgroundBlur === undefined) state.customization.backgroundBlur = 0;
+                } else {
+                    await getCustomizationDoc().set(state.customization);
+                }
                 
                 if (soundDoc.exists) {
                     state.soundEffects = soundDoc.data();
@@ -1803,12 +2052,35 @@ VIP Table</textarea>
                     return req;
                 });
 
-                // Load tables
+                // Load tables – now objects with name and settings
                 if (tablesSnap.empty) {
-                    state.tables = ['Table 1', 'Table 2', 'Table 3', 'VIP Table']; // default
+                    // default tables
+                    state.tables = [
+                        { name: 'Table 1', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } },
+                        { name: 'Table 2', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } },
+                        { name: 'Table 3', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } },
+                        { name: 'VIP Table', settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } }
+                    ];
                     await Promise.all(state.tables.map(t => saveTable(t)));
                 } else {
-                    state.tables = tablesSnap.docs.map(doc => doc.data().name);
+                    // Migrate old string tables to objects
+                    state.tables = tablesSnap.docs.map(doc => {
+                        const data = doc.data();
+                        if (typeof data === 'string') {
+                            // old format
+                            return { name: data, settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } };
+                        } else {
+                            // already object
+                            return { name: doc.id, ...data };
+                        }
+                    });
+                }
+
+                // NEW: Load printers
+                if (!printersSnap.empty) {
+                    state.printers = printersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                } else {
+                    state.printers = [];
                 }
                 
                 determineCurrentTheme();
@@ -1990,7 +2262,16 @@ VIP Table</textarea>
                 if (doc.exists) state.cumulativeStats = doc.data();
             });
             getTablesCollection().onSnapshot(snap => {
-                state.tables = snap.docs.map(doc => doc.data().name);
+                // Update tables array
+                state.tables = snap.docs.map(doc => {
+                    const data = doc.data();
+                    // ensure it's an object
+                    if (typeof data === 'string') {
+                        return { name: data, settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true } };
+                    } else {
+                        return { name: doc.id, ...data };
+                    }
+                });
                 if (state.isAdminMode && document.querySelector('#adminDashboardSection.active-section')) {
                     const activeTab = document.querySelector('#adminDashboardSection .admin-tab.active')?.dataset?.tab;
                     if (activeTab === 'tables') loadTablesForAdmin();
@@ -1998,6 +2279,18 @@ VIP Table</textarea>
                 if (adminPanel.style.display === 'flex') {
                     const modalActive = document.querySelector('#adminPanel .admin-tab.active')?.dataset?.tab;
                     if (modalActive === 'tablesModal') loadTablesForAdminModal();
+                }
+            });
+            // NEW: Printer listener
+            getPrintersCollection().onSnapshot(snap => {
+                state.printers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (state.isAdminMode && document.querySelector('#adminDashboardSection.active-section')) {
+                    const activeTab = document.querySelector('#adminDashboardSection .admin-tab.active')?.dataset?.tab;
+                    if (activeTab === 'printer') loadPrintersForAdmin();
+                }
+                if (adminPanel.style.display === 'flex') {
+                    const modalActive = document.querySelector('#adminPanel .admin-tab.active')?.dataset?.tab;
+                    if (modalActive === 'printerModal') loadPrintersForAdminModal();
                 }
             });
         }
@@ -2023,6 +2316,51 @@ VIP Table</textarea>
                 if (k === 'fontPrimary' || k === 'fontSecondary') root.style.setProperty(`--${k}`, state.customization[k]);
                 else root.style.setProperty(`--${k}`, state.customization[k]);
             });
+            
+            // Background gradient & blur
+            let styleEl = document.getElementById('dynamic-bg-style');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dynamic-bg-style';
+                document.head.appendChild(styleEl);
+            }
+            const gradient = state.customization.backgroundGradient;
+            const blur = state.customization.backgroundBlur || 0;
+            if (gradient) {
+                styleEl.textContent = `
+                    body::before {
+                        content: '';
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: ${gradient};
+                        filter: blur(${blur}px);
+                        pointer-events: none;
+                        z-index: -1;
+                    }
+                    body {
+                        background: transparent;
+                    }
+                `;
+            } else {
+                styleEl.textContent = `
+                    body::before {
+                        content: '';
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: var(--background);
+                        filter: blur(${blur}px);
+                        pointer-events: none;
+                        z-index: -1;
+                    }
+                `;
+            }
+            
             const previewName = document.getElementById('previewRestaurantName');
             if (previewName) { previewName.style.color = state.customization.primary; previewName.style.fontFamily = state.customization.fontSecondary; }
         }
@@ -2304,7 +2642,14 @@ VIP Table</textarea>
             resetCart();
             updateCategoryTabs();
             displayMenuItems('all');
-            myOrdersButton.style.display = 'flex';
+            
+            // Hide "My Orders" button if table name contains "take away" (case-insensitive)
+            if (name.toLowerCase().includes('take away')) {
+                myOrdersButton.style.display = 'none';
+            } else {
+                myOrdersButton.style.display = 'flex';
+            }
+            
             showSection('menuSection');
             if (name.toLowerCase() === "admin") {
                 adminFloating.style.display = 'flex';
@@ -2312,21 +2657,116 @@ VIP Table</textarea>
                 adminFloating.style.display = 'none';
             }
             updateRequestPayButton();
+            
+            // Apply per-table button visibility
+            applyTableSettings();
         }
+
+        // NEW: apply table settings to UI (hide buttons if disabled)
+        function applyTableSettings() {
+            if (!state.currentTable || state.currentTable === "Admin" || state.isAdminMode) return;
+            const tableObj = state.tables.find(t => t.name === state.currentTable);
+            if (!tableObj) return;
+            const settings = tableObj.settings || { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true };
+            
+            // Help button
+            const helpBtn = document.getElementById('headerHelpButton');
+            if (helpBtn) helpBtn.style.display = settings.help ? 'flex' : 'none';
+            
+            // Payment request button (visibility also depends on active orders)
+            updateRequestPayButton(); // will check settings inside
+            
+            // Payment method cards in payment section
+            const cardOption = document.querySelector('.option-card[data-payment="card"]');
+            const cashOption = document.querySelector('.option-card[data-payment="cash"]');
+            if (cardOption) cardOption.style.display = settings.card ? 'block' : 'none';
+            if (cashOption) cashOption.style.display = settings.cash ? 'block' : 'none';
+            
+            const payNowOption = document.querySelector('.option-card[data-time="now"]');
+            const payLaterOption = document.querySelector('.option-card[data-time="later"]');
+            if (payNowOption) payNowOption.style.display = settings.payNow ? 'block' : 'none';
+            if (payLaterOption) payLaterOption.style.display = settings.payLater ? 'block' : 'none';
+        }
+
+        // ========== AUTO-LOGIN FROM URL (FIXED: NO DEFAULT TABLE) ==========
         function autoLoginFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             const tableParam = urlParams.get('table');
             if (tableParam) {
                 const tableName = decodeURIComponent(tableParam);
                 selectTable(tableName, true);
-            } else {
-                selectTable('Table 1', true);
             }
+            // No default table - stay on scanner if no table parameter
+        }
+
+        // ========== QR SCANNER FUNCTIONS ==========
+        async function startCamera() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                qrVideo.srcObject = videoStream;
+                qrVideo.style.display = 'block';
+                qrVideo.play();
+                startCameraBtn.style.display = 'none';
+                stopCameraBtn.style.display = 'inline-block';
+                document.getElementById('qr-placeholder').style.display = 'none';
+                scanning = true;
+                requestAnimationFrame(scanQR);
+            } catch (err) {
+                console.error("Camera error:", err);
+                showNotification(state.currentLanguage === 'el' ? 'Δεν ήταν δυνατή η πρόσβαση στην κάμερα.' : 'Could not access camera.');
+            }
+        }
+
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            qrVideo.style.display = 'none';
+            startCameraBtn.style.display = 'inline-block';
+            stopCameraBtn.style.display = 'none';
+            document.getElementById('qr-placeholder').style.display = 'flex';
+            scanning = false;
+        }
+
+        function scanQR() {
+            if (!scanning || !qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
+                if (scanning) requestAnimationFrame(scanQR);
+                return;
+            }
+            const canvas = qrCanvas;
+            const context = canvas.getContext('2d');
+            canvas.width = qrVideo.videoWidth;
+            canvas.height = qrVideo.videoHeight;
+            context.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, canvas.width, canvas.height);
+            if (code) {
+                const url = code.data;
+                try {
+                    const urlObj = new URL(url);
+                    const tableParam = urlObj.searchParams.get('table');
+                    if (tableParam) {
+                        stopCamera();
+                        const tableName = decodeURIComponent(tableParam);
+                        selectTable(tableName, true);
+                        return;
+                    }
+                } catch (e) {
+                    // Not a valid URL
+                }
+            }
+            requestAnimationFrame(scanQR);
         }
 
         // ========== REQUEST PAY BUTTON (UPDATED LOGIC) ==========
         function updateRequestPayButton() {
             if (!state.currentTable || state.currentTable === "Admin" || state.isAdminMode) {
+                requestPayBtn.style.display = 'none';
+                return;
+            }
+            const tableObj = state.tables.find(t => t.name === state.currentTable);
+            if (!tableObj || !tableObj.settings.payRequest) {
                 requestPayBtn.style.display = 'none';
                 return;
             }
@@ -2343,17 +2783,26 @@ VIP Table</textarea>
             }
         }
 
+        // UPDATED requestPay with per-table cooldown & pending check
         async function requestPay() {
             if (!state.currentTable || state.currentTable === "Admin" || state.isAdminMode) return;
             
-            // Cooldown check (2 minutes = 120000 ms)
+            // Check if there's already a pending payment request for this table
+            const hasPendingPay = state.helpRequests.some(r => r.table === state.currentTable && r.requestType === 'payment' && r.status === 'pending');
+            if (hasPendingPay) {
+                showNotification(state.currentLanguage === 'el' ? 'Υπάρχει ήδη εκκρεμές αίτημα πληρωμής για αυτό το τραπέζι.' : 'There is already a pending payment request for this table.');
+                return;
+            }
+            
+            // Cooldown check (2 minutes = 120000 ms) per table
             const now = Date.now();
-            if (now - state.lastPayRequestTime < 120000) {
-                const remaining = Math.ceil((120000 - (now - state.lastPayRequestTime)) / 1000);
+            const last = state.lastPayRequestTimeByTable[state.currentTable] || 0;
+            if (now - last < 120000) {
+                const remaining = Math.ceil((120000 - (now - last)) / 1000);
                 showNotification(state.currentLanguage === 'el' ? `Παρακαλώ περιμένετε ${remaining} δευτερόλεπτα πριν ξαναστείλετε αίτημα πληρωμής.` : `Please wait ${remaining} seconds before sending another payment request.`);
                 return;
             }
-            state.lastPayRequestTime = now;
+            state.lastPayRequestTimeByTable[state.currentTable] = now;
             
             const requestId = 'pay_' + Date.now() + '_' + Math.random().toString(36).substring(2);
             const payRequest = {
@@ -2369,21 +2818,29 @@ VIP Table</textarea>
             playSound(state.soundEffects.helpRequestSound);
         }
 
-        // ========== HELP REQUEST ==========
+        // ========== HELP REQUEST (UPDATED) ==========
         async function requestHelp() {
             if (!state.currentTable || state.isAdminMode) {
                 showNotification(state.currentLanguage === 'el' ? 'Παρακαλώ επιλέξτε πρώτα ένα τραπέζι.' : 'Please select a table first.');
                 return;
             }
             
-            // Cooldown check (2 minutes = 120000 ms)
+            // Check if there's already a pending help request for this table
+            const hasPendingHelp = state.helpRequests.some(r => r.table === state.currentTable && r.requestType === 'help' && r.status === 'pending');
+            if (hasPendingHelp) {
+                showNotification(state.currentLanguage === 'el' ? 'Υπάρχει ήδη εκκρεμές αίτημα βοήθειας για αυτό το τραπέζι.' : 'There is already a pending help request for this table.');
+                return;
+            }
+            
+            // Cooldown check (2 minutes = 120000 ms) per table
             const now = Date.now();
-            if (now - state.lastHelpRequestTime < 120000) {
-                const remaining = Math.ceil((120000 - (now - state.lastHelpRequestTime)) / 1000);
+            const last = state.lastHelpRequestTimeByTable[state.currentTable] || 0;
+            if (now - last < 120000) {
+                const remaining = Math.ceil((120000 - (now - last)) / 1000);
                 showNotification(state.currentLanguage === 'el' ? `Παρακαλώ περιμένετε ${remaining} δευτερόλεπτα πριν ξαναστείλετε αίτημα βοήθειας.` : `Please wait ${remaining} seconds before sending another help request.`);
                 return;
             }
-            state.lastHelpRequestTime = now;
+            state.lastHelpRequestTimeByTable[state.currentTable] = now;
             
             playSound(state.soundEffects.helpRequestSound);
             const requestId = 'help_' + Date.now() + '_' + Math.random().toString(36).substring(2);
@@ -2412,6 +2869,7 @@ VIP Table</textarea>
             }, 60000);
         }
         function enterAdminMode() {
+            if (state.isAdminMode) return;
             state.isAdminMode = true; state.currentTable = "Admin";
             document.body.classList.add('admin-mode');
             document.querySelector('.header-center').innerHTML = '<div class="admin-badge"><i class="fas fa-shield-alt"></i> Administrator Mode</div><button class="language-toggle" id="languageToggleBtn"><i class="fas fa-language"></i> <span id="langToggleText">EN</span></button>';
@@ -2445,11 +2903,31 @@ VIP Table</textarea>
             updateRequestPayButton();
         }
 
-        // ========== AUTH STATE OBSERVER ==========
-        auth.onAuthStateChanged(user => {
-            // If user is logged in and current table is Admin, and not already in admin mode, enter admin mode
+        auth.onAuthStateChanged(async user => {
+            // If user is logged in and current table is Admin, and not already in admin mode, verify business email
             if (user && state.currentTable && state.currentTable.toLowerCase() === "admin" && !state.isAdminMode) {
-                enterAdminMode();
+                try {
+                    const businessDoc = await getBusinessDoc().get();
+                    if (!businessDoc.exists) {
+                        console.error('Business document not found');
+                        showNotification('Business configuration missing. Please contact support.');
+                        await auth.signOut();
+                        return;
+                    }
+                    const businessData = businessDoc.data();
+                    if (businessData.adminEmail !== user.email) {
+                        console.error('User email not authorized for this business');
+                        showNotification('Your email is not authorized for this business.');
+                        await auth.signOut();
+                        return;
+                    }
+                    // If authorized, enter admin mode
+                    enterAdminMode();
+                } catch (e) {
+                    console.error('Error verifying business admin:', e);
+                    showNotification('Error verifying authorization. Please try again.');
+                    await auth.signOut();
+                }
             }
         });
 
@@ -2571,6 +3049,108 @@ VIP Table</textarea>
             showNotification(`Order #${orderId} deleted.`);
         }
 
+        // ========== PDF DOWNLOAD FUNCTION ==========
+        function downloadOrderPdf(order) {
+            const lang = state.currentLanguage;
+            const restaurantName = state.restaurantInfo.name || 'Restaurant';
+        
+            // Δημιουργία πίνακα προϊόντων για το pdfmake
+            const body = [
+                [
+                    { text: lang === 'el' ? 'Προϊόν' : 'Item', style: 'tableHeader' },
+                    { text: lang === 'el' ? 'Ποσ.' : 'Qty', style: 'tableHeader' },
+                    { text: lang === 'el' ? 'Τιμή' : 'Price', style: 'tableHeader' }
+                ]
+            ];
+        
+            order.items.forEach(item => {
+                // Προσθέτουμε την κύρια γραμμή του προϊόντος
+                const itemRow = [
+                    item.name,
+                    item.quantity.toString(),
+                    `$${(item.price * item.quantity).toFixed(2)}`
+                ];
+                body.push(itemRow);
+        
+                // Αν υπάρχουν επιλογές, τις προσθέτουμε ως ξεχωριστές γραμμές (χωρίς ποσότητα/τιμή)
+                if (item.selectedOptions && item.selectedOptions.length) {
+                    item.selectedOptions.forEach(opt => {
+                        let optText = opt.isComment
+                            ? `${opt.groupName}: "${opt.choiceName}"`
+                            : `${opt.groupName}: ${opt.choiceName} ${opt.price ? (opt.price > 0 ? `+$${opt.price.toFixed(2)}` : opt.price < 0 ? `-$${Math.abs(opt.price).toFixed(2)}` : '') : ''}`;
+                        body.push([
+                            { text: optText, fontSize: 10, color: '#666666', margin: [10, 0, 0, 0] },
+                            '',
+                            ''
+                        ]);
+                    });
+                }
+            });
+        
+            // Ορισμός του εγγράφου
+            const docDefinition = {
+                content: [
+                    // Τίτλος εστιατορίου
+                    { text: restaurantName, style: 'header', alignment: 'center' },
+                    { text: '\n' },
+                    // Στοιχεία παραγγελίας
+                    { text: `${lang === 'el' ? 'Παραγγελία' : 'Order'} #${order.orderNumber}`, style: 'subheader' },
+                    { text: `${lang === 'el' ? 'Τραπέζι:' : 'Table:'} ${order.table}`, style: 'normal' },
+                    { text: `${lang === 'el' ? 'Ημερομηνία:' : 'Date:'} ${new Date(order.timestamp).toLocaleString(lang === 'el' ? 'el-GR' : 'en-US')}`, style: 'normal' },
+                    { text: '\n' },
+                    // Πίνακας προϊόντων
+                    {
+                        style: 'itemsTable',
+                        table: {
+                            headerRows: 1,
+                            widths: ['*', 'auto', 'auto'],
+                            body: body
+                        },
+                        layout: 'lightHorizontalLines'
+                    },
+                    { text: '\n' },
+                    // Σύνολο
+                    {
+                        columns: [
+                            { width: '*', text: '' },
+                            { width: 'auto', text: lang === 'el' ? 'Σύνολο:' : 'Total:', style: 'totalLabel' },
+                            { width: 'auto', text: `$${order.total.toFixed(2)}`, style: 'totalValue' }
+                        ]
+                    },
+                    { text: '\n' },
+                    // Πληροφορίες πληρωμής
+                    {
+                        columns: [
+                            { width: '*', text: '' },
+                            { width: 'auto', text: `${lang === 'el' ? 'Τρόπος πληρωμής:' : 'Payment method:'} ${order.paymentMethod === 'card' ? (lang === 'el' ? 'Κάρτα' : 'Card') : (lang === 'el' ? 'Μετρητά' : 'Cash')}`, style: 'paymentInfo' },
+                        ]
+                    },
+                    {
+                        columns: [
+                            { width: '*', text: '' },
+                            { width: 'auto', text: `${lang === 'el' ? 'Χρόνος πληρωμής:' : 'Payment time:'} ${order.paymentTime === 'now' ? (lang === 'el' ? 'Πληρωμή τώρα' : 'Pay now') : (lang === 'el' ? 'Πληρωμή αργότερα' : 'Pay later')}`, style: 'paymentInfo' },
+                        ]
+                    }
+                ],
+                styles: {
+                    header: { fontSize: 20, bold: true, color: '#e63946', margin: [0, 0, 0, 10] },
+                    subheader: { fontSize: 14, bold: true, margin: [0, 5, 0, 5] },
+                    normal: { fontSize: 12, margin: [0, 2, 0, 2] },
+                    tableHeader: { bold: true, fontSize: 12, fillColor: '#f2f2f2' },
+                    totalLabel: { bold: true, fontSize: 14, margin: [0, 5, 5, 5] },
+                    totalValue: { bold: true, fontSize: 14, color: '#e63946', margin: [0, 5, 0, 5] },
+                    paymentInfo: { fontSize: 11, margin: [0, 2, 0, 2] }
+                },
+                defaultStyle: {
+                    font: 'Roboto' // Η Roboto υποστηρίζει Ελληνικά
+                }
+            };
+        
+            // Δημιουργία και λήψη PDF
+            pdfMake.createPdf(docDefinition).download(`order-${order.orderNumber}.pdf`);
+            showNotification(lang === 'el' ? 'Το PDF δημιουργήθηκε.' : 'PDF generated.');
+        }
+
         // ========== QR CODE PDF GENERATOR (include business param) ==========
         function generateTableQRCodePDF(tableNamesArray) {
             if (!tableNamesArray || tableNamesArray.length === 0) {
@@ -2628,210 +3208,238 @@ VIP Table</textarea>
             showNotification(`PDF generated with ${tableNamesArray.length} QR code(s).`);
         }
 
-        // ========== OPEN VERTICAL ORDERS VIEW (unchanged) ==========
-        function openOrdersVerticalView() {
-            const winHtml = '<!DOCTYPE html>' +
-            '<html>' +
-            '<head>' +
-                '<meta charset="UTF-8">' +
-                '<title>Vertical Orders View</title>' +
-                '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">' +
-                '<style>' +
-                    'body { font-family: "Poppins", sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }' +
-                    '.container { max-width: 1200px; margin: 0 auto; }' +
-                    'h2 { color: #e63946; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-top: 0; }' +
-                    '.toolbar { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }' +
-                    '.toolbar select { padding: 8px; border-radius: 6px; border: 1px solid #ced4da; flex: 0 0 200px; }' +
-                    'button { padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; background: #e63946; color: white; transition: 0.2s; }' +
-                    'button:hover { background: #c1121f; }' +
-                    'button.secondary { background: #6c757d; }' +
-                    'button.secondary:hover { background: #495057; }' +
-                    '.orders-list { display: flex; flex-direction: column; gap: 20px; }' +
-                    '.order-card { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 20px; border-left: 4px solid #e63946; }' +
-                    '.order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }' +
-                    '.order-title { font-size: 18px; font-weight: 600; color: #212529; }' +
-                    '.order-time { font-size: 14px; color: #6c757d; }' +
-                    '.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }' +
-                    '.status-pending { background: #fff3cd; color: #856404; }' +
-                    '.status-preparing { background: #d1ecf1; color: #0c5460; }' +
-                    '.status-ready { background: #d4edda; color: #155724; }' +
-                    '.status-served { background: #cce5ff; color: #004085; }' +
-                    '.status-cancelled { background: #f8d7da; color: #721c24; }' +
-                    '.status-payed { background: #cce5ff; color: #004085; }' +
-                    '.order-body { margin-bottom: 15px; }' +
-                    '.order-items { margin: 10px 0; padding-left: 15px; }' +
-                    '.order-item { display: flex; justify-content: space-between; margin-bottom: 8px; }' +
-                    '.item-name { font-weight: 500; }' +
-                    '.item-price { color: #e63946; font-weight: 600; }' +
-                    '.order-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 15px; font-weight: 600; }' +
-                    '.order-total { font-size: 18px; color: #e63946; }' +
-                    '.payment-info { font-size: 14px; color: #6c757d; }' +
-                    '.order-actions { margin-top: 15px; display: flex; gap: 10px; align-items: center; }' +
-                    '.order-actions select { padding: 8px; border-radius: 6px; border: 1px solid #ced4da; flex: 1; }' +
-                    '.order-actions button { background: #457b9d; }' +
-                    '.order-actions button:hover { background: #2c5a7a; }' +
-                    '.no-orders { text-align: center; padding: 60px 20px; color: #6c757d; }' +
-                    '.no-orders i { font-size: 60px; margin-bottom: 20px; opacity: 0.5; }' +
-                '</style>' +
-                '<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"><\/script>' +
-                '<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"><\/script>' +
-            '</head>' +
-            '<body>' +
-                '<div class="container">' +
-                    '<h2><i class="fas fa-clipboard-list"></i> Vertical Orders View</h2>' +
-                    '<div class="toolbar">' +
-                        '<select id="statusFilter">' +
-                            '<option value="all">All Orders</option>' +
-                            '<option value="pending">Pending</option>' +
-                            '<option value="preparing">Preparing</option>' +
-                            '<option value="ready">Ready</option>' +
-                            '<option value="served">Served</option>' +
-                            '<option value="cancelled">Cancelled</option>' +
-                            '<option value="payed">Payed</option>' +
-                        '</select>' +
-                        '<select id="tableFilter">' +
-                            '<option value="all">All Tables</option>' +
-                        '</select>' +
-                        '<button id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>' +
-                        '<button class="secondary" onclick="window.close()"><i class="fas fa-times"></i> Close</button>' +
-                    '</div>' +
-                    '<div id="ordersList" class="orders-list">' +
-                        '<div class="no-orders"><i class="fas fa-spinner fa-pulse"></i><p>Loading orders...</p></div>' +
-                    '</div>' +
-                '</div>' +
-                '<script>' +
-                    'const firebaseConfig = {' +
-                        'apiKey: "AIzaSyBOYqnY3hDTCjBJv97zn4_LlpfpA6Mnvk0",'+
-                        'authDomain: "trytobereal-ce3f1.firebaseapp.com",'+
-                        'projectId: "trytobereal-ce3f1",'+
-                        'storageBucket: "trytobereal-ce3f1.firebasestorage.app",'+
-                        'messagingSenderId: "53123319511",'+
-                        'appId: "1:53123319511:web:78fb36d731b9e94b92d292"'+
-                    '};' +
-                    'firebase.initializeApp(firebaseConfig);' +
-                    'const db = firebase.firestore();' +
-                    '' +
-                    'function formatDate(iso) {' +
-                        'const d = new Date(iso);' +
-                        'return d.toLocaleString();' +
-                    '}' +
-                    '' +
-                    'async function updateOrderStatus(orderId, newStatus) {' +
-                        'try {' +
-                            'await db.collection("orders").doc(orderId).update({ status: newStatus });' +
-                        '} catch (err) {' +
-                            'console.error("Error updating order:", err);' +
-                            'alert("Failed to update order status.");' +
-                        '}' +
-                    '}' +
-                    '' +
-                    'let allOrders = [];' +
-                    '' +
-                    'function populateTableFilter(orders) {' +
-                        'const tables = [...new Set(orders.map(o => o.table))].sort();' +
-                        'const select = document.getElementById("tableFilter");' +
-                        'select.innerHTML = \'<option value="all">All Tables</option>\';' +
-                        'tables.forEach(t => {' +
-                            'const opt = document.createElement("option");' +
-                            'opt.value = t;' +
-                            'opt.textContent = t;' +
-                            'select.appendChild(opt);' +
-                        '});' +
-                    '}' +
-                    '' +
-                    'function renderOrders() {' +
-                        'const list = document.getElementById("ordersList");' +
-                        'const statusFilter = document.getElementById("statusFilter").value;' +
-                        'const tableFilter = document.getElementById("tableFilter").value;' +
-                        'let filtered = allOrders;' +
-                        'if (statusFilter !== "all") {' +
-                            'filtered = filtered.filter(o => o.status === statusFilter);' +
-                        '}' +
-                        'if (tableFilter !== "all") {' +
-                            'filtered = filtered.filter(o => o.table === tableFilter);' +
-                        '}' +
-                        'if (filtered.length === 0) {' +
-                            'list.innerHTML = "<div class=\\"no-orders\\"><i class=\\"fas fa-clipboard-list\\"></i><p>No orders found.</p></div>";' +
-                            'return;' +
-                        '}' +
-                        'filtered.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));' + // ← ascending order
-                        'let html = "";' +
-                        'filtered.forEach(o => {' +
-                            'let badgeClass = "";' +
-                            'let badgeText = o.status;' +
-                            'if (o.status === "pending") badgeClass = "status-pending";' +
-                            'else if (o.status === "preparing") badgeClass = "status-preparing";' +
-                            'else if (o.status === "ready") badgeClass = "status-ready";' +
-                            'else if (o.status === "served") badgeClass = "status-served";' +
-                            'else if (o.status === "cancelled") badgeClass = "status-cancelled";' +
-                            'else if (o.status === "payed") badgeClass = "status-payed";' +
-                            '' +
-                            'let itemsHtml = "";' +
-                            'o.items.forEach(item => {' +
-                                'let optionsHtml = "";' +
-                                'if (item.selectedOptions && item.selectedOptions.length) {' +
-                                    'optionsHtml = "<div style=\\"margin-left:20px; font-size:12px; color:#6c757d;\\">";' +
-                                    'item.selectedOptions.forEach(opt => {' +
-                                        'if (opt.isComment) {' +
-                                            'optionsHtml += "<i class=\\"fas fa-comment\\"></i> " + opt.groupName + ": \\"" + opt.choiceName + "\\"";' +
-                                        '} else {' +
-                                            'optionsHtml += "• " + opt.groupName + ": " + opt.choiceName;' +
-                                            'if (opt.price > 0) optionsHtml += " (+$" + opt.price.toFixed(2) + ")";' +
-                                            'else if (opt.price < 0) optionsHtml += " (-$" + Math.abs(opt.price).toFixed(2) + ")";' +
-                                        '}' +
-                                        'optionsHtml += "<br>";' +
-                                    '});' +
-                                    'optionsHtml += "</div>";' +
-                                '}' +
-                                'itemsHtml += "<div class=\\"order-item\\"><div><span class=\\"item-name\\">" + item.quantity + "x " + item.name + "</span>" + optionsHtml + "</div><span class=\\"item-price\\">$" + (item.price * item.quantity).toFixed(2) + "</span></div>";' +
-                            '});' +
-                            '' +
-                            'html += "<div class=\\"order-card\\">"' +
-                                '+ "<div class=\\"order-header\\"><div><span class=\\"order-title\\">Order #" + o.orderNumber + "</span> <span class=\\"order-time\\">" + formatDate(o.timestamp) + "</span></div><span class=\\"status-badge " + badgeClass + "\\">" + badgeText.charAt(0).toUpperCase() + badgeText.slice(1) + "</span></div>"' +
-                                '+ "<div class=\\"order-body\\"><div><strong>Table:</strong> " + o.table + "</div><div class=\\"order-items\\">" + itemsHtml + "</div></div>"' +
-                                '+ "<div class=\\"order-footer\\"><div class=\\"payment-info\\">" + (o.paymentMethod === "card" ? "Card" : "Cash") + " • " + (o.paymentTime === "now" ? "Pay Now" : "Pay Later") + "</div><div class=\\"order-total\\">Total: $" + o.total.toFixed(2) + "</div></div>"' +
-                                '+ "<div class=\\"order-actions\\"><select id=\\"status-" + o.orderNumber + "\\">"' +
-                                    '+ "<option value=\\"pending\\"" + (o.status === "pending" ? " selected" : "") + ">Pending</option>"' +
-                                    '+ "<option value=\\"preparing\\"" + (o.status === "preparing" ? " selected" : "") + ">Preparing</option>"' +
-                                    '+ "<option value=\\"ready\\"" + (o.status === "ready" ? " selected" : "") + ">Ready</option>"' +
-                                    '+ "<option value=\\"served\\"" + (o.status === "served" ? " selected" : "") + ">Served</option>"' +
-                                    '+ "<option value=\\"cancelled\\"" + (o.status === "cancelled" ? " selected" : "") + ">Cancelled</option>"' +
-                                    '+ "<option value=\\"payed\\"" + (o.status === "payed" ? " selected" : "") + ">Payed</option>"' +
-                                '+ "</select>"' +
-                                '+ "<button onclick=\\"updateOrderStatus(\'" + o.orderNumber + "\', document.getElementById(\'status-" + o.orderNumber + "\').value)\\"><i class=\\"fas fa-save\\"></i> Update</button>"' +
-                            '+ "</div>"' +
-                            '+ "</div>";' +
-                        '});' +
-                        'list.innerHTML = html;' +
-                    '}' +
-                    '' +
-                    'function loadOrders() {' +
-                        'db.collection("orders").onSnapshot(snap => {' +
-                            'allOrders = snap.docs.map(doc => ({ orderNumber: doc.id, ...doc.data() }));' +
-                            'populateTableFilter(allOrders);' +
-                            'renderOrders();' +
-                        '}, err => {' +
-                            'console.error("Firestore error", err);' +
-                            'document.getElementById("ordersList").innerHTML = "<div class=\\"no-orders\\"><i class=\\"fas fa-exclamation-triangle\\"></i><p>Error loading orders.</p></div>";' +
-                        '});' +
-                    '}' +
-                    '' +
-                    'document.getElementById("statusFilter").addEventListener("change", renderOrders);' +
-                    'document.getElementById("tableFilter").addEventListener("change", renderOrders);' +
-                    'document.getElementById("refreshBtn").addEventListener("click", () => { loadOrders(); });' +
-                    '' +
-                    'loadOrders();' +
-                '<\/script>' +
-            '</body>' +
-            '</html>';
-            const win = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
-            if (win) {
-                win.document.write(winHtml);
-                win.document.close();
+        // ========== OPEN VERTICAL ORDERS VIEW (FIXED) ==========
+       // ========== OPEN VERTICAL ORDERS VIEW (FIXED PERMISSIONS) ==========
+function openVerticalOrdersView() {
+    const winHtml = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Vertical Orders Viewer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: "Poppins", sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h2 { color: #e63946; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-top: 0; }
+        .toolbar { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .toolbar select { padding: 8px; border-radius: 6px; border: 1px solid #ced4da; flex: 0 0 200px; }
+        button { padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; background: #e63946; color: white; transition: 0.2s; }
+        button:hover { background: #c1121f; }
+        button.secondary { background: #6c757d; }
+        button.secondary:hover { background: #495057; }
+        .orders-list { display: flex; flex-direction: column; gap: 20px; }
+        .order-card { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 20px; border-left: 4px solid #e63946; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
+        .order-title { font-size: 18px; font-weight: 600; color: #212529; }
+        .order-time { font-size: 14px; color: #6c757d; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-preparing { background: #d1ecf1; color: #0c5460; }
+        .status-ready { background: #d4edda; color: #155724; }
+        .status-served { background: #cce5ff; color: #004085; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-payed { background: #cce5ff; color: #004085; }
+        .order-body { margin-bottom: 15px; }
+        .order-actions { margin-top: 15px; display: flex; gap: 10px; align-items: center; }
+        .order-actions select { padding: 6px; border-radius: 4px; border: 1px solid #ced4da; }
+        .order-actions button { background: #457b9d; }
+        .order-actions button:hover { background: #2c5a7a; }
+        .no-orders { text-align: center; padding: 60px 20px; color: #6c757d; }
+        .no-orders i { font-size: 60px; margin-bottom: 20px; opacity: 0.5; }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"><\/script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"><\/script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"><\/script>
+</head>
+<body>
+    <div class="container">
+        <h2><i class="fas fa-list-ul"></i> Vertical Orders Viewer</h2>
+        <div class="toolbar">
+            <select id="statusFilter">
+                <option value="all">All Orders</option>
+                <option value="pending">Pending</option>
+                <option value="preparing">Preparing</option>
+                <option value="ready">Ready</option>
+                <option value="served">Served</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="payed">Payed</option>
+            </select>
+            <select id="tableFilter">
+                <option value="all">All Tables</option>
+            </select>
+            <button id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+            <button class="secondary" onclick="window.close()"><i class="fas fa-times"></i> Close</button>
+        </div>
+        <div id="ordersList" class="orders-list">
+            <div class="no-orders"><i class="fas fa-spinner fa-pulse"></i><p>Loading orders...</p></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Firebase (Only needed for Reading/Listening)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBOYqnY3hDTCjBJv97zn4_LlpfpA6Mnvk0",
+            authDomain: "trytobereal-ce3f1.firebaseapp.com",
+            projectId: "trytobereal-ce3f1",
+            storageBucket: "trytobereal-ce3f1.firebasestorage.app",
+            messagingSenderId: "53123319511",
+            appId: "1:53123319511:web:78fb36d731b9e94b92d292"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        const businessId = '${businessId}';
+        const ordersCollection = businessId === 'default' ? db.collection('orders') : db.collection(\`business_\${businessId}_orders\`);
+
+        function formatDate(iso) {
+            const d = new Date(iso);
+            return d.toLocaleString();
+        }
+
+        // --- UPDATED: DELEGATE TO PARENT WINDOW ---
+        // This uses the functions from the main Admin dashboard which is already logged in
+        function updateOrderStatus(orderId, newStatus) {
+            if (window.opener && !window.opener.closed && typeof window.opener.updateOrderStatusOptimistic === 'function') {
+                window.opener.updateOrderStatusOptimistic(orderId, newStatus);
             } else {
-                showNotification('Pop‑up blocked. Please allow pop‑ups for this site.');
+                alert("Error: Main Admin window is closed. Cannot update status.");
             }
         }
+
+        function deleteOrder(orderId) {
+            if (!confirm("Delete this order?")) return;
+            
+            if (window.opener && !window.opener.closed && typeof window.opener.deleteSingleOrder === 'function') {
+                window.opener.deleteSingleOrder(orderId);
+            } else {
+                alert("Error: Main Admin window is closed. Cannot delete order.");
+            }
+        }
+        // ------------------------------------------
+
+        let allOrders = [];
+
+        function populateTableFilter(orders) {
+            const tableFilter = document.getElementById("tableFilter");
+            const currentSelection = tableFilter.value;
+            const tables = [...new Set(orders.filter(o => o.table && o.table.toLowerCase() !== "admin").map(o => o.table))].sort();
+            
+            tableFilter.innerHTML = "<option value='all'>All Tables</option>";
+            tables.forEach(t => {
+                const opt = document.createElement("option");
+                opt.value = t;
+                opt.textContent = t;
+                tableFilter.appendChild(opt);
+            });
+            tableFilter.value = currentSelection;
+        }
+
+        function renderOrders() {
+            const list = document.getElementById("ordersList");
+            const statusFilter = document.getElementById("statusFilter").value;
+            const tableFilter = document.getElementById("tableFilter").value;
+            let filtered = allOrders;
+            if (statusFilter !== "all") {
+                filtered = filtered.filter(o => o.status === statusFilter);
+            }
+            if (tableFilter !== "all") {
+                filtered = filtered.filter(o => o.table === tableFilter);
+            }
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="no-orders"><i class="fas fa-clipboard-list"></i><p>No orders found.</p></div>';
+                return;
+            }
+            filtered.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+            let html = "";
+            filtered.forEach(o => {
+                let badgeClass = "";
+                let badgeText = o.status.charAt(0).toUpperCase() + o.status.slice(1);
+                switch(o.status) {
+                    case "pending": badgeClass = "status-pending"; break;
+                    case "preparing": badgeClass = "status-preparing"; break;
+                    case "ready": badgeClass = "status-ready"; break;
+                    case "served": badgeClass = "status-served"; break;
+                    case "cancelled": badgeClass = "status-cancelled"; break;
+                    case "payed": badgeClass = "status-payed"; break;
+                }
+                let itemsHtml = "";
+                o.items.forEach(item => {
+                    itemsHtml += \`<div><strong>\${item.quantity}× \${item.name}</strong> $\${(item.price * item.quantity).toFixed(2)}</div>\`;
+                    if (item.selectedOptions && item.selectedOptions.length) {
+                        item.selectedOptions.forEach(opt => {
+                            if (opt.isComment) itemsHtml += \`<div style="margin-left:20px; font-size:12px; color:#666;"><i class="fas fa-comment"></i> \${opt.groupName}: "\${opt.choiceName}"</div>\`;
+                            else itemsHtml += \`<div style="margin-left:20px; font-size:12px; color:#666;">• \${opt.groupName}: \${opt.choiceName} \${opt.price>0? \`(+$\${opt.price.toFixed(2)})\` : opt.price<0? \`(-$\${Math.abs(opt.price).toFixed(2)})\` : ""}</div>\`;
+                        });
+                    }
+                });
+                html += \`
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div>
+                                <span class="order-title">Order #\${o.orderNumber}</span>
+                                <span class="order-time">\${formatDate(o.timestamp)}</span>
+                            </div>
+                            <span class="status-badge \${badgeClass}">\${badgeText}</span>
+                        </div>
+                        <div class="order-body">
+                            <p><strong>Table:</strong> \${o.table}</p>
+                            <div>\${itemsHtml}</div>
+                            <p><strong>Total:</strong> $\${o.total.toFixed(2)}</p>
+                        </div>
+                        <div class="order-actions">
+                            <select id="status_sel_\${o.orderNumber}">
+                                <option value="pending" \${o.status==="pending"?"selected":""}>Pending</option>
+                                <option value="preparing" \${o.status==="preparing"?"selected":""}>Preparing</option>
+                                <option value="ready" \${o.status==="ready"?"selected":""}>Ready</option>
+                                <option value="served" \${o.status==="served"?"selected":""}>Served</option>
+                                <option value="cancelled" \${o.status==="cancelled"?"selected":""}>Cancelled</option>
+                                <option value="payed" \${o.status==="payed"?"selected":""}>Payed</option>
+                            </select>
+                            <button onclick="updateOrderStatus('\${o.orderNumber}', document.getElementById('status_sel_\${o.orderNumber}').value)" style="background: #2a9d8f;"><i class="fas fa-sync"></i> Update</button>
+                            <button onclick="deleteOrder('\${o.orderNumber}')" style="background: #dc3545;"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                \`;
+            });
+            list.innerHTML = html;
+        }
+
+        function loadOrders() {
+            ordersCollection.onSnapshot(snap => {
+                allOrders = snap.docs.map(doc => ({ orderNumber: doc.id, ...doc.data() }));
+                populateTableFilter(allOrders);
+                renderOrders();
+            }, err => {
+                console.error("Firestore error", err);
+                // If permission denied error occurs on read, show appropriate message
+                if (err.code === 'permission-denied') {
+                     document.getElementById("ordersList").innerHTML = '<div class="no-orders"><i class="fas fa-lock"></i><p>Permission Denied. Please ensure you are logged in on the main window.</p></div>';
+                }
+            });
+        }
+
+        document.getElementById("statusFilter").addEventListener("change", renderOrders);
+        document.getElementById("tableFilter").addEventListener("change", renderOrders);
+        document.getElementById("refreshBtn").addEventListener("click", loadOrders);
+
+        loadOrders();
+    <\/script>
+</body>
+</html>`;
+
+    // Try to open the window
+    const win = window.open('', '_blank', 'width=900,height=600,scrollbars=yes,resizable=yes');
+    if (win) {
+        win.document.write(winHtml);
+        win.document.close();
+    } else {
+        showNotification('Pop‑up blocked. Please allow pop‑ups for this site.');
+    }
+}
+
+           
 
         // ========== OPEN VERTICAL HELP REQUESTS VIEW (unchanged) ==========
         function openHelpVerticalView() {
@@ -2897,6 +3505,9 @@ VIP Table</textarea>
                     'firebase.initializeApp(firebaseConfig);' +
                     'const db = firebase.firestore();' +
                     '' +
+                    'const businessId = \'' + businessId + '\';' + // embed businessId
+                    'const helpRequestsCollection = businessId === \'default\' ? db.collection(\'helpRequests\') : db.collection(`business_${businessId}_helpRequests`);' +
+                    '' +
                     'function formatDate(iso) {' +
                         'const d = new Date(iso);' +
                         'return d.toLocaleString();' +
@@ -2904,7 +3515,7 @@ VIP Table</textarea>
                     '' +
                     'async function updateRequestStatus(requestId, newStatus) {' +
                         'try {' +
-                            'await db.collection("helpRequests").doc(requestId).update({ status: newStatus });' +
+                            'await helpRequestsCollection.doc(requestId).update({ status: newStatus });' +
                         '} catch (err) {' +
                             'console.error("Error updating request:", err);' +
                             'alert("Failed to update request status.");' +
@@ -2914,7 +3525,7 @@ VIP Table</textarea>
                     'async function deleteRequest(requestId) {' +
                         'if (!confirm("Delete this help request?")) return;' +
                         'try {' +
-                            'await db.collection("helpRequests").doc(requestId).delete();' +
+                            'await helpRequestsCollection.doc(requestId).delete();' +
                         '} catch (err) {' +
                             'console.error("Error deleting request:", err);' +
                             'alert("Failed to delete request.");' +
@@ -2956,7 +3567,7 @@ VIP Table</textarea>
                     '}' +
                     '' +
                     'function loadRequests() {' +
-                        'db.collection("helpRequests").onSnapshot(snap => {' +
+                        'helpRequestsCollection.onSnapshot(snap => {' +
                             'allRequests = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));' +
                             'renderRequests();' +
                         '}, err => {' +
@@ -2981,7 +3592,7 @@ VIP Table</textarea>
             }
         }
 
-        // ========== NEW FUNCTION: OPEN CUSTOMER ORDER VIEW (unchanged) ==========
+        // ========== OPEN CUSTOMER ORDER VIEW (unchanged) ==========
         function openCustomerOrderView() {
             const winHtml = '<!DOCTYPE html>' +
             '<html>' +
@@ -3046,6 +3657,9 @@ VIP Table</textarea>
                     'firebase.initializeApp(firebaseConfig);' +
                     'const db = firebase.firestore();' +
                     '' +
+                    'const businessId = \'' + businessId + '\';' + // embed businessId
+                    'const ordersCollection = businessId === \'default\' ? db.collection(\'orders\') : db.collection(`business_${businessId}_orders`);' +
+                    '' +
                     'function formatDate(iso) {' +
                         'const d = new Date(iso);' +
                         'return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });' +
@@ -3099,7 +3713,7 @@ VIP Table</textarea>
                     '}' +
                     '' +
                     'function loadOrders() {' +
-                        'db.collection("orders").onSnapshot(snap => {' +
+                        'ordersCollection.onSnapshot(snap => {' +
                             'const orders = snap.docs.map(doc => ({ orderNumber: doc.id, ...doc.data() }));' +
                             'renderOrders(orders);' +
                         '}, err => {' +
@@ -3124,7 +3738,7 @@ VIP Table</textarea>
             }
         }
 
-        // ========== TABLE MANAGEMENT FUNCTIONS (unchanged) ==========
+        // ========== TABLE MANAGEMENT FUNCTIONS (UPDATED with Settings) ==========
         function loadTablesForAdmin() {
             const container = document.getElementById('tablesListContainer');
             if (!container) return;
@@ -3133,7 +3747,9 @@ VIP Table</textarea>
                 container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">No tables added yet.</p>';
                 return;
             }
-            state.tables.sort().forEach(tableName => {
+            state.tables.sort((a,b) => a.name.localeCompare(b.name)).forEach(tableObj => {
+                const tableName = tableObj.name;
+                const settings = tableObj.settings || { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true };
                 const el = document.createElement('div'); el.className = 'category-item';
                 el.innerHTML = `
                     <div style="display:flex; align-items:center;">
@@ -3141,6 +3757,7 @@ VIP Table</textarea>
                         <span class="category-item-name">${tableName}</span>
                     </div>
                     <div class="admin-card-actions">
+                        <button class="admin-small-btn btn-info table-settings" data-table="${tableName}"><i class="fas fa-cog"></i> Settings</button>
                         <button class="admin-small-btn btn-success order-for-table" data-table="${tableName}"><i class="fas fa-shopping-cart"></i> Order</button>
                         <button class="admin-small-btn btn-danger delete-table" data-table="${tableName}"><i class="fas fa-trash"></i></button>
                     </div>
@@ -3160,18 +3777,27 @@ VIP Table</textarea>
                     myOrdersButton.style.display = 'flex';
                     showSection('menuSection');
                     backToAdminBtn.style.display = 'flex';
+                    applyTableSettings();
                 });
             });
             document.querySelectorAll('.delete-table').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
                     if (confirm(`Delete table "${table}"?`)) {
-                        state.tables = state.tables.filter(t => t !== table);
+                        state.tables = state.tables.filter(t => t.name !== table);
                         deleteTableFirestore(table);
                         loadTablesForAdmin();
                         if (adminPanel.style.display === 'flex') loadTablesForAdminModal();
                         showNotification(`Table "${table}" deleted.`);
                     }
+                });
+            });
+            document.querySelectorAll('.table-settings').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tableName = this.dataset.table;
+                    const tableObj = state.tables.find(t => t.name === tableName);
+                    if (!tableObj) return;
+                    openTableSettings(tableObj);
                 });
             });
         }
@@ -3184,7 +3810,9 @@ VIP Table</textarea>
                 container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">No tables added yet.</p>';
                 return;
             }
-            state.tables.sort().forEach(tableName => {
+            state.tables.sort((a,b) => a.name.localeCompare(b.name)).forEach(tableObj => {
+                const tableName = tableObj.name;
+                const settings = tableObj.settings || { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true };
                 const el = document.createElement('div'); el.className = 'category-item';
                 el.innerHTML = `
                     <div style="display:flex; align-items:center;">
@@ -3192,6 +3820,7 @@ VIP Table</textarea>
                         <span class="category-item-name">${tableName}</span>
                     </div>
                     <div class="admin-card-actions">
+                        <button class="admin-small-btn btn-info table-settings-modal" data-table="${tableName}"><i class="fas fa-cog"></i> Settings</button>
                         <button class="admin-small-btn btn-success order-for-table-modal" data-table="${tableName}"><i class="fas fa-shopping-cart"></i> Order</button>
                         <button class="admin-small-btn btn-danger delete-table-modal" data-table="${tableName}"><i class="fas fa-trash"></i></button>
                     </div>
@@ -3212,13 +3841,14 @@ VIP Table</textarea>
                     showSection('menuSection');
                     backToAdminBtn.style.display = 'flex';
                     adminPanel.style.display = 'none';
+                    applyTableSettings();
                 });
             });
             document.querySelectorAll('.delete-table-modal').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
                     if (confirm(`Delete table "${table}"?`)) {
-                        state.tables = state.tables.filter(t => t !== table);
+                        state.tables = state.tables.filter(t => t.name !== table);
                         deleteTableFirestore(table);
                         loadTablesForAdmin();
                         loadTablesForAdminModal();
@@ -3226,6 +3856,52 @@ VIP Table</textarea>
                     }
                 });
             });
+            document.querySelectorAll('.table-settings-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tableName = this.dataset.table;
+                    const tableObj = state.tables.find(t => t.name === tableName);
+                    if (!tableObj) return;
+                    openTableSettings(tableObj);
+                });
+            });
+        }
+
+        function openTableSettings(tableObj) {
+            currentTableForSettings = tableObj;
+            tableSettingsName.textContent = tableObj.name;
+            const s = tableObj.settings || { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true };
+            tableSettingHelp.checked = s.help;
+            tableSettingPayRequest.checked = s.payRequest;
+            tableSettingCard.checked = s.card;
+            tableSettingCash.checked = s.cash;
+            tableSettingPayNow.checked = s.payNow;
+            tableSettingPayLater.checked = s.payLater;
+            tableSettingsModal.style.display = 'flex';
+        }
+
+        async function saveTableSettings() {
+            if (!currentTableForSettings) return;
+            const newSettings = {
+                help: tableSettingHelp.checked,
+                payRequest: tableSettingPayRequest.checked,
+                card: tableSettingCard.checked,
+                cash: tableSettingCash.checked,
+                payNow: tableSettingPayNow.checked,
+                payLater: tableSettingPayLater.checked
+            };
+            currentTableForSettings.settings = newSettings;
+            await saveTable(currentTableForSettings);
+            tableSettingsModal.style.display = 'none';
+            currentTableForSettings = null;
+            showNotification(`Settings saved for table.`);
+            if (state.currentTable && state.currentTable === currentTableForSettings?.name) {
+                applyTableSettings();
+            }
+        }
+
+        function cancelTableSettings() {
+            tableSettingsModal.style.display = 'none';
+            currentTableForSettings = null;
         }
 
         async function addTable() {
@@ -3235,12 +3911,16 @@ VIP Table</textarea>
                 showNotification('Please enter a table name.');
                 return;
             }
-            if (state.tables.includes(name)) {
+            if (state.tables.some(t => t.name === name)) {
                 showNotification('Table already exists.');
                 return;
             }
-            state.tables.push(name);
-            await saveTable(name);
+            const newTable = {
+                name,
+                settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true }
+            };
+            state.tables.push(newTable);
+            await saveTable(newTable);
             input.value = '';
             loadTablesForAdmin();
             if (adminPanel.style.display === 'flex') loadTablesForAdminModal();
@@ -3254,16 +3934,216 @@ VIP Table</textarea>
                 showNotification('Please enter a table name.');
                 return;
             }
-            if (state.tables.includes(name)) {
+            if (state.tables.some(t => t.name === name)) {
                 showNotification('Table already exists.');
                 return;
             }
-            state.tables.push(name);
-            await saveTable(name);
+            const newTable = {
+                name,
+                settings: { help: true, payRequest: true, card: true, cash: true, payNow: true, payLater: true }
+            };
+            state.tables.push(newTable);
+            await saveTable(newTable);
             input.value = '';
             loadTablesForAdmin();
             loadTablesForAdminModal();
             showNotification(`Table "${name}" added.`);
+        }
+
+        // ========== NEW PRINTER FUNCTIONS ==========
+        function loadPrintersForAdmin() {
+            const container = document.getElementById('printersListContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            if (state.printers.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">No printers added yet.</p>';
+                return;
+            }
+            state.printers.sort((a,b) => (a.name || '').localeCompare(b.name || '')).forEach(printer => {
+                const el = document.createElement('div'); el.className = 'category-item';
+                el.innerHTML = `
+                    <div style="display:flex; align-items:center;">
+                        <i class="fas fa-print"></i>
+                        <span class="category-item-name">${printer.name} (${printer.ip}${printer.port ? ':'+printer.port : ''})</span>
+                    </div>
+                    <div class="admin-card-actions">
+                        <button class="admin-small-btn btn-primary test-printer" data-id="${printer.id}" data-ip="${printer.ip}" data-port="${printer.port || 9100}"><i class="fas fa-play"></i> Test</button>
+                        <button class="admin-small-btn btn-danger delete-printer" data-id="${printer.id}"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+            document.querySelectorAll('.test-printer').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const ip = this.dataset.ip;
+                    const port = this.dataset.port;
+                    // Simple test: try to fetch a simple page (only works if printer has HTTP interface)
+                    showNotification(`Testing printer at ${ip}:${port}...`);
+                    fetch(`http://${ip}:${port}`, { mode: 'no-cors' })
+                        .then(() => showNotification(`Printer at ${ip}:${port} responded.`))
+                        .catch(() => showNotification(`Printer at ${ip}:${port} did not respond (might still work for printing).`));
+                });
+            });
+            document.querySelectorAll('.delete-printer').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    if (confirm('Delete this printer?')) {
+                        state.printers = state.printers.filter(p => p.id !== id);
+                        deletePrinterFirestore(id);
+                        loadPrintersForAdmin();
+                        if (adminPanel.style.display === 'flex') loadPrintersForAdminModal();
+                        showNotification('Printer deleted.');
+                    }
+                });
+            });
+        }
+
+        function loadPrintersForAdminModal() {
+            const container = document.getElementById('printersListContainerModal');
+            if (!container) return;
+            container.innerHTML = '';
+            if (state.printers.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">No printers added yet.</p>';
+                return;
+            }
+            state.printers.sort((a,b) => (a.name || '').localeCompare(b.name || '')).forEach(printer => {
+                const el = document.createElement('div'); el.className = 'category-item';
+                el.innerHTML = `
+                    <div style="display:flex; align-items:center;">
+                        <i class="fas fa-print"></i>
+                        <span class="category-item-name">${printer.name} (${printer.ip}${printer.port ? ':'+printer.port : ''})</span>
+                    </div>
+                    <div class="admin-card-actions">
+                        <button class="admin-small-btn btn-danger delete-printer-modal" data-id="${printer.id}"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+            document.querySelectorAll('.delete-printer-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    if (confirm('Delete this printer?')) {
+                        state.printers = state.printers.filter(p => p.id !== id);
+                        deletePrinterFirestore(id);
+                        loadPrintersForAdmin();
+                        loadPrintersForAdminModal();
+                        showNotification('Printer deleted.');
+                    }
+                });
+            });
+        }
+
+        async function addPrinter() {
+            const name = document.getElementById('newPrinterName').value.trim();
+            const ip = document.getElementById('newPrinterIp').value.trim();
+            const port = parseInt(document.getElementById('newPrinterPort').value) || 9100;
+            if (!name || !ip) {
+                showNotification('Please enter both printer name and IP address.');
+                return;
+            }
+            const id = 'printer_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+            const printer = { id, name, ip, port };
+            state.printers.push(printer);
+            await savePrinter(printer);
+            document.getElementById('newPrinterName').value = '';
+            document.getElementById('newPrinterIp').value = '';
+            document.getElementById('newPrinterPort').value = '9100';
+            loadPrintersForAdmin();
+            if (adminPanel.style.display === 'flex') loadPrintersForAdminModal();
+            showNotification(`Printer "${name}" added.`);
+        }
+
+        async function addPrinterModal() {
+            const name = document.getElementById('newPrinterNameModal').value.trim();
+            const ip = document.getElementById('newPrinterIpModal').value.trim();
+            const port = parseInt(document.getElementById('newPrinterPortModal').value) || 9100;
+            if (!name || !ip) {
+                showNotification('Please enter both printer name and IP address.');
+                return;
+            }
+            const id = 'printer_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+            const printer = { id, name, ip, port };
+            state.printers.push(printer);
+            await savePrinter(printer);
+            document.getElementById('newPrinterNameModal').value = '';
+            document.getElementById('newPrinterIpModal').value = '';
+            document.getElementById('newPrinterPortModal').value = '9100';
+            loadPrintersForAdmin();
+            loadPrintersForAdminModal();
+            showNotification(`Printer "${name}" added.`);
+        }
+
+        // NEW: Network printer scan function
+        async function scanNetworkPrinters() {
+            const rangeInput = document.getElementById('scanRange').value;
+            // Parse range like "192.168.1.1-254"
+            const match = rangeInput.match(/^(\d+\.\d+\.\d+)\.(\d+)-(\d+)$/);
+            if (!match) {
+                showNotification('Invalid range format. Use e.g., 192.168.1.1-254');
+                return;
+            }
+            const base = match[1];
+            const start = parseInt(match[2]);
+            const end = parseInt(match[3]);
+            if (start < 1 || end > 254 || start > end) {
+                showNotification('Invalid IP range.');
+                return;
+            }
+            showNotification(`Scanning ${base}.${start}-${end} ... this may take a while.`);
+            const ports = [80, 443, 9100]; // common printer ports
+            const found = [];
+            for (let i = start; i <= end; i++) {
+                const ip = `${base}.${i}`;
+                for (const port of ports) {
+                    try {
+                        const response = await fetch(`http://${ip}:${port}`, { mode: 'no-cors', signal: AbortSignal.timeout(1000) });
+                        // If we get here (even with error), it means the host responded
+                        found.push({ ip, port });
+                        // Add to printers if not already present
+                        if (!state.printers.some(p => p.ip === ip && p.port === port)) {
+                            const name = `Printer ${ip}`;
+                            const id = 'printer_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+                            const printer = { id, name, ip, port };
+                            state.printers.push(printer);
+                            await savePrinter(printer);
+                        }
+                        break; // stop scanning other ports for this IP
+                    } catch (err) {
+                        // no response, continue
+                    }
+                }
+                // Update UI periodically
+                if (i % 10 === 0) {
+                    loadPrintersForAdmin();
+                    if (adminPanel.style.display === 'flex') loadPrintersForAdminModal();
+                }
+            }
+            loadPrintersForAdmin();
+            if (adminPanel.style.display === 'flex') loadPrintersForAdminModal();
+            showNotification(`Scan complete. Found ${found.length} device(s).`);
+        }
+
+        function printTestPage() {
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                showNotification('Pop-up blocked. Please allow pop-ups to print.');
+                return;
+            }
+            const html = `
+                <html>
+                <head><title>Test Page</title></head>
+                <body>
+                    <h1>Restaurant Printer Test</h1>
+                    <p>If you see this, your system default printer is working.</p>
+                    <p>Date: ${new Date().toLocaleString()}</p>
+                </body>
+                </html>
+            `;
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            // No need to close; user can close after printing
         }
 
         // ========== EDIT ORDER FUNCTIONS (unchanged) ==========
@@ -3359,7 +4239,7 @@ VIP Table</textarea>
             saveCumulativeStats();
         }
 
-        // ========== ADMIN DASHBOARD (unchanged, except removed old admin code prompt call) ==========
+        // ========== ADMIN DASHBOARD (unchanged, except added button for vertical orders viewer) ==========
         function loadAdminDashboardData() {
             document.getElementById('adminRestaurantName').value = state.restaurantInfo.name;
             document.getElementById('adminTaxRate').value = state.restaurantInfo.taxRate;
@@ -3376,6 +4256,8 @@ VIP Table</textarea>
             loadSoundSettingsUI();
             loadHelpRequestsForAdmin();
             loadTablesForAdmin();
+            // NEW: load printers
+            loadPrintersForAdmin();
 
             document.querySelectorAll('#adminDashboardSection .admin-tab').forEach(tab => {
                 tab.addEventListener('click', function() {
@@ -3392,6 +4274,7 @@ VIP Table</textarea>
                     if (tid==='sound') setTimeout(loadSoundSettingsUI,50);
                     if (tid==='menuEn') setTimeout(()=>{ loadMenuItemsForAdminEn(); makeAdminGridDraggable('menuItemsListEn'); },50);
                     if (tid==='tables') setTimeout(loadTablesForAdmin,50);
+                    if (tid==='printer') setTimeout(loadPrintersForAdmin,50); // NEW
                 });
             });
             document.getElementById('uploadLogoBtn').addEventListener('click', ()=>document.getElementById('logoUpload').click());
@@ -3441,10 +4324,15 @@ VIP Table</textarea>
                 showNotification('All resolved help requests deleted.');
                 updatePendingBadges();
             });
-            document.getElementById('openOrdersVerticalBtn').addEventListener('click', openOrdersVerticalView);
-            document.getElementById('openHelpVerticalBtn').addEventListener('click', openHelpVerticalView); // NEW
-            document.getElementById('openCustomerOrderViewBtn').addEventListener('click', openCustomerOrderView); // FIXED
+            document.getElementById('openHelpVerticalBtn').addEventListener('click', openHelpVerticalView);
+            document.getElementById('openCustomerOrderViewBtn').addEventListener('click', openCustomerOrderView);
+            // NEW: Vertical Orders Viewer button
+            document.getElementById('openVerticalOrdersViewBtn').addEventListener('click', openVerticalOrdersView);
             document.getElementById('addTableBtn').addEventListener('click', ()=> showAdminChangePrompt(addTable));
+            // NEW: Add Printer button and scan button
+            document.getElementById('addPrinterBtn').addEventListener('click', ()=> showAdminChangePrompt(addPrinter));
+            document.getElementById('scanPrintersBtn').addEventListener('click', ()=> showAdminChangePrompt(scanNetworkPrinters));
+            document.getElementById('printTestPageBtn').addEventListener('click', printTestPage);
             backToAdminBtn.addEventListener('click', function() {
                 state.currentTable = null;
                 showSection('adminDashboardSection');
@@ -3477,6 +4365,12 @@ VIP Table</textarea>
                     const orderId = btn.dataset.orderId;
                     deleteSingleOrder(orderId);
                 }
+                // NEW: Print order button handler
+                if (e.target.classList.contains('print-order-btn') || e.target.closest('.print-order-btn')) {
+                    const btn = e.target.classList.contains('print-order-btn') ? e.target : e.target.closest('.print-order-btn');
+                    const orderId = btn.dataset.orderId;
+                    printOrderToPrinter(orderId);
+                }
             });
             setTimeout(()=>{ 
                 makeAdminGridDraggable('menuItemsList'); 
@@ -3485,6 +4379,92 @@ VIP Table</textarea>
                 makeCategoriesDraggable('categoriesListContainerEn'); // new
                 populateTableSelect('tableSelectForDelete'); 
             },500);
+        }
+
+        // ========== PRINT ORDER FUNCTION (MODIFIED – NO PRICES, NO RESTAURANT, ONLY TABLE, ORDER#, TIME, ITEMS WITH OPTIONS) ==========
+        function printOrderToPrinter(orderId) {
+            const order = state.orders.find(o => o.orderNumber === orderId);
+            if (!order) {
+                showNotification('Order not found.');
+                return;
+            }
+
+            // Format the time nicely
+            const orderTime = new Date(order.timestamp).toLocaleString();
+
+            // Build HTML for the print window – only table, order number, time, items with subcategories/comments
+            const printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Order #${order.orderNumber}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        h2 { margin-bottom: 5px; }
+                        .order-info { margin-bottom: 20px; }
+                        .item { margin-bottom: 15px; }
+                        .item-name { font-weight: bold; }
+                        .options { margin-left: 20px; font-size: 0.9em; color: #555; }
+                        .comment { margin-left: 20px; font-size: 0.9em; color: #2a7f62; font-style: italic; }
+                        hr { border: 0; border-top: 1px solid #ccc; margin: 15px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="order-info">
+                        <h2>Order #${order.orderNumber}</h2>
+                        <p><strong>Table:</strong> ${order.table}</p>
+                        <p><strong>Time:</strong> ${orderTime}</p>
+                    </div>
+                    <hr>
+                    ${order.items.map(item => {
+                        // Start with the main item line (quantity + name)
+                        let itemHtml = `<div class="item"><div class="item-name">${item.quantity} × ${item.name}</div>`;
+                        // Add subcategories/options if they exist
+                        if (item.selectedOptions && item.selectedOptions.length) {
+                            itemHtml += '<div class="options">';
+                            item.selectedOptions.forEach(opt => {
+                                if (opt.isComment) {
+                                    itemHtml += `<div class="comment">📝 ${opt.groupName}: "${opt.choiceName}"</div>`;
+                                } else {
+                                    itemHtml += `<div>• ${opt.groupName}: ${opt.choiceName}</div>`;
+                                }
+                            });
+                            itemHtml += '</div>';
+                        }
+                        itemHtml += '</div>';
+                        return itemHtml;
+                    }).join('')}
+                    <hr>
+                </body>
+                </html>
+            `;
+
+            // Open a new window with the print content
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            if (printWindow) {
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                printWindow.focus();
+                // Automatically open the print dialog after a short delay
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
+            } else {
+                showNotification('Pop‑up blocked. Please allow pop‑ups for printing.');
+                return;
+            }
+
+            // Mark as printed if not already
+            if (!order.printed) {
+                order.printed = true;
+                saveOrder(order);  // Firestore update
+                // Refresh admin lists to show green icon
+                loadOrdersForAdmin();
+                if (adminPanel.style.display === 'flex') loadOrdersForAdminModal();
+            }
+
+            showNotification(`Print dialog opened for order #${order.orderNumber}.`);
         }
 
         function updateLogoPreview() {
@@ -3991,7 +4971,7 @@ VIP Table</textarea>
             await saveCategories();
         }
 
-        // --- ORDER ADMIN (unchanged) ---
+        // --- ORDER ADMIN (unchanged, but added printed icon and print button) ---
         function loadOrdersForAdmin() {
             const list = document.getElementById('adminOrdersList');
             const statusFilter = document.getElementById('orderStatusFilter').value;
@@ -4018,6 +4998,7 @@ VIP Table</textarea>
                     case 'cancelled': badge='<span class="order-status-badge status-cancelled">Cancelled</span>'; break;
                     case 'payed': badge='<span class="order-status-badge status-payed">Payed</span>'; break;
                 }
+                let printedIcon = o.printed ? '<i class="fas fa-print" style="color:green; margin-right:5px;" title="Printed"></i>' : '';
                 let itemsHtml = '';
                 o.items.forEach(item => {
                     itemsHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span><strong>${item.quantity}x ${item.name}</strong></span><span style="color:var(--primary);">$${(item.price*item.quantity).toFixed(2)}</span></div>`;
@@ -4032,7 +5013,7 @@ VIP Table</textarea>
                     itemsHtml += '</div>';
                 });
                 // Add a delete button next to edit button
-                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button></div>`;
+                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">${printedIcon} Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button><button class="btn btn-info btn-small print-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-print"></i> Print</button></div>`;
                 list.appendChild(card);
             });
             populateTableSelect('tableSelectForDelete');
@@ -4138,7 +5119,7 @@ VIP Table</textarea>
             stats.innerHTML = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:15px;"><div style="background-color:var(--light); padding:15px; border-radius:8px;"><div style="font-size:24px; font-weight:600; color:var(--primary);">${total}</div><div style="font-size:14px; color:var(--gray);">Total Orders (Lifetime)</div></div><div style="background-color:var(--light); padding:15px; border-radius:8px;"><div style="font-size:24px; font-weight:600; color:var(--primary);">$${revenue.toFixed(2)}</div><div style="font-size:14px; color:var(--gray);">Total Revenue (Lifetime)</div></div><div style="background-color:var(--light); padding:15px; border-radius:8px;"><div style="font-size:24px; font-weight:600; color:var(--primary);">$${avg.toFixed(2)}</div><div style="font-size:14px; color:var(--gray);">Average Order</div></div><div style="background-color:var(--light); padding:15px; border-radius:8px;"><div style="font-size:24px; font-weight:600; color:var(--primary);">${state.menuItems.length}</div><div style="font-size:14px; color:var(--gray);">Menu Items</div></div><div style="background-color:var(--light); padding:15px; border-radius:8px;"><div style="font-size:24px; font-weight:600; color:var(--primary);">${state.categories.length}</div><div style="font-size:14px; color:var(--gray);">Categories</div></div></div><div style="margin-top:20px;"><h5 style="margin-bottom:10px;">Order Status Distribution (Current Orders)</h5><div style="display:flex; gap:10px; flex-wrap:wrap;"><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#fff3cd; border-radius:2px;"></div><span>Pending: ${pending}</span></div><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#d1ecf1; border-radius:2px;"></div><span>Preparing: ${prep}</span></div><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#d4edda; border-radius:2px;"></div><span>Ready: ${ready}</span></div><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#cce5ff; border-radius:2px;"></div><span>Served: ${served}</span></div><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#f8d7da; border-radius:2px;"></div><span>Cancelled: ${cancelled}</span></div><div style="display:flex; align-items:center; gap:5px;"><div style="width:12px; height:12px; background-color:#cce5ff; border-radius:2px;"></div><span>Payed: ${payed}</span></div></div></div>`;
         }
         function exportData() {
-            const data = { restaurantInfo: state.restaurantInfo, menuItems: state.menuItems, orders: state.orders, categories: state.categories, customization: state.customization, soundEffects: state.soundEffects, helpRequests: state.helpRequests, cumulativeStats: state.cumulativeStats, tables: state.tables, exportDate: new Date().toISOString() };
+            const data = { restaurantInfo: state.restaurantInfo, menuItems: state.menuItems, orders: state.orders, categories: state.categories, customization: state.customization, soundEffects: state.soundEffects, helpRequests: state.helpRequests, cumulativeStats: state.cumulativeStats, tables: state.tables, printers: state.printers, exportDate: new Date().toISOString() };
             const str = JSON.stringify(data,null,2); const uri = 'data:application/json;charset=utf-8,'+encodeURIComponent(str);
             const a = document.createElement('a'); a.href = uri; a.download = `dineeasy-backup-${new Date().toISOString().split('T')[0]}.json`; a.click(); showNotification("Data exported successfully.");
         }
@@ -4158,6 +5139,7 @@ VIP Table</textarea>
                         if (d.helpRequests) state.helpRequests = d.helpRequests;
                         if (d.cumulativeStats) state.cumulativeStats = d.cumulativeStats;
                         if (d.tables) state.tables = d.tables;
+                        if (d.printers) state.printers = d.printers;
                         await Promise.all(state.menuItems.map(i=>saveMenuItem(i)));
                         await saveCategories();
                         await Promise.all(state.orders.map(o=>saveOrder(o)));
@@ -4167,8 +5149,9 @@ VIP Table</textarea>
                         await Promise.all(state.helpRequests.map(r=>saveHelpRequest(r)));
                         await saveCumulativeStats();
                         await Promise.all(state.tables.map(t=>saveTable(t)));
+                        await Promise.all(state.printers.map(p=>savePrinter(p)));
                         updateRestaurantUI(); displayMenuItems('all'); updateCategoryTabs(); applyCustomization();
-                        loadMenuItemsForAdmin(); loadMenuItemsForAdminEn(); loadCategoriesForAdmin(); loadCategoriesForAdminEn(); loadOrdersForAdmin(); loadSystemStats(); loadHelpRequestsForAdmin(); loadTablesForAdmin();
+                        loadMenuItemsForAdmin(); loadMenuItemsForAdminEn(); loadCategoriesForAdmin(); loadCategoriesForAdminEn(); loadOrdersForAdmin(); loadSystemStats(); loadHelpRequestsForAdmin(); loadTablesForAdmin(); loadPrintersForAdmin();
                         showNotification("Data imported successfully.");
                     }
                 } catch { showNotification("Error importing data. Invalid file format."); }
@@ -4206,6 +5189,125 @@ VIP Table</textarea>
                 inp.addEventListener('input', function() { const v = this.value; val.textContent = v; pre.style.backgroundColor = v; state.customization[col.id] = v; state.currentTheme = "custom"; g.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected')); document.getElementById('currentThemeName').textContent = "Custom"; document.getElementById('currentThemeCategory').textContent = "Custom"; applyCustomization(); });
                 cc.appendChild(el);
             });
+        
+            // --- ADD GRADIENT GALLERY AND BLUR SLIDER ---
+            // Create a new section for gradients if not already present
+            let gradSection = document.querySelector('#customizationTab .gradient-section');
+            if (!gradSection) {
+                gradSection = document.createElement('div');
+                gradSection.className = 'customization-section gradient-section';
+                gradSection.innerHTML = `
+                    <div class="section-title-small"><i class="fas fa-palette"></i> Background Gradient Gallery (60 Premium Gradients)</div>
+                    <p style="margin-bottom: 20px; color: var(--gray);">Click a gradient to apply it. Use "None" to use the solid background color or uploaded image.</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" id="gradientNoneBtn"><i class="fas fa-times"></i> None</button>
+                    </div>
+                    <div class="theme-gallery" id="gradientGallery"></div>
+                `;
+                // Insert after the font section, before color customization
+                const fontSection = document.querySelector('#customizationTab .customization-section .font-options')?.closest('.customization-section');
+                if (fontSection) {
+                    fontSection.insertAdjacentElement('afterend', gradSection);
+                } else {
+                    // fallback: append to panel
+                    document.querySelector('.customization-panel').appendChild(gradSection);
+                }
+            }
+        
+            // Populate gradient gallery
+            const gradGallery = document.getElementById('gradientGallery');
+            if (gradGallery) {
+                gradGallery.innerHTML = '';
+                gradientLibrary.forEach(g => {
+                    const card = document.createElement('div');
+                    card.className = `theme-card ${state.customization.backgroundGradient === g.gradient ? 'selected' : ''}`;
+                    card.dataset.gradient = g.gradient;
+                    card.innerHTML = `
+                        <div style="height: 100px; background: ${g.gradient}; border-radius: 8px 8px 0 0;"></div>
+                        <div class="theme-info">
+                            <div class="theme-name">${g.name}</div>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => {
+                        gradGallery.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        state.customization.backgroundGradient = g.gradient;
+                        applyCustomization();
+                        updatePreviewGradient();
+                    });
+                    gradGallery.appendChild(card);
+                });
+            }
+        
+            document.getElementById('gradientNoneBtn')?.addEventListener('click', () => {
+                gradGallery.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+                state.customization.backgroundGradient = null;
+                applyCustomization();
+                updatePreviewGradient();
+            });
+        
+            // Add blur slider section
+            let blurSection = document.querySelector('#customizationTab .blur-section');
+            if (!blurSection) {
+                blurSection = document.createElement('div');
+                blurSection.className = 'customization-section blur-section';
+                blurSection.innerHTML = `
+                    <div class="section-title-small"><i class="fas fa-tint"></i> Background Blur</div>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <input type="range" id="blurSlider" min="0" max="50" value="${state.customization.backgroundBlur}" step="1" style="flex: 1;">
+                        <span id="blurValue">${state.customization.backgroundBlur} px</span>
+                    </div>
+                `;
+                // Insert after gradient section
+                if (gradSection) {
+                    gradSection.insertAdjacentElement('afterend', blurSection);
+                } else {
+                    document.querySelector('.customization-panel').appendChild(blurSection);
+                }
+            }
+        
+            const blurSlider = document.getElementById('blurSlider');
+            const blurValue = document.getElementById('blurValue');
+            if (blurSlider) {
+                blurSlider.value = state.customization.backgroundBlur;
+                blurSlider.addEventListener('input', (e) => {
+                    const val = parseInt(e.target.value);
+                    state.customization.backgroundBlur = val;
+                    blurValue.textContent = val + ' px';
+                    applyCustomization();
+                    updatePreviewBlur(val);
+                });
+            }
+        
+            // Add a preview box for the gradient inside the existing preview grid if not present
+            const previewGrid = document.querySelector('.customization-preview .preview-content-grid');
+            if (previewGrid && !document.getElementById('gradientPreviewBox')) {
+                const gradPreviewDiv = document.createElement('div');
+                gradPreviewDiv.innerHTML = `
+                    <div class="preview-card" style="margin-top: 15px;">
+                        <div style="font-weight: 600; margin-bottom: 10px; color: var(--text);">Background Preview</div>
+                        <div id="gradientPreviewBox" style="height: 100px; border-radius: 8px; background: ${state.customization.backgroundGradient || 'var(--background)'}; filter: blur(${state.customization.backgroundBlur}px);"></div>
+                    </div>
+                `;
+                previewGrid.appendChild(gradPreviewDiv);
+            }
+        
+            function updatePreviewGradient() {
+                const previewBox = document.getElementById('gradientPreviewBox');
+                if (!previewBox) return;
+                if (state.customization.backgroundGradient) {
+                    previewBox.style.background = state.customization.backgroundGradient;
+                } else {
+                    previewBox.style.background = 'var(--background)';
+                }
+            }
+            function updatePreviewBlur(blur) {
+                const previewBox = document.getElementById('gradientPreviewBox');
+                if (previewBox) previewBox.style.filter = `blur(${blur}px)`;
+            }
+        
+            // --- end of new gradient/blur UI ---
+        
             document.getElementById('resetCustomizationBtn').addEventListener('click', function() { if (confirm("Reset all visual customization to default values?")) { resetCustomization(); setTimeout(initializeCustomizationTab,100); } });
             document.getElementById('saveCustomizationBtn').addEventListener('click', saveCustomizationOptimistic);
             const curTheme = themes[state.currentTheme]; if (curTheme) { document.getElementById('currentThemeName').textContent = curTheme.name; document.getElementById('currentThemeCategory').textContent = curTheme.category; }
@@ -4228,8 +5330,35 @@ VIP Table</textarea>
         function updateColorInputs() { importantColors.forEach(col=>{ const inp = document.getElementById(`color-${col.id}`); if (inp) { const val = inp.parentElement.querySelector('.color-value'); const pre = inp.parentElement.parentElement.querySelector('.color-preview'); if (inp && val && pre) { inp.value = state.customization[col.id]; val.textContent = state.customization[col.id]; pre.style.backgroundColor = state.customization[col.id]; } } }); }
         async function saveCustomizationOptimistic() { showNotification("Visual customization saved."); await saveCustomization(); }
         function resetCustomization() {
-            state.customization = { primary: "#e63946", primaryDark: "#c1121f", secondary: "#457b9d", light: "#f8f9fa", dark: "#212529", gray: "#6c757d", lightGray: "#e9ecef", success: "#2a9d8f", warning: "#e9c46a", danger: "#dc3545", shadow: "0 4px 12px rgba(0, 0, 0, 0.08)", radius: "12px", background: "#fefefe", text: "#212529", cardBg: "#ffffff", headerBg: "#ffffff", menuBg: "#ffffff", cartBg: "#ffffff", paymentBg: "#ffffff", buttonText: "#ffffff", fontPrimary: "'Poppins', sans-serif", fontSecondary: "'Playfair Display', serif" };
-            state.currentTheme = "default"; state.currentFont = "poppins"; applyCustomization();
+                state.customization = {
+                primary: "#e63946",
+                primaryDark: "#c1121f",
+                secondary: "#457b9d",
+                light: "#f8f9fa",
+                dark: "#212529",
+                gray: "#6c757d",
+                lightGray: "#e9ecef",
+                success: "#2a9d8f",
+                warning: "#e9c46a",
+                danger: "#dc3545",
+                shadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+                radius: "12px",
+                background: "#fefefe",
+                text: "#212529",
+                cardBg: "#ffffff",
+                headerBg: "#ffffff",
+                menuBg: "#ffffff",
+                cartBg: "#ffffff",
+                paymentBg: "#ffffff",
+                buttonText: "#ffffff",
+                fontPrimary: "'Poppins', sans-serif",
+                fontSecondary: "'Playfair Display', serif",
+                backgroundGradient: null,
+                backgroundBlur: 0
+            };
+            state.currentTheme = "default";
+            state.currentFont = "poppins";
+            applyCustomization();
         }
         function darkenColor(c,p) { const n = parseInt(c.replace("#",""),16); const a = Math.round(2.55*p); const r = (n>>16)-a, g = (n>>8&0x00FF)-a, b = (n&0x0000FF)-a; return "#" + (0x1000000 + (r<255?r<1?0:r:255)*0x10000 + (g<255?g<1?0:g:255)*0x100 + (b<255?b<1?0:b:255)).toString(16).slice(1); }
         function getContrastColor(h) { const r=parseInt(h.substr(1,2),16), g=parseInt(h.substr(3,2),16), b=parseInt(h.substr(5,2),16), yiq=((r*299)+(g*587)+(b*114))/1000; return yiq>=128?'#000000':'#ffffff'; }
@@ -4366,7 +5495,7 @@ VIP Table</textarea>
             }
         }
 
-        // --- MODAL ADMIN (unchanged) ---
+        // --- MODAL ADMIN (unchanged, except added button for vertical orders viewer) ---
         function setupAdminPanel() {
             adminClose.addEventListener('click', ()=> adminPanel.style.display = 'none');
             document.querySelectorAll('#adminPanel .admin-tab').forEach(tab => {
@@ -4384,6 +5513,7 @@ VIP Table</textarea>
                     if (tid==='orders') { loadOrdersForAdminModal(); populateTableSelect('tableSelectForDeleteModal'); }
                     if (tid==='helpRequests') { loadHelpRequestsForAdminModal(); }
                     if (tid==='tablesModal') { loadTablesForAdminModal(); }
+                    if (tid==='printerModal') { loadPrintersForAdminModal(); } // NEW
                     if (tid==='sound') { 
                         const modalEnabled = document.getElementById('soundEffectsEnabledModal');
                         if (modalEnabled) modalEnabled.checked = state.soundEffects.enabled;
@@ -4414,10 +5544,14 @@ VIP Table</textarea>
                 }
             });
             document.getElementById('helpRequestStatusFilterModal').addEventListener('change', loadHelpRequestsForAdminModal);
-            document.getElementById('openOrdersVerticalBtnModal').addEventListener('click', openOrdersVerticalView);
-            document.getElementById('openHelpVerticalBtnModal').addEventListener('click', openHelpVerticalView); // NEW
-            document.getElementById('openCustomerOrderViewBtnModal').addEventListener('click', openCustomerOrderView); // FIXED
+            document.getElementById('openHelpVerticalBtnModal').addEventListener('click', openHelpVerticalView);
+            document.getElementById('openCustomerOrderViewBtnModal').addEventListener('click', openCustomerOrderView);
+            // NEW: Vertical Orders Viewer button in modal
+            document.getElementById('openVerticalOrdersViewBtnModal').addEventListener('click', openVerticalOrdersView);
             document.getElementById('addTableBtnModal').addEventListener('click', ()=> showAdminChangePrompt(addTableModal));
+            // NEW: Add Printer button modal and scan
+            document.getElementById('addPrinterBtnModal').addEventListener('click', ()=> showAdminChangePrompt(addPrinterModal));
+            document.getElementById('scanPrintersBtnModal').addEventListener('click', ()=> showAdminChangePrompt(scanNetworkPrinters));
         }
 
         function loadMenuItemsForAdminModal() {
@@ -4551,6 +5685,7 @@ VIP Table</textarea>
                     case 'cancelled': badge='<span class="order-status-badge status-cancelled">Cancelled</span>'; 
                     case 'payed': badge='<span class="order-status-badge status-payed">Payed</span>';
                 }
+                let printedIcon = o.printed ? '<i class="fas fa-print" style="color:green; margin-right:5px;" title="Printed"></i>' : '';
                 let itemsHtml = '';
                 o.items.forEach(item => {
                     itemsHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span><strong>${item.quantity}x ${item.name}</strong></span><span style="color:var(--primary);">$${(item.price*item.quantity).toFixed(2)}</span></div>`;
@@ -4565,7 +5700,7 @@ VIP Table</textarea>
                     itemsHtml += '</div>';
                 });
                 // Add delete button in modal as well
-                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button></div>`;
+                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">${printedIcon} Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button><button class="btn btn-info btn-small print-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-print"></i> Print</button></div>`;
                 list.appendChild(card);
             });
             populateTableSelect('tableSelectForDeleteModal');
@@ -4579,6 +5714,11 @@ VIP Table</textarea>
             document.querySelectorAll('.delete-order-btn-modal').forEach(b=> b.addEventListener('click', function() {
                 const orderId = this.dataset.orderId;
                 deleteSingleOrder(orderId);
+            }));
+            // Add print handler for modal
+            document.querySelectorAll('.print-order-btn-modal').forEach(b=> b.addEventListener('click', function() {
+                const orderId = this.dataset.orderId;
+                printOrderToPrinter(orderId);
             }));
         }
 
@@ -4672,11 +5812,28 @@ VIP Table</textarea>
                 return;
             }
             try {
-                await auth.signInWithEmailAndPassword(email, password);
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                // Check business admin email
+                const businessDoc = await getBusinessDoc().get();
+                if (!businessDoc.exists) {
+                    loginError.textContent = 'Business configuration not found.';
+                    loginError.style.display = 'block';
+                    await auth.signOut();
+                    return;
+                }
+                const businessData = businessDoc.data();
+                if (businessData.adminEmail !== user.email) {
+                    loginError.textContent = 'This email is not authorized for this business.';
+                    loginError.style.display = 'block';
+                    await auth.signOut();
+                    return;
+                }
                 adminLoginPrompt.style.display = 'none';
                 adminEmail.value = '';
                 adminPassword.value = '';
                 loginError.style.display = 'none';
+                enterAdminMode();
                 // enterAdminMode will be triggered by onAuthStateChanged
             } catch (error) {
                 loginError.textContent = 'Invalid email or password. Please try again.';
@@ -4703,6 +5860,11 @@ VIP Table</textarea>
             await loadInitialData();
             setupListeners();
             autoLoginFromUrl();
+
+            // QR scanner buttons
+            startCameraBtn.addEventListener('click', startCamera);
+            stopCameraBtn.addEventListener('click', stopCamera);
+
             document.getElementById('languageToggleBtn').addEventListener('click', toggleLanguage);
             document.querySelectorAll('.table-btn').forEach(btn => btn.addEventListener('click', function() { selectTable(this.dataset.table, false); }));
             cartFloating.addEventListener('click', function() { if (!state.isAdminMode || (state.currentTable && state.currentTable !== "Admin")) showSection('cartSection'); });
@@ -4737,6 +5899,21 @@ VIP Table</textarea>
             myOrdersButton.addEventListener('click', function() { loadMyOrders(); showSection('myOrdersSection'); });
             document.getElementById('backToMenuFromOrdersBtn').addEventListener('click', ()=> showSection('menuSection'));
             document.getElementById('placeNewOrderBtn').addEventListener('click', function() { resetCart(); showSection('menuSection'); });
+
+            // PDF download button
+            downloadOrderPdfBtn.addEventListener('click', function() {
+                // Find the current order (the one just placed) – stored in state.currentOrderNumber? 
+                // Actually the order is displayed in confirmation section; we need to retrieve it.
+                // We can store the last placed order in a temporary variable.
+                if (state.currentOrderNumber) {
+                    const order = state.orders.find(o => o.orderNumber === state.currentOrderNumber);
+                    if (order) downloadOrderPdf(order);
+                } else {
+                    // Fallback: try to get from URL or last order in state
+                    const lastOrder = state.orders[state.orders.length - 1];
+                    if (lastOrder) downloadOrderPdf(lastOrder);
+                }
+            });
             
             // Admin floating button now shows login prompt
             adminFloating.addEventListener('click', function() {
@@ -4778,9 +5955,13 @@ VIP Table</textarea>
             });
             saveEditOrderBtn.addEventListener('click', saveEditedOrder);
             setupAdminPanel();
+
+            // Table settings modal buttons
+            cancelTableSettingsBtn.addEventListener('click', cancelTableSettings);
+            saveTableSettingsBtn.addEventListener('click', saveTableSettings);
         }
 
-        // ========== UPDATED PLACE ORDER FUNCTION (unchanged) ==========
+        // ========== UPDATED PLACE ORDER FUNCTION ==========
         window.placeOrderOptimistic = async function() {
             if (!state.selectedPaymentMethod || !state.selectedPaymentTime) { showNotification(state.currentLanguage === 'el' ? 'Παρακαλώ επιλέξτε τρόπο και χρόνο πληρωμής' : 'Please select payment method and time'); return; }
             if (state.cart.length === 0) { showNotification(state.currentLanguage === 'el' ? 'Το καλάθι είναι άδειο' : 'Cart is empty'); return; }
@@ -4790,15 +5971,27 @@ VIP Table</textarea>
                 items: state.cart.map(item => ({ ...item })),
                 paymentMethod: state.selectedPaymentMethod, paymentTime: state.selectedPaymentTime,
                 subtotal: calculateSubtotal(), total: calculateTotal(),
-                status: 'pending', timestamp: new Date().toISOString(), customerNotes: ""
+                status: 'pending', timestamp: new Date().toISOString(), customerNotes: "",
+                printed: false          // <-- ADD THIS LINE
             };
             state.orders.push(order);
+            state.currentOrderNumber = orderNumber; // store for PDF
             state.cumulativeStats.totalOrders++;
             state.cumulativeStats.totalRevenue += order.total;
             await saveCumulativeStats();
             showOrderConfirmation(order);
             playSound(state.soundEffects.checkoutSound);
             await saveOrder(order);
+            
+            // Adjust confirmation buttons based on table type
+            const isTakeaway = state.currentTable && state.currentTable.toLowerCase().includes('take away');
+            if (isTakeaway) {
+                document.getElementById('viewMyOrdersBtn').style.display = 'none';
+                document.getElementById('downloadOrderPdfBtn').style.display = 'inline-flex';
+            } else {
+                document.getElementById('viewMyOrdersBtn').style.display = 'inline-flex';
+                document.getElementById('downloadOrderPdfBtn').style.display = 'none';
+            }
             
             if (state.isAdminMode && state.currentTable && state.currentTable !== "Admin") {
                 state.currentTable = null;
