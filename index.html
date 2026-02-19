@@ -4184,6 +4184,12 @@ function openVerticalOrdersView() {
                     const orderId = btn.dataset.orderId;
                     deleteSingleOrder(orderId);
                 }
+                // NEW: Print order button handler
+                if (e.target.classList.contains('print-order-btn') || e.target.closest('.print-order-btn')) {
+                    const btn = e.target.classList.contains('print-order-btn') ? e.target : e.target.closest('.print-order-btn');
+                    const orderId = btn.dataset.orderId;
+                    printOrderToPrinter(orderId);
+                }
             });
             setTimeout(()=>{ 
                 makeAdminGridDraggable('menuItemsList'); 
@@ -4192,6 +4198,92 @@ function openVerticalOrdersView() {
                 makeCategoriesDraggable('categoriesListContainerEn'); // new
                 populateTableSelect('tableSelectForDelete'); 
             },500);
+        }
+
+        // ========== PRINT ORDER FUNCTION (MODIFIED – NO PRICES, NO RESTAURANT, ONLY TABLE, ORDER#, TIME, ITEMS WITH OPTIONS) ==========
+        function printOrderToPrinter(orderId) {
+            const order = state.orders.find(o => o.orderNumber === orderId);
+            if (!order) {
+                showNotification('Order not found.');
+                return;
+            }
+
+            // Format the time nicely
+            const orderTime = new Date(order.timestamp).toLocaleString();
+
+            // Build HTML for the print window – only table, order number, time, items with subcategories/comments
+            const printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Order #${order.orderNumber}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        h2 { margin-bottom: 5px; }
+                        .order-info { margin-bottom: 20px; }
+                        .item { margin-bottom: 15px; }
+                        .item-name { font-weight: bold; }
+                        .options { margin-left: 20px; font-size: 0.9em; color: #555; }
+                        .comment { margin-left: 20px; font-size: 0.9em; color: #2a7f62; font-style: italic; }
+                        hr { border: 0; border-top: 1px solid #ccc; margin: 15px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="order-info">
+                        <h2>Order #${order.orderNumber}</h2>
+                        <p><strong>Table:</strong> ${order.table}</p>
+                        <p><strong>Time:</strong> ${orderTime}</p>
+                    </div>
+                    <hr>
+                    ${order.items.map(item => {
+                        // Start with the main item line (quantity + name)
+                        let itemHtml = `<div class="item"><div class="item-name">${item.quantity} × ${item.name}</div>`;
+                        // Add subcategories/options if they exist
+                        if (item.selectedOptions && item.selectedOptions.length) {
+                            itemHtml += '<div class="options">';
+                            item.selectedOptions.forEach(opt => {
+                                if (opt.isComment) {
+                                    itemHtml += `<div class="comment">📝 ${opt.groupName}: "${opt.choiceName}"</div>`;
+                                } else {
+                                    itemHtml += `<div>• ${opt.groupName}: ${opt.choiceName}</div>`;
+                                }
+                            });
+                            itemHtml += '</div>';
+                        }
+                        itemHtml += '</div>';
+                        return itemHtml;
+                    }).join('')}
+                    <hr>
+                </body>
+                </html>
+            `;
+
+            // Open a new window with the print content
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            if (printWindow) {
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                printWindow.focus();
+                // Automatically open the print dialog after a short delay
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
+            } else {
+                showNotification('Pop‑up blocked. Please allow pop‑ups for printing.');
+                return;
+            }
+
+            // Mark as printed if not already
+            if (!order.printed) {
+                order.printed = true;
+                saveOrder(order);  // Firestore update
+                // Refresh admin lists to show green icon
+                loadOrdersForAdmin();
+                if (adminPanel.style.display === 'flex') loadOrdersForAdminModal();
+            }
+
+            showNotification(`Print dialog opened for order #${order.orderNumber}.`);
         }
 
         function updateLogoPreview() {
@@ -4698,7 +4790,7 @@ function openVerticalOrdersView() {
             await saveCategories();
         }
 
-        // --- ORDER ADMIN (unchanged) ---
+        // --- ORDER ADMIN (unchanged, but added printed icon and print button) ---
         function loadOrdersForAdmin() {
             const list = document.getElementById('adminOrdersList');
             const statusFilter = document.getElementById('orderStatusFilter').value;
@@ -4725,6 +4817,7 @@ function openVerticalOrdersView() {
                     case 'cancelled': badge='<span class="order-status-badge status-cancelled">Cancelled</span>'; break;
                     case 'payed': badge='<span class="order-status-badge status-payed">Payed</span>'; break;
                 }
+                let printedIcon = o.printed ? '<i class="fas fa-print" style="color:green; margin-right:5px;" title="Printed"></i>' : '';
                 let itemsHtml = '';
                 o.items.forEach(item => {
                     itemsHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span><strong>${item.quantity}x ${item.name}</strong></span><span style="color:var(--primary);">$${(item.price*item.quantity).toFixed(2)}</span></div>`;
@@ -4739,7 +4832,7 @@ function openVerticalOrdersView() {
                     itemsHtml += '</div>';
                 });
                 // Add a delete button next to edit button
-                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button></div>`;
+                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">${printedIcon} Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button><button class="btn btn-info btn-small print-order-btn" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-print"></i> Print</button></div>`;
                 list.appendChild(card);
             });
             populateTableSelect('tableSelectForDelete');
@@ -5411,6 +5504,7 @@ function openVerticalOrdersView() {
                     case 'cancelled': badge='<span class="order-status-badge status-cancelled">Cancelled</span>'; 
                     case 'payed': badge='<span class="order-status-badge status-payed">Payed</span>';
                 }
+                let printedIcon = o.printed ? '<i class="fas fa-print" style="color:green; margin-right:5px;" title="Printed"></i>' : '';
                 let itemsHtml = '';
                 o.items.forEach(item => {
                     itemsHtml += `<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between;"><span><strong>${item.quantity}x ${item.name}</strong></span><span style="color:var(--primary);">$${(item.price*item.quantity).toFixed(2)}</span></div>`;
@@ -5425,7 +5519,7 @@ function openVerticalOrdersView() {
                     itemsHtml += '</div>';
                 });
                 // Add delete button in modal as well
-                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button></div>`;
+                card.innerHTML = `<div class="admin-card-header"><div><div class="admin-card-title">${printedIcon} Order #${o.orderNumber}</div><div style="font-size:12px; color:var(--gray);">${date}</div></div><div>${badge}</div></div><p style="margin-bottom:10px; font-size:14px;"><strong>Table:</strong> ${o.table}<br><strong>Items:</strong></p><div style="margin-bottom:15px;">${itemsHtml}</div><p style="margin-bottom:10px; font-size:14px;"><strong>Total:</strong> $${o.total.toFixed(2)}<br><strong>Payment:</strong> ${o.paymentMethod==='card'?'Card':'Cash'} (${o.paymentTime==='now'?'Pay Now':'Pay Later'})</p><div style="display:flex; gap:10px; margin-top:15px;"><select class="admin-select" style="flex:1;" data-order-id="${o.orderNumber}"><option value="pending" ${o.status==='pending'?'selected':''}>Pending</option><option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option><option value="ready" ${o.status==='ready'?'selected':''}>Ready</option><option value="served" ${o.status==='served'?'selected':''}>Served</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option><option value="payed" ${o.status==='payed'?'selected':''}>Payed</option></select><button class="btn btn-primary btn-small update-status-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;">Update</button><button class="btn btn-secondary btn-small edit-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-danger btn-small delete-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-trash"></i> Delete</button><button class="btn btn-info btn-small print-order-btn-modal" data-order-id="${o.orderNumber}" style="padding:8px 15px;"><i class="fas fa-print"></i> Print</button></div>`;
                 list.appendChild(card);
             });
             populateTableSelect('tableSelectForDeleteModal');
@@ -5439,6 +5533,11 @@ function openVerticalOrdersView() {
             document.querySelectorAll('.delete-order-btn-modal').forEach(b=> b.addEventListener('click', function() {
                 const orderId = this.dataset.orderId;
                 deleteSingleOrder(orderId);
+            }));
+            // Add print handler for modal
+            document.querySelectorAll('.print-order-btn-modal').forEach(b=> b.addEventListener('click', function() {
+                const orderId = this.dataset.orderId;
+                printOrderToPrinter(orderId);
             }));
         }
 
@@ -5687,7 +5786,8 @@ function openVerticalOrdersView() {
                 items: state.cart.map(item => ({ ...item })),
                 paymentMethod: state.selectedPaymentMethod, paymentTime: state.selectedPaymentTime,
                 subtotal: calculateSubtotal(), total: calculateTotal(),
-                status: 'pending', timestamp: new Date().toISOString(), customerNotes: ""
+                status: 'pending', timestamp: new Date().toISOString(), customerNotes: "",
+                printed: false          // <-- ADD THIS LINE
             };
             state.orders.push(order);
             state.currentOrderNumber = orderNumber; // store for PDF
