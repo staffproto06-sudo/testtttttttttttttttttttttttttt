@@ -357,30 +357,37 @@
         #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: var(--font-primary); transition: opacity 0.5s ease; }
         .spinner { width: 60px; height: 60px; border: 6px solid var(--light-gray); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* ========== CART FLY ANIMATION ========== */
-        .fly-animation {
+        /* ========== CART ANIMATION ========== */
+        .cart-animation {
             position: fixed;
             z-index: 9999;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
             width: 40px;
             height: 40px;
-            background-color: var(--primary);
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             font-weight: bold;
             font-size: 20px;
             pointer-events: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.6s ease;
-            will-change: transform, opacity;
-            opacity: 1;
-            transform: scale(1);
+            animation: cartPop 0.8s ease-out forwards;
         }
-        .fly-animation.fly {
-            transform: translate(var(--translateX), var(--translateY)) scale(0.2);
-            opacity: 0;
+
+        @keyframes cartPop {
+            0% {
+                transform: scale(0.5) translateY(0);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2) translateY(-20px);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0.8) translateY(-40px);
+                opacity: 0;
+            }
         }
         @media (max-width: 992px) { .theme-gallery { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } .font-options { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
         @media (max-width: 768px) { 
@@ -665,6 +672,11 @@
                     <div class="admin-form-group"><label class="admin-label">Tax Rate (%)</label><input type="number" class="admin-input" id="adminTaxRate" value="8" min="0" max="50" step="0.1"></div>
                     <div class="admin-form-group"><label class="admin-label">Estimated Preparation Time (minutes)</label><input type="text" class="admin-input" id="adminPrepTime" value="15-25"></div>
                     <div class="admin-form-group"><label class="admin-label">Welcome Message</label><textarea class="admin-textarea" id="adminWelcomeMessage" placeholder="Welcome to our restaurant..."></textarea></div>
+                    <!-- NEW Admin Code Field -->
+                    <div class="admin-form-group">
+                        <label class="admin-label">Admin Code (for changes)</label>
+                        <input type="password" class="admin-input" id="adminCode" value="">
+                    </div>
                     <button class="btn btn-primary" id="saveRestaurantSettings"><i class="fas fa-save"></i> Save Restaurant Settings</button>
                 </div>
                 <!-- Menu Management (EL) -->
@@ -1058,6 +1070,11 @@ VIP Table</textarea>
                 <div class="admin-form-group"><label class="admin-label">Tax Rate (%)</label><input type="number" class="admin-input" id="adminTaxRateModal" value="8" min="0" max="50" step="0.1"></div>
                 <div class="admin-form-group"><label class="admin-label">Estimated Preparation Time (minutes)</label><input type="text" class="admin-input" id="adminPrepTimeModal" value="15-25"></div>
                 <div class="admin-form-group"><label class="admin-label">Welcome Message</label><textarea class="admin-textarea" id="adminWelcomeMessageModal" placeholder="Welcome to our restaurant..."></textarea></div>
+                <!-- NEW Admin Code Field in Modal -->
+                <div class="admin-form-group">
+                    <label class="admin-label">Admin Code (for changes)</label>
+                    <input type="password" class="admin-input" id="adminCodeModal" value="">
+                </div>
                 <button class="btn btn-primary" id="saveRestaurantSettingsModal"><i class="fas fa-save"></i> Save Restaurant Settings</button>
             </div>
             <!-- Menu Management Modal (EL) -->
@@ -1257,7 +1274,7 @@ VIP Table</textarea>
         </div>
     </div>
 
-    <!-- ========== ADMIN CHANGE CONFIRMATION PROMPT (unchanged, still uses numeric code) ========== -->
+    <!-- ========== ADMIN CHANGE CONFIRMATION PROMPT (now uses per‑business code) ========== -->
     <div class="admin-code-prompt" id="adminChangePrompt">
         <div class="admin-code-container">
             <div class="admin-code-icon"><i class="fas fa-shield-alt"></i></div>
@@ -1705,7 +1722,8 @@ VIP Table</textarea>
                 taxRate: 8,
                 estimatedPrepTime: "15-25",
                 logoImage: "",
-                welcomeMessage: ""
+                welcomeMessage: "",
+                adminCode: ""   // <-- NEW admin code field
             },
             menuItems: [],
             orders: [],
@@ -1714,8 +1732,8 @@ VIP Table</textarea>
             // NEW: printers array
             printers: [],
             seenHelpRequests: new Set(),
-            adminAccessCode: decodeCode("gege"),  // decodes to "3232"
-            adminChangeCode: decodeCode("lele"),  // decodes to "6262"
+            adminAccessCode: decodeCode("gege"),  // decodes to "3232" (still used for admin table login? may be legacy)
+            // adminChangeCode is REMOVED – now using restaurantInfo.adminCode
             categories: [],
             isAdminMode: false,
             pendingAdminAction: null,
@@ -2100,7 +2118,7 @@ VIP Table</textarea>
         // ========== FIRESTORE SAVE / LOAD (now using helpers) ==========
         // (already defined above)
 
-        // ========== INITIAL LOAD (unchanged, but uses helpers) ==========
+        // ========== INITIAL LOAD (unchanged, but uses helpers and ensures adminCode) ==========
         async function loadInitialData() {
             try {
                 const [restDoc, menuSnap, ordersSnap, catDoc, customDoc, soundDoc, helpSnap, statsDoc, tablesSnap, printersSnap] = await Promise.all([
@@ -2115,8 +2133,13 @@ VIP Table</textarea>
                     getTablesCollection().get(),
                     getPrintersCollection().get()
                 ]);
-                if (restDoc.exists) state.restaurantInfo = restDoc.data();
-                else await getSettingsDoc().set(state.restaurantInfo);
+                if (restDoc.exists) {
+                    state.restaurantInfo = restDoc.data();
+                    // Ensure adminCode exists
+                    if (!state.restaurantInfo.adminCode) state.restaurantInfo.adminCode = "";
+                } else {
+                    await getSettingsDoc().set(state.restaurantInfo);
+                }
                 
                 if (menuSnap.empty) {
                     state.menuItems = JSON.parse(JSON.stringify(defaultMenuItems));
@@ -2531,30 +2554,28 @@ VIP Table</textarea>
                 const itemDesc = getItemDescription(item);
                 const itemTags = getItemTags(item);
                 el.innerHTML = `<div class="item-image" style="${imgStyle}"></div><div class="item-content"><div class="item-header"><div class="item-name">${itemName}</div><div class="item-price">$${item.price.toFixed(2)}</div></div><div class="item-description">${itemDesc}</div>${optInd}<div class="item-footer"><div class="item-tags">${itemTags.map(t=>`<span class="item-tag">${t}</span>`).join('')}</div><button class="add-to-cart" data-id="${item.id}"><i class="fas fa-plus"></i></button></div></div>`;
-                // Pass event to addToCart when clicking the button
+                el.addEventListener('click', function(e) {
+                    if (e.target.closest('.add-to-cart')) return;
+                    addToCart(item.id);
+                });
                 const btn = el.querySelector('.add-to-cart');
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    addToCart(item.id, e);
-                });
-                // Also handle click on the whole card (excluding button)
-                el.addEventListener('click', function(e) {
-                    if (e.target.closest('.add-to-cart')) return;
-                    addToCart(item.id, e);
+                    addToCart(item.id);
                 });
                 menuGrid.appendChild(el);
             });
         }
 
-        // ========== CART FUNCTIONS (updated to accept event for animation) ==========
-        function addToCart(itemId, event) {
+        // ========== CART FUNCTIONS (unchanged, with added animation) ==========
+        function addToCart(itemId) {
             if (state.isAdminMode && (!state.currentTable || state.currentTable === "Admin")) return;
             const item = state.menuItems.find(i=>i.id===itemId);
             if (!item) return;
             if (item.options && item.options.length) openOptionsModal(item);
-            else addToCartWithOptions(itemId, [], event);
+            else addToCartWithOptions(itemId, []);
         }
-        function addToCartWithOptions(itemId, selectedOptions = [], event) {
+        function addToCartWithOptions(itemId, selectedOptions = []) {
             if (state.isAdminMode && (!state.currentTable || state.currentTable === "Admin")) return;
             const menuItem = state.menuItems.find(i=>i.id===itemId);
             if (!menuItem) return;
@@ -2579,61 +2600,25 @@ VIP Table</textarea>
                 else state.cart.push(cartItem);
             } else state.cart.push(cartItem);
             updateCart();
-            
-            // Animate from the clicked element if available
-            if (event && event.target) {
-                // Try to get the menu item element (the card)
-                const sourceElement = event.target.closest('.menu-item');
-                if (sourceElement) {
-                    animateFlyToCart(sourceElement);
-                } else {
-                    // Fallback: from the button itself
-                    animateFlyToCart(event.target);
-                }
-            } else {
-                // If no event (e.g., from options modal), we could still animate from somewhere
-                // For now, we skip animation in that case.
-            }
-            
+            animateCart(); // <-- ADD ANIMATION HERE
             showNotification(state.currentLanguage === 'el' ? `Το ${getItemName(menuItem)} προστέθηκε στο καλάθι` : `${getItemName(menuItem)} added to cart`);
             playSound(state.soundEffects.addToCartSound);
         }
 
-        // ========== FLY ANIMATION FUNCTION ==========
-        function animateFlyToCart(sourceElement) {
-            const cartElement = document.getElementById('cartFloating');
-            if (!cartElement || !sourceElement) return;
-
-            const sourceRect = sourceElement.getBoundingClientRect();
-            const cartRect = cartElement.getBoundingClientRect();
-
-            // Create a flying element (a small circle)
-            const flyer = document.createElement('div');
-            flyer.className = 'fly-animation';
-            flyer.textContent = '+1'; // Or use an icon
-            flyer.style.left = (sourceRect.left + sourceRect.width / 2 - 20) + 'px';
-            flyer.style.top = (sourceRect.top + sourceRect.height / 2 - 20) + 'px';
-
-            document.body.appendChild(flyer);
-
-            // Force a reflow to ensure the initial position is set
-            flyer.offsetHeight;
-
-            // Calculate the distance to the cart
-            const deltaX = cartRect.left + cartRect.width / 2 - 20 - (sourceRect.left + sourceRect.width / 2 - 20);
-            const deltaY = cartRect.top + cartRect.height / 2 - 20 - (sourceRect.top + sourceRect.height / 2 - 20);
-
-            // Set CSS custom properties for the translation
-            flyer.style.setProperty('--translateX', deltaX + 'px');
-            flyer.style.setProperty('--translateY', deltaY + 'px');
-
-            // Add the fly class to start animation
-            flyer.classList.add('fly');
-
-            // Remove the element after animation
+        // ========== CART ANIMATION FUNCTION ==========
+        function animateCart() {
+            const cartEl = document.getElementById('cartFloating');
+            if (!cartEl) return;
+            const rect = cartEl.getBoundingClientRect();
+            const anim = document.createElement('div');
+            anim.className = 'cart-animation';
+            anim.textContent = '+1';
+            anim.style.left = (rect.left + rect.width/2 - 20) + 'px';
+            anim.style.top = (rect.top + rect.height/2 - 20) + 'px';
+            document.body.appendChild(anim);
             setTimeout(() => {
-                flyer.remove();
-            }, 600);
+                anim.remove();
+            }, 800);
         }
 
         function openOptionsModal(item) {
@@ -2675,9 +2660,7 @@ VIP Table</textarea>
                         if (cf && cf.value.trim() !== '') selected.push({ groupName: g.name, choiceName: cf.value.trim(), price: 0, isComment: true });
                     }
                 });
-                // When adding from modal, we don't have a direct source element, so we can either not animate or animate from modal position.
-                // For simplicity, we'll pass no event (no animation) in this case.
-                addToCartWithOptions(item.id, selected, null);
+                addToCartWithOptions(item.id, selected);
                 optionsModal.style.display = 'none';
             });
         }
@@ -4487,6 +4470,8 @@ function openVerticalOrdersView() {
             document.getElementById('adminTaxRate').value = state.restaurantInfo.taxRate;
             document.getElementById('adminPrepTime').value = state.restaurantInfo.estimatedPrepTime;
             document.getElementById('adminWelcomeMessage').value = state.restaurantInfo.welcomeMessage || '';
+            // NEW: set admin code field
+            document.getElementById('adminCode').value = state.restaurantInfo.adminCode || '';
             updateLogoPreview();
             loadMenuItemsForAdmin();
             loadMenuItemsForAdminEn();
@@ -4545,7 +4530,7 @@ function openVerticalOrdersView() {
             document.getElementById('deleteOrdersForTableBtn').addEventListener('click', function() {
                 const sel = document.getElementById('tableSelectForDelete');
                 if (sel.value) {
-                    state.pendingAdminCodeAction = async () => { await deleteOrdersForTable(sel.value); };
+                    state.pendingAdminAction = async () => { await deleteOrdersForTable(sel.value); };
                     showAdminChangePrompt(); // uses the numeric code modal
                 } else {
                     showNotification('Please select a table.');
@@ -4726,6 +4711,7 @@ function openVerticalOrdersView() {
             state.restaurantInfo.taxRate = parseFloat(document.getElementById('adminTaxRate').value);
             state.restaurantInfo.estimatedPrepTime = document.getElementById('adminPrepTime').value;
             state.restaurantInfo.welcomeMessage = document.getElementById('adminWelcomeMessage').value;
+            state.restaurantInfo.adminCode = document.getElementById('adminCode').value;  // <-- NEW
             updateRestaurantUI();
             showNotification("Restaurant settings saved.");
             await saveRestaurantInfo();
@@ -5766,6 +5752,7 @@ function openVerticalOrdersView() {
             document.getElementById('adminTaxRateModal').value = state.restaurantInfo.taxRate;
             document.getElementById('adminPrepTimeModal').value = state.restaurantInfo.estimatedPrepTime;
             document.getElementById('adminWelcomeMessageModal').value = state.restaurantInfo.welcomeMessage || '';
+            document.getElementById('adminCodeModal').value = state.restaurantInfo.adminCode || ''; // NEW
             updateLogoPreview();
             loadMenuItemsForAdminModal();
             loadMenuItemsForAdminModalEn();
@@ -5779,7 +5766,7 @@ function openVerticalOrdersView() {
             document.getElementById('deleteOrdersForTableBtnModal').addEventListener('click', function() {
                 const sel = document.getElementById('tableSelectForDeleteModal');
                 if (sel.value) {
-                    state.pendingAdminCodeAction = async () => { await deleteOrdersForTable(sel.value); };
+                    state.pendingAdminAction = async () => { await deleteOrdersForTable(sel.value); };
                     showAdminChangePrompt(); // uses the numeric code modal
                 } else {
                     showNotification('Please select a table.');
@@ -6090,7 +6077,7 @@ function openVerticalOrdersView() {
             loginError.style.display = 'none';
         }
 
-        // ========== SHOW ADMIN CHANGE PROMPT (unchanged) ==========
+        // ========== SHOW ADMIN CHANGE PROMPT (now uses dynamic adminCode) ==========
         function showAdminChangePrompt(callback) {
             state.pendingAdminAction = callback;
             adminChangePrompt.style.display = 'flex';
@@ -6174,9 +6161,9 @@ function openVerticalOrdersView() {
             submitAdminLoginBtn.addEventListener('click', handleAdminLogin);
             cancelAdminLoginBtn.addEventListener('click', cancelAdminLogin);
 
-            // Change code modal (unchanged)
+            // Change code modal – now uses dynamic adminCode
             submitChangeCodeBtn.addEventListener('click', function() { 
-                if (adminChangeCodeInput.value === state.adminChangeCode) { 
+                if (adminChangeCodeInput.value === state.restaurantInfo.adminCode) { 
                     adminChangePrompt.style.display = 'none'; 
                     adminChangeCodeInput.value = ''; 
                     if (state.pendingAdminAction) { 
