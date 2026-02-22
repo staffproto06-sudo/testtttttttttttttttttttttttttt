@@ -673,11 +673,11 @@
                     <div class="admin-form-group"><label class="admin-label">Estimated Preparation Time (minutes)</label><input type="text" class="admin-input" id="adminPrepTime" value="15-25"></div>
                     <div class="admin-form-group"><label class="admin-label">Welcome Message</label><textarea class="admin-textarea" id="adminWelcomeMessage" placeholder="Welcome to our restaurant..."></textarea></div>
                     <!-- NEW FIELD: Admin Change Code -->
-                    <div class="admin-form-group">
-                        <label class="admin-label">Admin Change Code (4 digits)</label>
-                        <input type="password" class="admin-input" maxlength="4" placeholder="Enter 4-digit code">
-                    </div>
-                    <button class="btn btn-primary" id="saveRestaurantSettings"><i class="fas fa-save"></i> Save Restaurant Settings</button>
+                   <div class="admin-form-group">
+              <label class="admin-label">Admin Change Code (4 digits)</label>
+              <input type="password" class="admin-input" id="****" maxlength="4" pattern="\d*" placeholder="Enter 4-digit code">
+          </div>
+               <button class="btn btn-primary" id="saveRestaurantSettings"><i class="fas fa-save"></i> Save Restaurant Settings</button>
                 </div>
                 <!-- Menu Management (EL) -->
                 <div class="admin-content" id="menuTab">
@@ -1072,9 +1072,10 @@ VIP Table</textarea>
                 <div class="admin-form-group"><label class="admin-label">Welcome Message</label><textarea class="admin-textarea" id="adminWelcomeMessageModal" placeholder="Welcome to our restaurant..."></textarea></div>
                 <!-- NEW FIELD: Admin Change Code (Modal) -->
                 <div class="admin-form-group">
-                   <label class="admin-label">Admin Change Code (4 digits)</label>
-                   <input type="password" class="admin-input" id="adminChangeCodeModal" maxlength="4" placeholder="Enter 4-digit code">
-               </div>
+                   <div class="admin-form-group">
+              <label class="admin-label">Admin Change Code (4 digits)</label>
+              <input type="password" class="admin-input" id="****" maxlength="4" pattern="\d*" placeholder="Enter 4-digit code">
+          </div>
                 <button class="btn btn-primary" id="saveRestaurantSettingsModal"><i class="fas fa-save"></i> Save Restaurant Settings</button>
             </div>
             <!-- Menu Management Modal (EL) -->
@@ -6283,6 +6284,7 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
+
 
 
 
