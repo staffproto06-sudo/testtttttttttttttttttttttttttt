@@ -357,37 +357,30 @@
         #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: var(--font-primary); transition: opacity 0.5s ease; }
         .spinner { width: 60px; height: 60px; border: 6px solid var(--light-gray); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* ========== CART ANIMATION ========== */
-        .cart-animation {
+        /* ========== CART FLY ANIMATION ========== */
+        .fly-animation {
             position: fixed;
             z-index: 9999;
-            background-color: var(--primary);
-            color: white;
-            border-radius: 50%;
             width: 40px;
             height: 40px;
+            background-color: var(--primary);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
             font-weight: bold;
             font-size: 20px;
             pointer-events: none;
-            animation: cartPop 0.8s ease-out forwards;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.6s ease;
+            will-change: transform, opacity;
+            opacity: 1;
+            transform: scale(1);
         }
-
-        @keyframes cartPop {
-            0% {
-                transform: scale(0.5) translateY(0);
-                opacity: 1;
-            }
-            50% {
-                transform: scale(1.2) translateY(-20px);
-                opacity: 0.8;
-            }
-            100% {
-                transform: scale(0.8) translateY(-40px);
-                opacity: 0;
-            }
+        .fly-animation.fly {
+            transform: translate(var(--translateX), var(--translateY)) scale(0.2);
+            opacity: 0;
         }
         @media (max-width: 992px) { .theme-gallery { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } .font-options { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
         @media (max-width: 768px) { 
@@ -2538,28 +2531,30 @@ VIP Table</textarea>
                 const itemDesc = getItemDescription(item);
                 const itemTags = getItemTags(item);
                 el.innerHTML = `<div class="item-image" style="${imgStyle}"></div><div class="item-content"><div class="item-header"><div class="item-name">${itemName}</div><div class="item-price">$${item.price.toFixed(2)}</div></div><div class="item-description">${itemDesc}</div>${optInd}<div class="item-footer"><div class="item-tags">${itemTags.map(t=>`<span class="item-tag">${t}</span>`).join('')}</div><button class="add-to-cart" data-id="${item.id}"><i class="fas fa-plus"></i></button></div></div>`;
-                el.addEventListener('click', function(e) {
-                    if (e.target.closest('.add-to-cart')) return;
-                    addToCart(item.id);
-                });
+                // Pass event to addToCart when clicking the button
                 const btn = el.querySelector('.add-to-cart');
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    addToCart(item.id);
+                    addToCart(item.id, e);
+                });
+                // Also handle click on the whole card (excluding button)
+                el.addEventListener('click', function(e) {
+                    if (e.target.closest('.add-to-cart')) return;
+                    addToCart(item.id, e);
                 });
                 menuGrid.appendChild(el);
             });
         }
 
-        // ========== CART FUNCTIONS (unchanged, with added animation) ==========
-        function addToCart(itemId) {
+        // ========== CART FUNCTIONS (updated to accept event for animation) ==========
+        function addToCart(itemId, event) {
             if (state.isAdminMode && (!state.currentTable || state.currentTable === "Admin")) return;
             const item = state.menuItems.find(i=>i.id===itemId);
             if (!item) return;
             if (item.options && item.options.length) openOptionsModal(item);
-            else addToCartWithOptions(itemId, []);
+            else addToCartWithOptions(itemId, [], event);
         }
-        function addToCartWithOptions(itemId, selectedOptions = []) {
+        function addToCartWithOptions(itemId, selectedOptions = [], event) {
             if (state.isAdminMode && (!state.currentTable || state.currentTable === "Admin")) return;
             const menuItem = state.menuItems.find(i=>i.id===itemId);
             if (!menuItem) return;
@@ -2584,25 +2579,61 @@ VIP Table</textarea>
                 else state.cart.push(cartItem);
             } else state.cart.push(cartItem);
             updateCart();
-            animateCart(); // <-- ADD ANIMATION HERE
+            
+            // Animate from the clicked element if available
+            if (event && event.target) {
+                // Try to get the menu item element (the card)
+                const sourceElement = event.target.closest('.menu-item');
+                if (sourceElement) {
+                    animateFlyToCart(sourceElement);
+                } else {
+                    // Fallback: from the button itself
+                    animateFlyToCart(event.target);
+                }
+            } else {
+                // If no event (e.g., from options modal), we could still animate from somewhere
+                // For now, we skip animation in that case.
+            }
+            
             showNotification(state.currentLanguage === 'el' ? `Το ${getItemName(menuItem)} προστέθηκε στο καλάθι` : `${getItemName(menuItem)} added to cart`);
             playSound(state.soundEffects.addToCartSound);
         }
 
-        // ========== CART ANIMATION FUNCTION ==========
-        function animateCart() {
-            const cartEl = document.getElementById('cartFloating');
-            if (!cartEl) return;
-            const rect = cartEl.getBoundingClientRect();
-            const anim = document.createElement('div');
-            anim.className = 'cart-animation';
-            anim.textContent = '+1';
-            anim.style.left = (rect.left + rect.width/2 - 20) + 'px';
-            anim.style.top = (rect.top + rect.height/2 - 20) + 'px';
-            document.body.appendChild(anim);
+        // ========== FLY ANIMATION FUNCTION ==========
+        function animateFlyToCart(sourceElement) {
+            const cartElement = document.getElementById('cartFloating');
+            if (!cartElement || !sourceElement) return;
+
+            const sourceRect = sourceElement.getBoundingClientRect();
+            const cartRect = cartElement.getBoundingClientRect();
+
+            // Create a flying element (a small circle)
+            const flyer = document.createElement('div');
+            flyer.className = 'fly-animation';
+            flyer.textContent = '+1'; // Or use an icon
+            flyer.style.left = (sourceRect.left + sourceRect.width / 2 - 20) + 'px';
+            flyer.style.top = (sourceRect.top + sourceRect.height / 2 - 20) + 'px';
+
+            document.body.appendChild(flyer);
+
+            // Force a reflow to ensure the initial position is set
+            flyer.offsetHeight;
+
+            // Calculate the distance to the cart
+            const deltaX = cartRect.left + cartRect.width / 2 - 20 - (sourceRect.left + sourceRect.width / 2 - 20);
+            const deltaY = cartRect.top + cartRect.height / 2 - 20 - (sourceRect.top + sourceRect.height / 2 - 20);
+
+            // Set CSS custom properties for the translation
+            flyer.style.setProperty('--translateX', deltaX + 'px');
+            flyer.style.setProperty('--translateY', deltaY + 'px');
+
+            // Add the fly class to start animation
+            flyer.classList.add('fly');
+
+            // Remove the element after animation
             setTimeout(() => {
-                anim.remove();
-            }, 800);
+                flyer.remove();
+            }, 600);
         }
 
         function openOptionsModal(item) {
@@ -2644,7 +2675,9 @@ VIP Table</textarea>
                         if (cf && cf.value.trim() !== '') selected.push({ groupName: g.name, choiceName: cf.value.trim(), price: 0, isComment: true });
                     }
                 });
-                addToCartWithOptions(item.id, selected);
+                // When adding from modal, we don't have a direct source element, so we can either not animate or animate from modal position.
+                // For simplicity, we'll pass no event (no animation) in this case.
+                addToCartWithOptions(item.id, selected, null);
                 optionsModal.style.display = 'none';
             });
         }
