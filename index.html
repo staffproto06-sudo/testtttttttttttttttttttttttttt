@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
-     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
    
     <link rel="icon" type="image/x-icon" href="https://github.com/staffproto06-sudo/testtttttttttttttttttttttttttt/tree/main/favicon_io">
     <meta charset="UTF-8">
@@ -555,7 +554,7 @@
         </div>
     </section>
 
-    <!-- ========== PAYMENT SECTION ========== -->
+    <!-- ========== PAYMENT SECTION (with customisable texts via JS) ========== -->
     <section id="paymentSection" class="app-section">
         <div class="container">
             <h2 class="section-title" data-i18n="paymentTitle">Πληρωμή</h2>
@@ -565,15 +564,31 @@
                     <div class="option-group">
                         <div class="option-title" data-i18n="paymentMethod">Τρόπος Πληρωμής</div>
                         <div class="option-cards">
-                            <div class="option-card" data-payment="card"><div class="option-icon"><i class="fas fa-credit-card"></i></div><div class="option-name" data-i18n="paymentCard">Πιστωτική/Χρεωστική Κάρτα</div><div class="option-desc" data-i18n="paymentCardDesc">Πληρώστε με κάρτα</div></div>
-                            <div class="option-card" data-payment="cash"><div class="option-icon"><i class="fas fa-money-bill-wave"></i></div><div class="option-name" data-i18n="paymentCash">Μετρητά</div><div class="option-desc" data-i18n="paymentCashDesc">Πληρώστε με μετρητά</div></div>
+                            <div class="option-card" data-payment="card">
+                                <div class="option-icon"><i class="fas fa-credit-card"></i></div>
+                                <div class="option-name" id="paymentCardLabel" data-i18n="paymentCard">Πιστωτική/Χρεωστική Κάρτα</div>
+                                <div class="option-desc" id="paymentCardDesc" data-i18n="paymentCardDesc">Πληρώστε με κάρτα</div>
+                            </div>
+                            <div class="option-card" data-payment="cash">
+                                <div class="option-icon"><i class="fas fa-money-bill-wave"></i></div>
+                                <div class="option-name" id="paymentCashLabel" data-i18n="paymentCash">Μετρητά</div>
+                                <div class="option-desc" id="paymentCashDesc" data-i18n="paymentCashDesc">Πληρώστε με μετρητά</div>
+                            </div>
                         </div>
                     </div>
                     <div class="option-group">
                         <div class="option-title" data-i18n="paymentTime">Χρόνος Πληρωμής</div>
                         <div class="option-cards">
-                            <div class="option-card" data-time="now"><div class="option-icon"><i class="fas fa-bolt"></i></div><div class="option-name" data-i18n="payNow">Πληρωμή Τώρα</div><div class="option-desc" data-i18n="payNowDesc">Ολοκληρώστε την πληρωμή άμεσα</div></div>
-                            <div class="option-card" data-time="later"><div class="option-icon"><i class="fas fa-clock"></i></div><div class="option-name" data-i18n="payLater">Πληρωμή Αργότερα</div><div class="option-desc" data-i18n="payLaterDesc">Πληρώστε στο ταμείο όταν φεύγετε</div></div>
+                            <div class="option-card" data-time="now">
+                                <div class="option-icon"><i class="fas fa-bolt"></i></div>
+                                <div class="option-name" id="paymentNowLabel" data-i18n="payNow">Πληρωμή Τώρα</div>
+                                <div class="option-desc" id="paymentNowDesc" data-i18n="payNowDesc">Ολοκληρώστε την πληρωμή άμεσα</div>
+                            </div>
+                            <div class="option-card" data-time="later">
+                                <div class="option-icon"><i class="fas fa-clock"></i></div>
+                                <div class="option-name" id="paymentLaterLabel" data-i18n="payLater">Πληρωμή Αργότερα</div>
+                                <div class="option-desc" id="paymentLaterDesc" data-i18n="payLaterDesc">Πληρώστε στο ταμείο όταν φεύγετε</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -657,7 +672,7 @@
                     <button class="admin-tab" data-tab="qr">Table QR Codes</button>
                     <button class="admin-tab" data-tab="system">System Tools</button>
                 </div>
-                <!-- Restaurant Settings (modified with adminChangeCode) -->
+                <!-- Restaurant Settings (modified with custom payment texts) -->
                 <div class="admin-content active" id="restaurantTab">
                     <div class="admin-form-group"><label class="admin-label">Restaurant Name</label><input type="text" class="admin-input" id="adminRestaurantName" value="DineEasy"></div>
                     <div class="image-upload-container">
@@ -672,7 +687,18 @@
                     <div class="admin-form-group"><label class="admin-label">Tax Rate (%)</label><input type="number" class="admin-input" id="adminTaxRate" value="8" min="0" max="50" step="0.1"></div>
                     <div class="admin-form-group"><label class="admin-label">Estimated Preparation Time (minutes)</label><input type="text" class="admin-input" id="adminPrepTime" value="15-25"></div>
                     <div class="admin-form-group"><label class="admin-label">Welcome Message</label><textarea class="admin-textarea" id="adminWelcomeMessage" placeholder="Welcome to our restaurant..."></textarea></div>
-                    <!-- NEW FIELD: Admin Change Code -->
+                    <!-- NEW CUSTOM PAYMENT TEXTS -->
+                    <h4 style="margin: 20px 0 10px;">Payment Method Custom Texts</h4>
+                    <div class="admin-form-group"><label class="admin-label">Card Method - Label</label><input type="text" class="admin-input" id="adminPaymentCardLabel" placeholder="e.g., Credit/Debit Card"></div>
+                    <div class="admin-form-group"><label class="admin-label">Card Method - Description</label><input type="text" class="admin-input" id="adminPaymentCardDesc" placeholder="e.g., Pay with card"></div>
+                    <div class="admin-form-group"><label class="admin-label">Cash Method - Label</label><input type="text" class="admin-input" id="adminPaymentCashLabel" placeholder="e.g., Cash"></div>
+                    <div class="admin-form-group"><label class="admin-label">Cash Method - Description</label><input type="text" class="admin-input" id="adminPaymentCashDesc" placeholder="e.g., Pay with cash"></div>
+                    <h4 style="margin: 20px 0 10px;">Payment Time Custom Texts</h4>
+                    <div class="admin-form-group"><label class="admin-label">Pay Now - Label</label><input type="text" class="admin-input" id="adminPaymentNowLabel" placeholder="e.g., Pay Now"></div>
+                    <div class="admin-form-group"><label class="admin-label">Pay Now - Description</label><input type="text" class="admin-input" id="adminPaymentNowDesc" placeholder="e.g., Complete payment immediately"></div>
+                    <div class="admin-form-group"><label class="admin-label">Pay Later - Label</label><input type="text" class="admin-input" id="adminPaymentLaterLabel" placeholder="e.g., Pay Later"></div>
+                    <div class="admin-form-group"><label class="admin-label">Pay Later - Description</label><input type="text" class="admin-input" id="adminPaymentLaterDesc" placeholder="e.g., Pay at counter"></div>
+                    <!-- Admin Change Code -->
                     <div class="admin-form-group">
                         <label class="admin-label">Admin Change Code (4 digits)</label>
                         <input type="text" class="admin-input" id="adminChangeCode" maxlength="4" pattern="\d*" placeholder="e.g., 6262">
@@ -1055,7 +1081,7 @@ VIP Table</textarea>
                 <button class="admin-tab" data-tab="qr">QR Codes</button>
                 <button class="admin-tab" data-tab="system">System</button>
             </div>
-            <!-- Restaurant Settings Modal (modified with adminChangeCode) -->
+            <!-- Restaurant Settings Modal (modified with custom payment texts) -->
             <div class="admin-content active" id="restaurantTabModal">
                 <div class="admin-form-group"><label class="admin-label">Restaurant Name</label><input type="text" class="admin-input" id="adminRestaurantNameModal" value="DineEasy"></div>
                 <div class="image-upload-container">
@@ -1070,7 +1096,18 @@ VIP Table</textarea>
                 <div class="admin-form-group"><label class="admin-label">Tax Rate (%)</label><input type="number" class="admin-input" id="adminTaxRateModal" value="8" min="0" max="50" step="0.1"></div>
                 <div class="admin-form-group"><label class="admin-label">Estimated Preparation Time (minutes)</label><input type="text" class="admin-input" id="adminPrepTimeModal" value="15-25"></div>
                 <div class="admin-form-group"><label class="admin-label">Welcome Message</label><textarea class="admin-textarea" id="adminWelcomeMessageModal" placeholder="Welcome to our restaurant..."></textarea></div>
-                <!-- NEW FIELD: Admin Change Code (Modal) -->
+                <!-- NEW CUSTOM PAYMENT TEXTS (Modal) -->
+                <h4 style="margin: 20px 0 10px;">Payment Method Custom Texts</h4>
+                <div class="admin-form-group"><label class="admin-label">Card Method - Label</label><input type="text" class="admin-input" id="adminPaymentCardLabelModal" placeholder="e.g., Credit/Debit Card"></div>
+                <div class="admin-form-group"><label class="admin-label">Card Method - Description</label><input type="text" class="admin-input" id="adminPaymentCardDescModal" placeholder="e.g., Pay with card"></div>
+                <div class="admin-form-group"><label class="admin-label">Cash Method - Label</label><input type="text" class="admin-input" id="adminPaymentCashLabelModal" placeholder="e.g., Cash"></div>
+                <div class="admin-form-group"><label class="admin-label">Cash Method - Description</label><input type="text" class="admin-input" id="adminPaymentCashDescModal" placeholder="e.g., Pay with cash"></div>
+                <h4 style="margin: 20px 0 10px;">Payment Time Custom Texts</h4>
+                <div class="admin-form-group"><label class="admin-label">Pay Now - Label</label><input type="text" class="admin-input" id="adminPaymentNowLabelModal" placeholder="e.g., Pay Now"></div>
+                <div class="admin-form-group"><label class="admin-label">Pay Now - Description</label><input type="text" class="admin-input" id="adminPaymentNowDescModal" placeholder="e.g., Complete payment immediately"></div>
+                <div class="admin-form-group"><label class="admin-label">Pay Later - Label</label><input type="text" class="admin-input" id="adminPaymentLaterLabelModal" placeholder="e.g., Pay Later"></div>
+                <div class="admin-form-group"><label class="admin-label">Pay Later - Description</label><input type="text" class="admin-input" id="adminPaymentLaterDescModal" placeholder="e.g., Pay at counter"></div>
+                <!-- Admin Change Code (Modal) -->
                 <div class="admin-form-group">
                     <label class="admin-label">Admin Change Code (4 digits)</label>
                     <input type="text" class="admin-input" id="adminChangeCodeModal" maxlength="4" pattern="\d*" placeholder="e.g., 6262">
@@ -1709,7 +1746,7 @@ VIP Table</textarea>
             }
         }
 
-        // ========== STATE (with obfuscated admin codes) ==========
+        // ========== STATE (with obfuscated admin codes + custom payment texts) ==========
         const state = {
             currentTable: null,
             cart: [],
@@ -1723,6 +1760,15 @@ VIP Table</textarea>
                 estimatedPrepTime: "15-25",
                 logoImage: "",
                 welcomeMessage: "",
+                // Custom payment texts (will be loaded from Firestore)
+                paymentCardLabel: "",
+                paymentCardDesc: "",
+                paymentCashLabel: "",
+                paymentCashDesc: "",
+                paymentNowLabel: "",
+                paymentNowDesc: "",
+                paymentLaterLabel: "",
+                paymentLaterDesc: "",
                 adminChangeCode: decodeCode("lele")  // default 6262
             },
             menuItems: [],
@@ -2063,7 +2109,75 @@ VIP Table</textarea>
             return cat.displayName || categoryId;
         }
 
-        // ========== TRANSLATION FUNCTION (unchanged) ==========
+        // ========== CUSTOM PAYMENT TEXT HELPERS ==========
+        function getPaymentMethodLabel(method) {
+            const lang = state.currentLanguage;
+            if (method === 'card') {
+                return state.restaurantInfo.paymentCardLabel && state.restaurantInfo.paymentCardLabel.trim() !== ''
+                    ? state.restaurantInfo.paymentCardLabel
+                    : (lang === 'el' ? 'Πιστωτική/Χρεωστική Κάρτα' : 'Credit/Debit Card');
+            } else {
+                return state.restaurantInfo.paymentCashLabel && state.restaurantInfo.paymentCashLabel.trim() !== ''
+                    ? state.restaurantInfo.paymentCashLabel
+                    : (lang === 'el' ? 'Μετρητά' : 'Cash');
+            }
+        }
+        function getPaymentMethodDesc(method) {
+            if (method === 'card') {
+                return state.restaurantInfo.paymentCardDesc && state.restaurantInfo.paymentCardDesc.trim() !== ''
+                    ? state.restaurantInfo.paymentCardDesc
+                    : (state.currentLanguage === 'el' ? 'Πληρώστε με κάρτα' : 'Pay with card');
+            } else {
+                return state.restaurantInfo.paymentCashDesc && state.restaurantInfo.paymentCashDesc.trim() !== ''
+                    ? state.restaurantInfo.paymentCashDesc
+                    : (state.currentLanguage === 'el' ? 'Πληρώστε με μετρητά' : 'Pay with cash');
+            }
+        }
+        function getPaymentTimeLabel(time) {
+            if (time === 'now') {
+                return state.restaurantInfo.paymentNowLabel && state.restaurantInfo.paymentNowLabel.trim() !== ''
+                    ? state.restaurantInfo.paymentNowLabel
+                    : (state.currentLanguage === 'el' ? 'Πληρωμή Τώρα' : 'Pay Now');
+            } else {
+                return state.restaurantInfo.paymentLaterLabel && state.restaurantInfo.paymentLaterLabel.trim() !== ''
+                    ? state.restaurantInfo.paymentLaterLabel
+                    : (state.currentLanguage === 'el' ? 'Πληρωμή Αργότερα' : 'Pay Later');
+            }
+        }
+        function getPaymentTimeDesc(time) {
+            if (time === 'now') {
+                return state.restaurantInfo.paymentNowDesc && state.restaurantInfo.paymentNowDesc.trim() !== ''
+                    ? state.restaurantInfo.paymentNowDesc
+                    : (state.currentLanguage === 'el' ? 'Ολοκληρώστε την πληρωμή άμεσα' : 'Complete payment immediately');
+            } else {
+                return state.restaurantInfo.paymentLaterDesc && state.restaurantInfo.paymentLaterDesc.trim() !== ''
+                    ? state.restaurantInfo.paymentLaterDesc
+                    : (state.currentLanguage === 'el' ? 'Πληρώστε στο ταμείο όταν φεύγετε' : 'Pay at the counter when you leave');
+            }
+        }
+
+        // Update payment option texts in the payment section
+        function updatePaymentOptionsText() {
+            const cardLabel = document.getElementById('paymentCardLabel');
+            const cardDesc = document.getElementById('paymentCardDesc');
+            const cashLabel = document.getElementById('paymentCashLabel');
+            const cashDesc = document.getElementById('paymentCashDesc');
+            const nowLabel = document.getElementById('paymentNowLabel');
+            const nowDesc = document.getElementById('paymentNowDesc');
+            const laterLabel = document.getElementById('paymentLaterLabel');
+            const laterDesc = document.getElementById('paymentLaterDesc');
+
+            if (cardLabel) cardLabel.textContent = getPaymentMethodLabel('card');
+            if (cardDesc) cardDesc.textContent = getPaymentMethodDesc('card');
+            if (cashLabel) cashLabel.textContent = getPaymentMethodLabel('cash');
+            if (cashDesc) cashDesc.textContent = getPaymentMethodDesc('cash');
+            if (nowLabel) nowLabel.textContent = getPaymentTimeLabel('now');
+            if (nowDesc) nowDesc.textContent = getPaymentTimeDesc('now');
+            if (laterLabel) laterLabel.textContent = getPaymentTimeLabel('later');
+            if (laterDesc) laterDesc.textContent = getPaymentTimeDesc('later');
+        }
+
+        // ========== TRANSLATION FUNCTION (updated to also update payment texts) ==========
         function applyTranslations() {
             const lang = state.currentLanguage;
             document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -2083,6 +2197,8 @@ VIP Table</textarea>
                 cartSubtitle.textContent = lang === 'el' ? `Η παραγγελία σας για ${state.currentTable}` : `Your order for ${state.currentTable}`;
             }
             document.getElementById('langToggleText').textContent = lang === 'el' ? 'EN' : 'EL';
+            // Also update payment option texts with custom labels
+            updatePaymentOptionsText();
         }
 
         // ========== LANGUAGE TOGGLE (UPDATED TO TRANSLATE CATEGORIES) ==========
@@ -2118,7 +2234,7 @@ VIP Table</textarea>
         // ========== FIRESTORE SAVE / LOAD (now using helpers) ==========
         // (already defined above)
 
-        // ========== INITIAL LOAD (unchanged, but uses helpers and now loads adminChangeCode) ==========
+        // ========== INITIAL LOAD (unchanged, but uses helpers and now loads custom payment texts) ==========
         async function loadInitialData() {
             try {
                 const [restDoc, menuSnap, ordersSnap, catDoc, customDoc, soundDoc, helpSnap, statsDoc, tablesSnap, printersSnap] = await Promise.all([
@@ -2135,6 +2251,15 @@ VIP Table</textarea>
                 ]);
                 if (restDoc.exists) {
                     state.restaurantInfo = restDoc.data();
+                    // Load custom payment texts (ensure they exist)
+                    state.restaurantInfo.paymentCardLabel = state.restaurantInfo.paymentCardLabel || "";
+                    state.restaurantInfo.paymentCardDesc = state.restaurantInfo.paymentCardDesc || "";
+                    state.restaurantInfo.paymentCashLabel = state.restaurantInfo.paymentCashLabel || "";
+                    state.restaurantInfo.paymentCashDesc = state.restaurantInfo.paymentCashDesc || "";
+                    state.restaurantInfo.paymentNowLabel = state.restaurantInfo.paymentNowLabel || "";
+                    state.restaurantInfo.paymentNowDesc = state.restaurantInfo.paymentNowDesc || "";
+                    state.restaurantInfo.paymentLaterLabel = state.restaurantInfo.paymentLaterLabel || "";
+                    state.restaurantInfo.paymentLaterDesc = state.restaurantInfo.paymentLaterDesc || "";
                     // Load adminChangeCode from restaurantInfo or fallback to decoded default
                     state.adminChangeCode = state.restaurantInfo.adminChangeCode || decodeCode("lele");
                 } else {
@@ -2246,6 +2371,8 @@ VIP Table</textarea>
                 updatePendingBadges();
                 populateTableFilter();
                 populateTableFilterModal();
+                // Update payment option texts with loaded custom texts
+                updatePaymentOptionsText();
             } catch (e) { console.error("loadInitialData", e); }
         }
 
@@ -2448,7 +2575,7 @@ VIP Table</textarea>
             });
         }
 
-        // ========== UI HELPERS (unchanged) ==========
+        // ========== UI HELPERS (unchanged, but we add updatePaymentOptionsText to showSection) ==========
         function determineCurrentTheme() {
             for (const [id, t] of Object.entries(themes)) {
                 if (state.customization.primary === t.primary && state.customization.secondary === t.secondary && state.customization.background === t.background) {
@@ -2735,8 +2862,8 @@ VIP Table</textarea>
                 confirmationItems.innerHTML += `<div class="order-item"><div class="order-item-name"><div class="order-item-quantity">${i.quantity}</div><div>${i.name}${opt}</div></div><div class="order-item-price">$${(i.price*i.quantity).toFixed(2)}</div></div>`;
             });
             confirmationTotal.textContent = `$${order.total.toFixed(2)}`;
-            confirmationPaymentMethod.textContent = order.paymentMethod === 'card' ? (state.currentLanguage === 'el' ? 'Πιστωτική/Χρεωστική Κάρτα' : 'Credit/Debit Card') : (state.currentLanguage === 'el' ? 'Μετρητά' : 'Cash');
-            confirmationPaymentTime.textContent = order.paymentTime === 'now' ? (state.currentLanguage === 'el' ? 'Πληρωμή Τώρα' : 'Pay Now') : (state.currentLanguage === 'el' ? 'Πληρωμή Αργότερα' : 'Pay Later');
+            confirmationPaymentMethod.textContent = getPaymentMethodLabel(order.paymentMethod);
+            confirmationPaymentTime.textContent = getPaymentTimeLabel(order.paymentTime);
             confirmationOrderStatus.textContent = order.status === 'pending' ? (state.currentLanguage === 'el' ? 'Εκκρεμεί' : 'Pending') : (order.status.charAt(0).toUpperCase() + order.status.slice(1));
         }
         function resetCart() { state.cart = []; updateCart(); }
@@ -2756,6 +2883,10 @@ VIP Table</textarea>
             if (id==='cartSection' && state.currentTable && !state.isAdminMode) cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${state.currentTable}` : `Your order for ${state.currentTable}`;
             if (id==='menuSection' && state.currentTable && !state.isAdminMode) menuSubtitle.textContent = state.cart.length===0 ? (state.currentLanguage === 'el' ? `Επιλέξτε είδη για την παραγγελία σας για ${state.currentTable}` : `Select items for your order for ${state.currentTable}`) : (state.currentLanguage === 'el' ? `Συνεχίστε να προσθέτετε είδη στην παραγγελία σας για ${state.currentTable}` : `Continue adding items to your order for ${state.currentTable}`);
             if (id==='myOrdersSection' && state.currentTable && !state.isAdminMode) loadMyOrders();
+            if (id==='paymentSection') {
+                // Update payment option texts when payment section is shown
+                updatePaymentOptionsText();
+            }
             if (state.isAdminMode && state.currentTable && state.currentTable !== "Admin") {
                 cartFloating.style.display = 'flex';
             } else if (!state.isAdminMode && id !== 'scannerSection') {
@@ -2796,7 +2927,7 @@ VIP Table</textarea>
                     itemsSum = first.map(i=>`<div class="order-item-summary"><div class="order-item-summary-name"><div class="order-item-summary-quantity">${i.quantity}</div><div>${i.name}</div></div><div>$${(i.price*i.quantity).toFixed(2)}</div></div>`).join('');
                     itemsSum += `<div class="order-item-summary"><div class="order-item-summary-name" style="margin-left: 10px; font-style: italic;">+${rem} ${state.currentLanguage === 'el' ? 'ακόμα' : 'more'} ${rem>1 ? (state.currentLanguage === 'el' ? 'είδη' : 'items') : (state.currentLanguage === 'el' ? 'είδος' : 'item')}</div><div></div></div>`;
                 }
-                card.innerHTML = `<div class="order-card-header"><div><div class="order-card-title">${state.currentLanguage === 'el' ? 'Παραγγελία' : 'Order'} #${o.orderNumber}</div><div class="order-card-time">${date}</div></div><div>${badge}</div></div><div class="order-card-body"><div class="order-items-summary">${itemsSum}</div><div style="margin-top:15px;"><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${state.currentLanguage === 'el' ? 'Τρόπος Πληρωμής:' : 'Payment Method:'}</span><span>${o.paymentMethod==='card' ? (state.currentLanguage === 'el' ? 'Κάρτα' : 'Card') : (state.currentLanguage === 'el' ? 'Μετρητά' : 'Cash')}</span></div><div style="display:flex; justify-content:space-between;"><span>${state.currentLanguage === 'el' ? 'Χρόνος Πληρωμής:' : 'Payment Time:'}</span><span>${o.paymentTime==='now' ? (state.currentLanguage === 'el' ? 'Πληρωμή Τώρα' : 'Pay Now') : (state.currentLanguage === 'el' ? 'Πληρωμή Αργότερα' : 'Pay Later')}</span></div></div></div><div class="order-card-footer"><div class="order-total-summary">${state.currentLanguage === 'el' ? 'Σύνολο:' : 'Total:'} $${o.total.toFixed(2)}</div><div style="font-size:14px; color:var(--gray);">${o.status==='pending' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας επεξεργάζεται' : 'Your order is being processed') : o.status==='preparing' ? (state.currentLanguage === 'el' ? 'Το φαγητό σας ετοιμάζεται' : 'Your food is being prepared') : o.status==='ready' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας είναι έτοιμη' : 'Your order is ready') : o.status==='served' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας σερβιρίστηκε' : 'Your order has been served') : o.status==='payed' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας πληρώθηκε' : 'Your order is payed') : (state.currentLanguage === 'el' ? 'Η παραγγελία σας ακυρώθηκε' : 'Your order was cancelled')}</div></div>`;
+                card.innerHTML = `<div class="order-card-header"><div><div class="order-card-title">${state.currentLanguage === 'el' ? 'Παραγγελία' : 'Order'} #${o.orderNumber}</div><div class="order-card-time">${date}</div></div><div>${badge}</div></div><div class="order-card-body"><div class="order-items-summary">${itemsSum}</div><div style="margin-top:15px;"><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${state.currentLanguage === 'el' ? 'Τρόπος Πληρωμής:' : 'Payment Method:'}</span><span>${getPaymentMethodLabel(o.paymentMethod)}</span></div><div style="display:flex; justify-content:space-between;"><span>${state.currentLanguage === 'el' ? 'Χρόνος Πληρωμής:' : 'Payment Time:'}</span><span>${getPaymentTimeLabel(o.paymentTime)}</span></div></div></div><div class="order-card-footer"><div class="order-total-summary">${state.currentLanguage === 'el' ? 'Σύνολο:' : 'Total:'} $${o.total.toFixed(2)}</div><div style="font-size:14px; color:var(--gray);">${o.status==='pending' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας επεξεργάζεται' : 'Your order is being processed') : o.status==='preparing' ? (state.currentLanguage === 'el' ? 'Το φαγητό σας ετοιμάζεται' : 'Your food is being prepared') : o.status==='ready' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας είναι έτοιμη' : 'Your order is ready') : o.status==='served' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας σερβιρίστηκε' : 'Your order has been served') : o.status==='payed' ? (state.currentLanguage === 'el' ? 'Η παραγγελία σας πληρώθηκε' : 'Your order is payed') : (state.currentLanguage === 'el' ? 'Η παραγγελία σας ακυρώθηκε' : 'Your order was cancelled')}</div></div>`;
                 ordersList.appendChild(card);
             });
             myOrdersSubtitle.textContent = state.currentLanguage === 'el' ? `Έχετε ${tableOrders.length} παραγγελ${tableOrders.length!==1?'ίες':'ία'} για ${state.currentTable}` : `You have ${tableOrders.length} order${tableOrders.length!==1?'s':''} for ${state.currentTable}`;
@@ -3294,13 +3425,13 @@ VIP Table</textarea>
                     {
                         columns: [
                             { width: '*', text: '' },
-                            { width: 'auto', text: `${lang === 'el' ? 'Τρόπος πληρωμής:' : 'Payment method:'} ${order.paymentMethod === 'card' ? (lang === 'el' ? 'Κάρτα' : 'Card') : (lang === 'el' ? 'Μετρητά' : 'Cash')}`, style: 'paymentInfo' },
+                            { width: 'auto', text: `${lang === 'el' ? 'Τρόπος πληρωμής:' : 'Payment method:'} ${getPaymentMethodLabel(order.paymentMethod)}`, style: 'paymentInfo' },
                         ]
                     },
                     {
                         columns: [
                             { width: '*', text: '' },
-                            { width: 'auto', text: `${lang === 'el' ? 'Χρόνος πληρωμής:' : 'Payment time:'} ${order.paymentTime === 'now' ? (lang === 'el' ? 'Πληρωμή τώρα' : 'Pay now') : (lang === 'el' ? 'Πληρωμή αργότερα' : 'Pay later')}`, style: 'paymentInfo' },
+                            { width: 'auto', text: `${lang === 'el' ? 'Χρόνος πληρωμής:' : 'Payment time:'} ${getPaymentTimeLabel(order.paymentTime)}`, style: 'paymentInfo' },
                         ]
                     }
                 ],
@@ -4471,6 +4602,16 @@ VIP Table</textarea>
             document.getElementById('adminPrepTime').value = state.restaurantInfo.estimatedPrepTime;
             document.getElementById('adminWelcomeMessage').value = state.restaurantInfo.welcomeMessage || '';
             // NEW: set adminChangeCode field
+            document.getElementById('adminChangeCode').value = state.adminChangeCode || '';
+            // Set custom payment text fields
+            document.getElementById('adminPaymentCardLabel').value = state.restaurantInfo.paymentCardLabel || '';
+            document.getElementById('adminPaymentCardDesc').value = state.restaurantInfo.paymentCardDesc || '';
+            document.getElementById('adminPaymentCashLabel').value = state.restaurantInfo.paymentCashLabel || '';
+            document.getElementById('adminPaymentCashDesc').value = state.restaurantInfo.paymentCashDesc || '';
+            document.getElementById('adminPaymentNowLabel').value = state.restaurantInfo.paymentNowLabel || '';
+            document.getElementById('adminPaymentNowDesc').value = state.restaurantInfo.paymentNowDesc || '';
+            document.getElementById('adminPaymentLaterLabel').value = state.restaurantInfo.paymentLaterLabel || '';
+            document.getElementById('adminPaymentLaterDesc').value = state.restaurantInfo.paymentLaterDesc || '';
           
             updateLogoPreview();
             loadMenuItemsForAdmin();
@@ -4722,7 +4863,19 @@ VIP Table</textarea>
             state.restaurantInfo.taxRate = parseFloat(document.getElementById('adminTaxRate').value);
             state.restaurantInfo.estimatedPrepTime = document.getElementById('adminPrepTime').value;
             state.restaurantInfo.welcomeMessage = document.getElementById('adminWelcomeMessage').value;
+            
+            // Save custom payment texts
+            state.restaurantInfo.paymentCardLabel = document.getElementById('adminPaymentCardLabel').value;
+            state.restaurantInfo.paymentCardDesc = document.getElementById('adminPaymentCardDesc').value;
+            state.restaurantInfo.paymentCashLabel = document.getElementById('adminPaymentCashLabel').value;
+            state.restaurantInfo.paymentCashDesc = document.getElementById('adminPaymentCashDesc').value;
+            state.restaurantInfo.paymentNowLabel = document.getElementById('adminPaymentNowLabel').value;
+            state.restaurantInfo.paymentNowDesc = document.getElementById('adminPaymentNowDesc').value;
+            state.restaurantInfo.paymentLaterLabel = document.getElementById('adminPaymentLaterLabel').value;
+            state.restaurantInfo.paymentLaterDesc = document.getElementById('adminPaymentLaterDesc').value;
+
             updateRestaurantUI();
+            updatePaymentOptionsText(); // Update payment section immediately
             showNotification("Restaurant settings saved.");
             await saveRestaurantInfo();
         }
@@ -5763,6 +5916,16 @@ VIP Table</textarea>
             document.getElementById('adminPrepTimeModal').value = state.restaurantInfo.estimatedPrepTime;
             document.getElementById('adminWelcomeMessageModal').value = state.restaurantInfo.welcomeMessage || '';
             // NEW: set adminChangeCode modal field
+            document.getElementById('adminChangeCodeModal').value = state.adminChangeCode || '';
+            // Set custom payment text modal fields
+            document.getElementById('adminPaymentCardLabelModal').value = state.restaurantInfo.paymentCardLabel || '';
+            document.getElementById('adminPaymentCardDescModal').value = state.restaurantInfo.paymentCardDesc || '';
+            document.getElementById('adminPaymentCashLabelModal').value = state.restaurantInfo.paymentCashLabel || '';
+            document.getElementById('adminPaymentCashDescModal').value = state.restaurantInfo.paymentCashDesc || '';
+            document.getElementById('adminPaymentNowLabelModal').value = state.restaurantInfo.paymentNowLabel || '';
+            document.getElementById('adminPaymentNowDescModal').value = state.restaurantInfo.paymentNowDesc || '';
+            document.getElementById('adminPaymentLaterLabelModal').value = state.restaurantInfo.paymentLaterLabel || '';
+            document.getElementById('adminPaymentLaterDescModal').value = state.restaurantInfo.paymentLaterDesc || '';
            
             updateLogoPreview();
             loadMenuItemsForAdminModal();
@@ -5809,8 +5972,18 @@ VIP Table</textarea>
                 state.restaurantInfo.taxRate = parseFloat(document.getElementById('adminTaxRateModal').value);
                 state.restaurantInfo.estimatedPrepTime = document.getElementById('adminPrepTimeModal').value;
                 state.restaurantInfo.welcomeMessage = document.getElementById('adminWelcomeMessageModal').value;
+                // Save custom payment texts from modal
+                state.restaurantInfo.paymentCardLabel = document.getElementById('adminPaymentCardLabelModal').value;
+                state.restaurantInfo.paymentCardDesc = document.getElementById('adminPaymentCardDescModal').value;
+                state.restaurantInfo.paymentCashLabel = document.getElementById('adminPaymentCashLabelModal').value;
+                state.restaurantInfo.paymentCashDesc = document.getElementById('adminPaymentCashDescModal').value;
+                state.restaurantInfo.paymentNowLabel = document.getElementById('adminPaymentNowLabelModal').value;
+                state.restaurantInfo.paymentNowDesc = document.getElementById('adminPaymentNowDescModal').value;
+                state.restaurantInfo.paymentLaterLabel = document.getElementById('adminPaymentLaterLabelModal').value;
+                state.restaurantInfo.paymentLaterDesc = document.getElementById('adminPaymentLaterDescModal').value;
 
                 updateRestaurantUI();
+                updatePaymentOptionsText(); // Update payment section immediately
                 await saveRestaurantInfo();
                 showNotification("Restaurant settings saved.");
             }));
@@ -6283,4 +6456,3 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
-
