@@ -709,22 +709,10 @@
                     <!-- Admin Change Code -->
                     <div class="admin-form-group">
                         <label class="admin-label">Admin Change Code (4 digits)</label>
-                        <input type="password" class="admin-input" id="adminChangeCode" maxlength="4" placeholder="e.g., 6262" inputmode="numeric" autocomplete="off">
+                        <input type="text" class="admin-input" id="adminChangeCode" maxlength="4" pattern="\d*" placeholder="e.g., 6262">
                     </div>
                     <button class="btn btn-primary" id="saveRestaurantSettings"><i class="fas fa-save"></i> Save Restaurant Settings</button>
-                    
-                    <script>
-                        // Set a random 4-digit placeholder on page load
-                        function randomPlaceholder() {
-                            const input = document.getElementById('adminChangeCode');
-                            // Generate a random 4-digit string (0000 to 9999)
-                            const randomDigits = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-                            input.placeholder = `e.g., ${randomDigits}`;
-                        }
-                    
-                        // Run when page loads
-                        window.addEventListener('load', randomPlaceholder);
-                    </script>
+                </div>
                 <!-- Menu Management (EL) -->
                 <div class="admin-content" id="menuTab">
                     <div style="margin-bottom: 25px;"><button class="btn btn-success" id="addMenuItemBtn"><i class="fas fa-plus"></i> Add New Menu Item (EL)</button></div>
@@ -6527,4 +6515,3 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
-
