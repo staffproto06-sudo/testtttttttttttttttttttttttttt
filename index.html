@@ -706,21 +706,13 @@
                     <div class="admin-form-group"><label class="admin-label">Pay Later - Label (EN)</label><input type="text" class="admin-input" id="adminPaymentLaterLabelEn" placeholder="e.g., Pay Later"></div>
                     <div class="admin-form-group"><label class="admin-label">Pay Later - Description (EL)</label><input type="text" class="admin-input" id="adminPaymentLaterDescEl" placeholder="e.g., Πληρώστε στο ταμείο όταν φεύγετε"></div>
                     <div class="admin-form-group"><label class="admin-label">Pay Later - Description (EN)</label><input type="text" class="admin-input" id="adminPaymentLaterDescEn" placeholder="e.g., Pay at counter"></div>
-                   <!-- Admin Change Code -->
+                    <!-- Admin Change Code -->
                     <div class="admin-form-group">
                         <label class="admin-label">Admin Change Code (4 digits)</label>
-                        <input type="password" 
-                               class="admin-input" 
-                               id="adminChangeCode" 
-                               maxlength="4" 
-                               pattern="\d*" 
-                               placeholder="Leave blank to keep current code"
-                               autocomplete="off">
-                        <small class="form-text text-muted">Enter a new 4‑digit code only if you want to change it.</small>
+                        <input type="text" class="admin-input" id="adminChangeCode" maxlength="4" pattern="\d*" placeholder="e.g., 6262">
                     </div>
-                    <button class="btn btn-primary" id="saveRestaurantSettings">
-                        <i class="fas fa-save"></i> Save Restaurant Settings
-                    </button>
+                    <button class="btn btn-primary" id="saveRestaurantSettings"><i class="fas fa-save"></i> Save Restaurant Settings</button>
+                </div>
                 <!-- Menu Management (EL) -->
                 <div class="admin-content" id="menuTab">
                     <div style="margin-bottom: 25px;"><button class="btn btn-success" id="addMenuItemBtn"><i class="fas fa-plus"></i> Add New Menu Item (EL)</button></div>
@@ -6521,11 +6513,5 @@ VIP Table</textarea>
             }
         }, 7000);
     </script>
-    <script>
-    document.getElementById('adminChangeCode').value = '';
-    </script>
 </body>
 </html>
-
-
-
