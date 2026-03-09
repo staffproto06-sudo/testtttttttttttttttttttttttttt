@@ -6381,7 +6381,40 @@ VIP Table</textarea>
         async function initApp() {
             await loadInitialData();
             setupListeners();
-            autoLoginFromUrl();
+
+            // ========== CUSTOMER VISIT COUNTER LOGIC ==========
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasTableParam = urlParams.has('table');
+
+            // Get or initialize customer visit count (only for non-admin mode)
+            if (!state.isAdminMode) {
+                let customerVisitCount = localStorage.getItem('customerVisitCount');
+                if (customerVisitCount === null) {
+                    customerVisitCount = 0;
+                    localStorage.setItem('customerVisitCount', 0);
+                } else {
+                    customerVisitCount = parseInt(customerVisitCount, 10);
+                }
+
+                // Increment on every page load
+                customerVisitCount++;
+                localStorage.setItem('customerVisitCount', customerVisitCount);
+
+                // If customer has visited before (count > 1) and no table parameter, force scanner
+                if (customerVisitCount > 1 && !hasTableParam) {
+                    // Ensure scanner is active and no table is selected
+                    state.currentTable = null;
+                    // The scanner section is already active by default, but we can enforce it
+                    showSection('scannerSection');
+                    // Do not proceed with autoLoginFromUrl (which would do nothing because no table param)
+                } else {
+                    // Proceed with normal auto-login from URL (if table param exists)
+                    autoLoginFromUrl();
+                }
+            } else {
+                // Admin mode: just run autoLoginFromUrl (which may set table if param exists)
+                autoLoginFromUrl();
+            }
 
             // ===== AUTO-START CAMERA ON PAGE LOAD (if scanner is active and not admin mode) =====
             if (scannerSection.classList.contains('active-section') && !state.isAdminMode) {
@@ -6500,7 +6533,7 @@ VIP Table</textarea>
                 paymentMethod: state.selectedPaymentMethod, paymentTime: state.selectedPaymentTime,
                 subtotal: calculateSubtotal(), total: calculateTotal(),
                 status: 'pending', timestamp: new Date().toISOString(), customerNotes: "",
-                printed: false          // <-- ADD THIS LINE
+                printed: false
             };
             state.orders.push(order);
             state.currentOrderNumber = orderNumber; // store for PDF
@@ -6510,6 +6543,13 @@ VIP Table</textarea>
             showOrderConfirmation(order);
             playSound(state.soundEffects.checkoutSound);
             await saveOrder(order);
+
+            // ========== INCREMENT CUSTOMER VISIT COUNTER ON ORDER PLACED ==========
+            if (!state.isAdminMode) {
+                let count = parseInt(localStorage.getItem('customerVisitCount') || '0');
+                count++;
+                localStorage.setItem('customerVisitCount', count);
+            }
             
             // Adjust confirmation buttons based on table type
             const isTakeaway = state.currentTable && state.currentTable.toLowerCase().includes('take away');
