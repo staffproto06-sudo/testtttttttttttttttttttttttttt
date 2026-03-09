@@ -82,8 +82,7 @@
         /* QR scanner video */
         #qr-video { width: 100%; max-width: 400px; border-radius: 12px; margin: 20px auto; display: none; }
         #start-camera-btn, #stop-camera-btn { margin: 5px; }
-        /* DEMO TABLES - PERMANENTLY HIDDEN (SCAN ONLY) */
-        .demo-tables { display: none !important; }
+        .demo-tables { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 30px; }
         .table-btn { padding: 12px 24px; background-color: var(--card-bg); border: 2px solid var(--light-gray); border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s; color: var(--text); }
         .table-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
         .section-title { font-family: var(--font-secondary); font-size: 32px; margin-bottom: 10px; color: var(--text); }
@@ -498,21 +497,21 @@
                     <button class="btn btn-primary" id="start-camera-btn"><i class="fas fa-camera"></i> Έναρξη κάμερας</button>
                     <button class="btn btn-secondary" id="stop-camera-btn" style="display: none;"><i class="fas fa-stop"></i> Διακοπή</button>
                 </div>
-
-                <!-- NEW: scanner status & counter -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                    <span id="scanner-status" style="color: var(--gray); font-size: 0.95rem;">⚪ idle</span>
-                    <span id="scan-count" style="color: var(--primary); font-weight: 600; background: var(--light-gray); padding: 2px 10px; border-radius: 20px;">0</span>
-                </div>
                 
                 <div class="qr-placeholder" id="qr-placeholder">
                     <i class="fas fa-qrcode"></i>
                     <span data-i18n="qrPlaceholder">Περιοχή Σάρωσης QR</span>
                 </div>
                 
-                <!-- DEMO TABLES REMOVED – SCAN ONLY -->
-                <div class="demo-tables" style="display: none;"></div>
-                
+                <p style="margin: 20px 0; color: var(--gray);" data-i18n="demoTablesInstruction">Για δοκιμή, επιλέξτε ένα τραπέζι:</p>
+                <div class="demo-tables">
+                    <button class="table-btn" data-table="Table 1" data-i18n="table1">Τραπέζι 1</button>
+                    <button class="table-btn" data-table="Table 2" data-i18n="table2">Τραπέζι 2</button>
+                    <button class="table-btn" data-table="Table 3" data-i18n="table3">Τραπέζι 3</button>
+                    <button class="table-btn" data-table="Table 4" data-i18n="table4">Τραπέζι 4</button>
+                    <button class="table-btn" data-table="Table 5" data-i18n="table5">Τραπέζι 5</button>
+                    <button class="table-btn" data-table="VIP Table" data-i18n="vipTable">Τραπέζι VIP</button>
+                </div>
                 <p style="margin-top: 30px; font-size: 14px; color: var(--gray);" data-i18n="scannerNote"><i class="fas fa-info-circle"></i> Μόλις σαρώσετε, θα μπορείτε να δείτε το μενού και να κάνετε την παραγγελία σας.</p>
                 <p style="margin-top: 10px; font-size: 14px; color: var(--warning);" data-i18n="adminAccessNote"><i class="fas fa-shield-alt"></i> Πρόσβαση διαχειριστή μόνο μέσω QR του τραπεζιού Admin.</p>
             </div>
@@ -1436,6 +1435,39 @@ VIP Table</textarea>
             return encoded.split('').map(ch => codeMap[ch] || ch).join('');
         }
 
+        // ========== SESSION TIMEOUT CONSTANT ==========
+        const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+
+        // ========== SESSION HELPERS ==========
+        function setTableSession(tableName) {
+            const sessionData = {
+                table: tableName,
+                timestamp: Date.now()
+            };
+            sessionStorage.setItem('dineEasyTableData', JSON.stringify(sessionData));
+        }
+
+        function getTableSession() {
+            const data = sessionStorage.getItem('dineEasyTableData');
+            if (!data) return null;
+            try {
+                return JSON.parse(data);
+            } catch {
+                return null;
+            }
+        }
+
+        function isTableSessionValid() {
+            const session = getTableSession();
+            if (!session) return false;
+            const now = Date.now();
+            return (now - session.timestamp) <= SESSION_TIMEOUT;
+        }
+
+        function clearTableSession() {
+            sessionStorage.removeItem('dineEasyTableData');
+        }
+
         // ========== TRANSLATIONS OBJECT (unchanged) ==========
         const translations = {
             el: {
@@ -1850,9 +1882,7 @@ VIP Table</textarea>
             currentEditOrder: null,
             // Cooldown timestamps per table
             lastHelpRequestTimeByTable: {},
-            lastPayRequestTimeByTable: {},
-            // Page reload timer for non‑admin tables
-            pageReloadTimer: null
+            lastPayRequestTimeByTable: {}
         };
 
         // ========== DEFAULT DATA (unchanged) ==========
@@ -2090,127 +2120,11 @@ VIP Table</textarea>
         const qrCanvas = document.getElementById('qr-canvas');
         const startCameraBtn = document.getElementById('start-camera-btn');
         const stopCameraBtn = document.getElementById('stop-camera-btn');
-
-        // New scanner UI elements
-        const scannerStatus = document.getElementById('scanner-status');
-        const scanCountSpan = document.getElementById('scan-count');
+        let scanning = false;
+        let videoStream = null;
 
         // New PDF download button
         const downloadOrderPdfBtn = document.getElementById('downloadOrderPdfBtn');
-
-        // ========== NEW QR SCANNER (from deepseek_html) ==========
-        let streaming = false;
-        let animationFrame = null;
-        let scanCounter = 0;
-        let videoStream = null; // reuse existing variable
-
-        function stopCamera() {
-            if (animationFrame) {
-                cancelAnimationFrame(animationFrame);
-                animationFrame = null;
-            }
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-                videoStream = null;
-            }
-            qrVideo.srcObject = null;
-            streaming = false;
-            startCameraBtn.disabled = false;
-            stopCameraBtn.disabled = true;
-            if (scannerStatus) scannerStatus.innerHTML = '⏸ stopped';
-            document.getElementById('qr-placeholder').style.display = 'flex';
-            qrVideo.style.display = 'none';
-        }
-
-        async function startCamera() {
-            // stop any existing stream
-            stopCamera();
-            try {
-                const constraints = {
-                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: false
-                };
-                videoStream = await navigator.mediaDevices.getUserMedia(constraints);
-                qrVideo.srcObject = videoStream;
-                qrVideo.style.display = 'block';
-                document.getElementById('qr-placeholder').style.display = 'none';
-
-                qrVideo.onloadedmetadata = () => {
-                    qrVideo.play()
-                        .then(() => {
-                            streaming = true;
-                            startCameraBtn.disabled = true;
-                            stopCameraBtn.disabled = false;
-                            if (scannerStatus) scannerStatus.innerHTML = '🔴 scanning...';
-                            startScanLoop();
-                        })
-                        .catch(e => {
-                            showNotification('Video play error: ' + e.message);
-                            stopCamera();
-                        });
-                };
-            } catch (err) {
-                showNotification('Camera access denied or not available.');
-                stopCamera();
-            }
-        }
-
-        function startScanLoop() {
-            function scanFrame() {
-                if (!streaming) return;
-                if (qrVideo.readyState !== qrVideo.HAVE_ENOUGH_DATA) {
-                    animationFrame = requestAnimationFrame(scanFrame);
-                    return;
-                }
-                const width = qrVideo.videoWidth;
-                const height = qrVideo.videoHeight;
-                if (width === 0 || height === 0) {
-                    animationFrame = requestAnimationFrame(scanFrame);
-                    return;
-                }
-                // Downscale for performance (max 640px wide)
-                let targetWidth = width;
-                let targetHeight = height;
-                const MAX_WIDTH = 640;
-                if (width > MAX_WIDTH) {
-                    targetWidth = MAX_WIDTH;
-                    targetHeight = Math.floor(height * (MAX_WIDTH / width));
-                }
-                qrCanvas.width = targetWidth;
-                qrCanvas.height = targetHeight;
-                const ctx = qrCanvas.getContext('2d');
-                ctx.drawImage(qrVideo, 0, 0, targetWidth, targetHeight);
-                const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
-                const code = jsQR(imageData.data, targetWidth, targetHeight, { inversionAttempts: 'dontInvert' });
-
-                if (code) {
-                    // QR found
-                    scanCounter++;
-                    if (scanCountSpan) scanCountSpan.textContent = scanCounter;
-                    if (scannerStatus) scannerStatus.innerHTML = `✅ scanned: ${code.data.substring(0, 30)}…`;
-
-                    // Stop camera & scanning
-                    stopCamera();
-
-                    // Process the URL
-                    try {
-                        const urlObj = new URL(code.data);
-                        const tableParam = urlObj.searchParams.get('table');
-                        if (tableParam) {
-                            const tableName = decodeURIComponent(tableParam);
-                            selectTable(tableName, true);
-                        } else {
-                            showNotification('QR does not contain a table parameter.');
-                        }
-                    } catch (e) {
-                        showNotification('Invalid QR code (not a valid URL).');
-                    }
-                } else {
-                    animationFrame = requestAnimationFrame(scanFrame);
-                }
-            }
-            animationFrame = requestAnimationFrame(scanFrame);
-        }
 
         // ========== LANGUAGE HELPER FUNCTIONS (unchanged) ==========
         function getItemName(item) {
@@ -3020,6 +2934,7 @@ VIP Table</textarea>
             menuSubtitle.textContent = state.currentLanguage === 'el' ? 'Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας' : 'Select items to add to your order';
             myOrdersButton.style.display = 'none';
             adminFloating.style.display = 'none';
+            clearTableSession();  // <-- NEW: clear session on full reset
         }
         function showNotification(msg) { notificationText.textContent = msg; notification.classList.add('show'); setTimeout(()=>notification.classList.remove('show'),3000); }
         function showSection(id) {
@@ -3032,10 +2947,6 @@ VIP Table</textarea>
             if (id==='paymentSection') {
                 // Update payment option texts when payment section is shown
                 updatePaymentOptionsText();
-            }
-            // ===== AUTO-START CAMERA WHEN SCANNER SECTION IS SHOWN =====
-            if (id === 'scannerSection' && !state.isAdminMode) {
-                startCamera();
             }
             if (state.isAdminMode && state.currentTable && state.currentTable !== "Admin") {
                 cartFloating.style.display = 'flex';
@@ -3086,10 +2997,10 @@ VIP Table</textarea>
         // ========== SELECT TABLE ==========
         function selectTable(name, isAutoLogin = false) {
             state.currentTable = name;
+            setTableSession(name);  // <-- REPLACED localStorage with sessionStorage
             tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${name}`;
             menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${name}` : `Select items to add to your order for ${name}`;
             cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${name}` : `Your order for ${name}`;
-            localStorage.setItem('dineEasyTable', name);
             showNotification(state.currentLanguage === 'el' ? `Το τραπέζι ${name} επιλέχθηκε. Καλώς ήρθατε!` : `Table ${name} selected. Welcome!`);
             resetCart();
             updateCategoryTabs();
@@ -3112,15 +3023,6 @@ VIP Table</textarea>
             
             // Apply per-table button visibility
             applyTableSettings();
-
-            // ====== NEW: Auto‑refresh for non‑admin tables ======
-            if (state.pageReloadTimer) clearTimeout(state.pageReloadTimer);
-            if (name.toLowerCase() !== 'admin') {
-                state.pageReloadTimer = setTimeout(() => {
-                    // Clear any table selection and reload the page to return to scanner
-                    location.reload();
-                }, 600000); // 10 minutes
-            }
         }
 
         // NEW: apply table settings to UI (hide buttons if disabled)
@@ -3156,8 +3058,69 @@ VIP Table</textarea>
             if (tableParam) {
                 const tableName = decodeURIComponent(tableParam);
                 selectTable(tableName, true);
+                setTableSession(tableName);   // <-- ADD THIS
             }
             // No default table - stay on scanner if no table parameter
+        }
+
+        // ========== QR SCANNER FUNCTIONS ==========
+        async function startCamera() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                qrVideo.srcObject = videoStream;
+                qrVideo.style.display = 'block';
+                qrVideo.play();
+                startCameraBtn.style.display = 'none';
+                stopCameraBtn.style.display = 'inline-block';
+                document.getElementById('qr-placeholder').style.display = 'none';
+                scanning = true;
+                requestAnimationFrame(scanQR);
+            } catch (err) {
+                console.error("Camera error:", err);
+                showNotification(state.currentLanguage === 'el' ? 'Δεν ήταν δυνατή η πρόσβαση στην κάμερα.' : 'Could not access camera.');
+            }
+        }
+
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            qrVideo.style.display = 'none';
+            startCameraBtn.style.display = 'inline-block';
+            stopCameraBtn.style.display = 'none';
+            document.getElementById('qr-placeholder').style.display = 'flex';
+            scanning = false;
+        }
+
+        function scanQR() {
+            if (!scanning || !qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
+                if (scanning) requestAnimationFrame(scanQR);
+                return;
+            }
+            const canvas = qrCanvas;
+            const context = canvas.getContext('2d');
+            canvas.width = qrVideo.videoWidth;
+            canvas.height = qrVideo.videoHeight;
+            context.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, canvas.width, canvas.height);
+            if (code) {
+                const url = code.data;
+                try {
+                    const urlObj = new URL(url);
+                    const tableParam = urlObj.searchParams.get('table');
+                    if (tableParam) {
+                        stopCamera();
+                        const tableName = decodeURIComponent(tableParam);
+                        selectTable(tableName, true);
+                        return;
+                    }
+                } catch (e) {
+                    // Not a valid URL
+                }
+            }
+            requestAnimationFrame(scanQR);
         }
 
         // ========== REQUEST PAY BUTTON (UPDATED LOGIC) ==========
@@ -3284,12 +3247,6 @@ VIP Table</textarea>
             showNotification("Admin mode activated. Full administrative access granted.");
             startHelpSoundInterval();
             requestPayBtn.style.display = 'none';
-
-            // Cancel any pending page reload timer when entering admin mode
-            if (state.pageReloadTimer) {
-                clearTimeout(state.pageReloadTimer);
-                state.pageReloadTimer = null;
-            }
         }
         function exitAdminMode() {
             state.isAdminMode = false; state.currentTable = null;
@@ -3301,8 +3258,6 @@ VIP Table</textarea>
             document.getElementById('requestPayBtn').addEventListener('click', requestPay);
             cartFloating.style.display = 'flex';
             showSection('scannerSection');
-            // ===== AUTO-START CAMERA WHEN RETURNING TO SCANNER =====
-            startCamera();
             localStorage.removeItem('dineEasyAdminMode');
             adminFloating.style.display = 'none';
             auth.signOut(); // Sign out from Firebase
@@ -3310,6 +3265,7 @@ VIP Table</textarea>
             if (state.helpSoundInterval) { clearInterval(state.helpSoundInterval); state.helpSoundInterval = null; }
             applyTranslations();
             updateRequestPayButton();
+            clearTableSession();  // <-- NEW: clear session on logout
         }
 
         auth.onAuthStateChanged(async user => {
@@ -5817,7 +5773,7 @@ VIP Table</textarea>
             }
             function updatePreviewBlur(blur) {
                 const previewBox = document.getElementById('gradientPreviewBox');
-                if (previewBox) previewBox.style.filter = `blur(${blur}px)`;
+                if (previewBox) previewBox.style.filter = `filter: blur(${blur}px);`; // adjust if needed
             }
         
             // --- end of new gradient/blur UI ---
@@ -6433,44 +6389,17 @@ VIP Table</textarea>
         async function initApp() {
             await loadInitialData();
             setupListeners();
+            autoLoginFromUrl();
 
-            // ========== CUSTOMER VISIT COUNTER LOGIC ==========
-            const urlParams = new URLSearchParams(window.location.search);
-            const hasTableParam = urlParams.has('table');
-
-            // Get or initialize customer visit count (only for non-admin mode)
-            if (!state.isAdminMode) {
-                let customerVisitCount = localStorage.getItem('customerVisitCount');
-                if (customerVisitCount === null) {
-                    customerVisitCount = 0;
-                    localStorage.setItem('customerVisitCount', 0);
-                } else {
-                    customerVisitCount = parseInt(customerVisitCount, 10);
-                }
-
-                // Increment on every page load
-                customerVisitCount++;
-                localStorage.setItem('customerVisitCount', customerVisitCount);
-
-                // If customer has visited before (count > 1) and no table parameter, force scanner
-                if (customerVisitCount > 1 && !hasTableParam) {
-                    // Ensure scanner is active and no table is selected
-                    state.currentTable = null;
-                    // The scanner section is already active by default, but we can enforce it
-                    showSection('scannerSection');
-                    // Do not proceed with autoLoginFromUrl (which would do nothing because no table param)
-                } else {
-                    // Proceed with normal auto-login from URL (if table param exists)
-                    autoLoginFromUrl();
-                }
-            } else {
-                // Admin mode: just run autoLoginFromUrl (which may set table if param exists)
-                autoLoginFromUrl();
-            }
-
-            // ===== AUTO-START CAMERA ON PAGE LOAD (if scanner is active and not admin mode) =====
-            if (scannerSection.classList.contains('active-section') && !state.isAdminMode) {
-                startCamera();
+            // Check session validity
+            if (state.currentTable && !isTableSessionValid()) {
+                // Session expired – clear everything and go back to scanner
+                resetOrder();
+                clearTableSession();
+                showSection('scannerSection');
+                showNotification(state.currentLanguage === 'el' ? 
+                    'Η συνεδρία έληξε. Παρακαλώ σαρώστε ξανά το QR.' : 
+                    'Session expired. Please scan the QR again.');
             }
 
             // QR scanner buttons
@@ -6478,7 +6407,6 @@ VIP Table</textarea>
             stopCameraBtn.addEventListener('click', stopCamera);
 
             document.getElementById('languageToggleBtn').addEventListener('click', toggleLanguage);
-            // Demo tables are removed, but we keep the event listeners for safety (they are hidden)
             document.querySelectorAll('.table-btn').forEach(btn => btn.addEventListener('click', function() { selectTable(this.dataset.table, false); }));
             cartFloating.addEventListener('click', function() { if (!state.isAdminMode || (state.currentTable && state.currentTable !== "Admin")) showSection('cartSection'); });
             document.getElementById('backToMenuBtn').addEventListener('click', ()=> showSection('menuSection'));
@@ -6576,6 +6504,17 @@ VIP Table</textarea>
 
         // ========== UPDATED PLACE ORDER FUNCTION ==========
         window.placeOrderOptimistic = async function() {
+            // Session validation
+            if (!isTableSessionValid()) {
+                showNotification(state.currentLanguage === 'el' ?
+                    'Η συνεδρία έχει λήξει. Παρακαλώ σαρώστε ξανά το QR.' :
+                    'Session expired. Please scan the QR again.');
+                resetOrder();
+                clearTableSession();
+                showSection('scannerSection');
+                return;
+            }
+
             if (!state.selectedPaymentMethod || !state.selectedPaymentTime) { showNotification(state.currentLanguage === 'el' ? 'Παρακαλώ επιλέξτε τρόπο και χρόνο πληρωμής' : 'Please select payment method and time'); return; }
             if (state.cart.length === 0) { showNotification(state.currentLanguage === 'el' ? 'Το καλάθι είναι άδειο' : 'Cart is empty'); return; }
             const orderNumber = generateOrderNumber();
@@ -6585,7 +6524,7 @@ VIP Table</textarea>
                 paymentMethod: state.selectedPaymentMethod, paymentTime: state.selectedPaymentTime,
                 subtotal: calculateSubtotal(), total: calculateTotal(),
                 status: 'pending', timestamp: new Date().toISOString(), customerNotes: "",
-                printed: false
+                printed: false          // <-- ADD THIS LINE
             };
             state.orders.push(order);
             state.currentOrderNumber = orderNumber; // store for PDF
@@ -6595,13 +6534,6 @@ VIP Table</textarea>
             showOrderConfirmation(order);
             playSound(state.soundEffects.checkoutSound);
             await saveOrder(order);
-
-            // ========== INCREMENT CUSTOMER VISIT COUNTER ON ORDER PLACED ==========
-            if (!state.isAdminMode) {
-                let count = parseInt(localStorage.getItem('customerVisitCount') || '0');
-                count++;
-                localStorage.setItem('customerVisitCount', count);
-            }
             
             // Adjust confirmation buttons based on table type
             const isTakeaway = state.currentTable && state.currentTable.toLowerCase().includes('take away');
