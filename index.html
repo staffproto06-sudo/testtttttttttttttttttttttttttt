@@ -8,7 +8,7 @@
     <link rel="icon" type="image/x-icon" href="https://github.com/staffproto06-sudo/testtttttttttttttttttttttttttt/tree/main/favicon_io">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="appTitle">Εφαρμογή Εστιατορίου - PERFECT + SOUNDS</title>
+    <title data-i18n="appTitle">Μενού Εστιατορίου </title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts with MANY options (now 20+ fonts) -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;600;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&family=Oswald:wght@300;400;500;600;700&family=Raleway:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&family=PT+Sans:wght@400;700&family=Nunito:wght@300;400;600;700&family=Quicksand:wght@300;400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&family=Ubuntu:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&family=Roboto+Slab:wght@300;400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&family=Rubik:wght@300;400;500;600;700&family=Muli:wght@300;400;600;700&family=Abel:wght@400&display=swap" rel="stylesheet">
@@ -82,7 +82,8 @@
         /* QR scanner video */
         #qr-video { width: 100%; max-width: 400px; border-radius: 12px; margin: 20px auto; display: none; }
         #start-camera-btn, #stop-camera-btn { margin: 5px; }
-        .demo-tables { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 30px; }
+        /* DEMO TABLES - PERMANENTLY HIDDEN (SCAN ONLY) */
+        .demo-tables { display: none !important; }
         .table-btn { padding: 12px 24px; background-color: var(--card-bg); border: 2px solid var(--light-gray); border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s; color: var(--text); }
         .table-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
         .section-title { font-family: var(--font-secondary); font-size: 32px; margin-bottom: 10px; color: var(--text); }
@@ -503,15 +504,9 @@
                     <span data-i18n="qrPlaceholder">Περιοχή Σάρωσης QR</span>
                 </div>
                 
-                <p style="margin: 20px 0; color: var(--gray);" data-i18n="demoTablesInstruction">Για δοκιμή, επιλέξτε ένα τραπέζι:</p>
-                <div class="demo-tables">
-                    <button class="table-btn" data-table="Table 1" data-i18n="table1">Τραπέζι 1</button>
-                    <button class="table-btn" data-table="Table 2" data-i18n="table2">Τραπέζι 2</button>
-                    <button class="table-btn" data-table="Table 3" data-i18n="table3">Τραπέζι 3</button>
-                    <button class="table-btn" data-table="Table 4" data-i18n="table4">Τραπέζι 4</button>
-                    <button class="table-btn" data-table="Table 5" data-i18n="table5">Τραπέζι 5</button>
-                    <button class="table-btn" data-table="VIP Table" data-i18n="vipTable">Τραπέζι VIP</button>
-                </div>
+                <!-- DEMO TABLES REMOVED – SCAN ONLY -->
+                <div class="demo-tables" style="display: none;"></div>
+                
                 <p style="margin-top: 30px; font-size: 14px; color: var(--gray);" data-i18n="scannerNote"><i class="fas fa-info-circle"></i> Μόλις σαρώσετε, θα μπορείτε να δείτε το μενού και να κάνετε την παραγγελία σας.</p>
                 <p style="margin-top: 10px; font-size: 14px; color: var(--warning);" data-i18n="adminAccessNote"><i class="fas fa-shield-alt"></i> Πρόσβαση διαχειριστή μόνο μέσω QR του τραπεζιού Admin.</p>
             </div>
@@ -1438,7 +1433,7 @@ VIP Table</textarea>
         // ========== TRANSLATIONS OBJECT (unchanged) ==========
         const translations = {
             el: {
-                appTitle: "Εφαρμογή Εστιατορίου - PERFECT + SOUNDS",
+                appTitle: "Μενού Εστιατορίου",
                 loading: "Φόρτωση μενού...",
                 helpButton: "Χρειάζεστε βοήθεια?",
                 requestPay: "Αίτημα Πληρωμής",
@@ -1849,7 +1844,9 @@ VIP Table</textarea>
             currentEditOrder: null,
             // Cooldown timestamps per table
             lastHelpRequestTimeByTable: {},
-            lastPayRequestTimeByTable: {}
+            lastPayRequestTimeByTable: {},
+            // Page reload timer for non‑admin tables
+            pageReloadTimer: null
         };
 
         // ========== DEFAULT DATA (unchanged) ==========
@@ -2989,6 +2986,15 @@ VIP Table</textarea>
             
             // Apply per-table button visibility
             applyTableSettings();
+
+            // ====== NEW: Auto‑refresh for non‑admin tables ======
+            if (state.pageReloadTimer) clearTimeout(state.pageReloadTimer);
+            if (name.toLowerCase() !== 'admin') {
+                state.pageReloadTimer = setTimeout(() => {
+                    // Clear any table selection and reload the page to return to scanner
+                    location.reload();
+                }, 600000); // 10 minutes
+            }
         }
 
         // NEW: apply table settings to UI (hide buttons if disabled)
@@ -3212,6 +3218,12 @@ VIP Table</textarea>
             showNotification("Admin mode activated. Full administrative access granted.");
             startHelpSoundInterval();
             requestPayBtn.style.display = 'none';
+
+            // Cancel any pending page reload timer when entering admin mode
+            if (state.pageReloadTimer) {
+                clearTimeout(state.pageReloadTimer);
+                state.pageReloadTimer = null;
+            }
         }
         function exitAdminMode() {
             state.isAdminMode = false; state.currentTable = null;
@@ -6360,6 +6372,7 @@ VIP Table</textarea>
             stopCameraBtn.addEventListener('click', stopCamera);
 
             document.getElementById('languageToggleBtn').addEventListener('click', toggleLanguage);
+            // Demo tables are removed, but we keep the event listeners for safety (they are hidden)
             document.querySelectorAll('.table-btn').forEach(btn => btn.addEventListener('click', function() { selectTable(this.dataset.table, false); }));
             cartFloating.addEventListener('click', function() { if (!state.isAdminMode || (state.currentTable && state.currentTable !== "Admin")) showSection('cartSection'); });
             document.getElementById('backToMenuBtn').addEventListener('click', ()=> showSection('menuSection'));
@@ -6515,4 +6528,3 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
-
