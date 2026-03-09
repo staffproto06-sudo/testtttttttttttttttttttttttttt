@@ -3072,9 +3072,15 @@ VIP Table</textarea>
             scanning = false;
         }
 
+        // ========== FIXED SCAN FUNCTION ==========
         function scanQR() {
-            if (!scanning || !qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
-                if (scanning) requestAnimationFrame(scanQR);
+            if (!scanning) {
+                // If scanning is turned off, stop requesting frames
+                return;
+            }
+            // Wait until video has enough data and dimensions are valid
+            if (qrVideo.readyState < qrVideo.HAVE_ENOUGH_DATA || qrVideo.videoWidth === 0 || qrVideo.videoHeight === 0) {
+                requestAnimationFrame(scanQR);
                 return;
             }
             const canvas = qrCanvas;
@@ -3096,7 +3102,7 @@ VIP Table</textarea>
                         return;
                     }
                 } catch (e) {
-                    // Not a valid URL
+                    // Not a valid URL – ignore
                 }
             }
             requestAnimationFrame(scanQR);
