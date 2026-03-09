@@ -2911,6 +2911,10 @@ VIP Table</textarea>
                 // Update payment option texts when payment section is shown
                 updatePaymentOptionsText();
             }
+            // ===== AUTO-START CAMERA WHEN SCANNER SECTION IS SHOWN =====
+            if (id === 'scannerSection' && !state.isAdminMode) {
+                startCamera();
+            }
             if (state.isAdminMode && state.currentTable && state.currentTable !== "Admin") {
                 cartFloating.style.display = 'flex';
             } else if (!state.isAdminMode && id !== 'scannerSection') {
@@ -3036,6 +3040,10 @@ VIP Table</textarea>
 
         // ========== QR SCANNER FUNCTIONS ==========
         async function startCamera() {
+            if (videoStream) {
+                console.log('Camera already started');
+                return;
+            }
             try {
                 videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 qrVideo.srcObject = videoStream;
@@ -3235,6 +3243,8 @@ VIP Table</textarea>
             document.getElementById('requestPayBtn').addEventListener('click', requestPay);
             cartFloating.style.display = 'flex';
             showSection('scannerSection');
+            // ===== AUTO-START CAMERA WHEN RETURNING TO SCANNER =====
+            startCamera();
             localStorage.removeItem('dineEasyAdminMode');
             adminFloating.style.display = 'none';
             auth.signOut(); // Sign out from Firebase
@@ -6366,6 +6376,11 @@ VIP Table</textarea>
             await loadInitialData();
             setupListeners();
             autoLoginFromUrl();
+
+            // ===== AUTO-START CAMERA ON PAGE LOAD (if scanner is active and not admin mode) =====
+            if (scannerSection.classList.contains('active-section') && !state.isAdminMode) {
+                startCamera();
+            }
 
             // QR scanner buttons
             startCameraBtn.addEventListener('click', startCamera);
