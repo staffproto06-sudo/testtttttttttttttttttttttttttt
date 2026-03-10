@@ -1892,7 +1892,9 @@ VIP Table</textarea>
             currentEditOrder: null,
             // Cooldown timestamps per table
             lastHelpRequestTimeByTable: {},
-            lastPayRequestTimeByTable: {}
+            lastPayRequestTimeByTable: {},
+            // NEW: flag to indicate admin URL detected
+            adminUrlDetected: false
         };
 
         // ========== DEFAULT DATA (unchanged) ==========
@@ -3067,19 +3069,22 @@ VIP Table</textarea>
             if (payLaterOption) payLaterOption.style.display = settings.payLater ? 'block' : 'none';
         }
 
-        // ========== AUTO-LOGIN FROM URL (NOW HANDLES ADMIN) ==========
+        // ========== AUTO-LOGIN FROM URL (UPDATED TO HANDLE ADMIN) ==========
         function autoLoginFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             const tableParam = urlParams.get('table');
             if (tableParam) {
                 if (tableParam.toLowerCase() === 'admin') {
-                    // Set table to Admin and show admin login prompt
+                    // Admin URL detected – set flag, hide scanner, show login prompt
+                    state.adminUrlDetected = true;
                     state.currentTable = "Admin";
                     tableInfo.innerHTML = `<i class="fas fa-chair"></i> Admin`;
-                    // Trigger admin floating click (which shows login)
-                    adminFloating.click();
+                    // Hide scanner section to avoid showing it
+                    scannerSection.style.display = 'none';
+                    // Show admin login prompt directly
+                    showAdminLoginPrompt();
                 } else {
-                    // For other tables, we wait for scan, but we could also auto-select if needed? We'll just log.
+                    // For other tables, we wait for scan (no auto-select)
                     console.log('Table parameter present, waiting for scan.');
                 }
             }
@@ -3319,6 +3324,8 @@ VIP Table</textarea>
             showNotification("Admin mode activated. Full administrative access granted.");
             startHelpSoundInterval();
             requestPayBtn.style.display = 'none';
+            // Clear admin URL flag
+            state.adminUrlDetected = false;
         }
         function exitAdminMode() {
             state.isAdminMode = false; state.currentTable = null;
@@ -6463,24 +6470,29 @@ VIP Table</textarea>
             setupListeners();
             autoLoginFromUrl();
 
-            // Check for a valid session and restore it
-            const session = getTableSession();
-            if (session && isTableSessionValid()) {
-                state.currentTable = session.table;
-                tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${session.table}`;
-                menuSubtitle.textContent = state.currentLanguage === 'el' 
-                    ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${session.table}`
-                    : `Select items to add to your order for ${session.table}`;
-                cartSubtitle.textContent = state.currentLanguage === 'el'
-                    ? `Η παραγγελία σας για ${session.table}`
-                    : `Your order for ${session.table}`;
-                updateCategoryTabs();
-                displayMenuItems('all');
-                showSection('menuSection');
+            // Check for a valid session and restore it, but only if no admin URL was detected
+            if (!state.adminUrlDetected) {
+                const session = getTableSession();
+                if (session && isTableSessionValid()) {
+                    state.currentTable = session.table;
+                    tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${session.table}`;
+                    menuSubtitle.textContent = state.currentLanguage === 'el' 
+                        ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${session.table}`
+                        : `Select items to add to your order for ${session.table}`;
+                    cartSubtitle.textContent = state.currentLanguage === 'el'
+                        ? `Η παραγγελία σας για ${session.table}`
+                        : `Your order for ${session.table}`;
+                    updateCategoryTabs();
+                    displayMenuItems('all');
+                    showSection('menuSection');
+                } else {
+                    // No valid session – ensure we are on scanner
+                    clearTableSession(); // remove any stale data
+                    showSection('scannerSection');
+                }
             } else {
-                // No valid session – ensure we are on scanner
-                clearTableSession(); // remove any stale data
-                showSection('scannerSection');
+                // Admin URL detected – scanner is already hidden, login prompt shown
+                // Do nothing else
             }
 
             // QR scanner buttons
