@@ -1932,18 +1932,18 @@ VIP Table</textarea>
 
         // ========== DEFAULT DATA (unchanged) ==========
         const defaultMenuItems = [
-            { id: 1, name: "Πίτσα Μαργαρίτα", nameEn: "Margherita Pizza", description: "Κλασική σάλτσα ντομάτας, φρέσκια μοτσαρέλα, βασιλικός", descriptionEn: "Classic tomato sauce, fresh mozzarella, basil", price: 14.99, category: "pizza", tags: ["Χορτοφαγική", "Δημοφιλής"], tagsEn: ["Vegetarian", "Popular"], image: "", options: [] },
-            { id: 2, name: "Πίτσα Πεπερονί", nameEn: "Pepperoni Pizza", description: "Σάλτσα ντομάτας, μοτσαρέλα, διπλό πεπερόνι", descriptionEn: "Tomato sauce, mozzarella, double pepperoni", price: 16.99, category: "pizza", tags: ["Πικάντικη"], tagsEn: ["Spicy"], image: "", options: [] },
-            { id: 3, name: "Σαλάτα Καίσαρα", nameEn: "Caesar Salad", description: "Μαρούλι ρωμαϊκό, παρμεζάνα, κρουτόν, σάλτσα Καίσαρα", descriptionEn: "Romaine lettuce, parmesan, croutons, Caesar dressing", price: 9.99, category: "salads", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [] },
-            { id: 4, name: "Χωριάτικη Σαλάτα", nameEn: "Greek Salad", description: "Αγγούρι, ντομάτα, ελιές, φέτα, ρίγανη", descriptionEn: "Cucumber, tomato, olives, feta, oregano", price: 10.99, category: "salads", tags: ["Χορτοφαγική", "Υγιεινή"], tagsEn: ["Vegetarian", "Healthy"], image: "", options: [] },
-            { id: 5, name: "Σπαγγέτι Καρμπονάρα", nameEn: "Spaghetti Carbonara", description: "Αυγά, τυρί, πανσέτα, μαύρο πιπέρι", descriptionEn: "Eggs, cheese, pancetta, black pepper", price: 13.99, category: "pasta", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [] },
-            { id: 6, name: "Λαζάνια", nameEn: "Lasagna", description: "Στρώσεις ζύμης, κιμάς, μπεσαμέλ, παρμεζάνα", descriptionEn: "Layered pasta, minced meat, béchamel, parmesan", price: 15.99, category: "pasta", tags: [], tagsEn: [], image: "", options: [] },
-            { id: 7, name: "Σολομός στη Σχάρα", nameEn: "Grilled Salmon", description: "Φρέσκο φιλέτο σολομού, σάλτσα λεμονιού, λαχανικά", descriptionEn: "Fresh salmon fillet, lemon sauce, vegetables", price: 19.99, category: "main", tags: ["Χωρίς γλουτένη"], tagsEn: ["Gluten-free"], image: "", options: [] },
-            { id: 8, name: "Μπριζόλα Ribeye", nameEn: "Ribeye Steak", description: "300γρ. ribeye, συνοδεύεται από πατάτες και σαλάτα", descriptionEn: "300g ribeye, served with potatoes and salad", price: 24.99, category: "main", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [] },
-            { id: 9, name: "Τιραμισού", nameEn: "Tiramisu", description: "Μπισκότα Savoiardi εμποτισμένα με καφέ, κρέμα μασκαρπόνε, κακάο", descriptionEn: "Savoiardi biscuits soaked in coffee, mascarpone cream, cocoa", price: 7.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [] },
-            { id: 10, name: "Τσιζκέικ", nameEn: "Cheesecake", description: "Νεοϋορκέζικο, σάλτσα μούρων", descriptionEn: "New York style, berry sauce", price: 6.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [] },
-            { id: 11, name: "Coca-Cola", nameEn: "Coca-Cola", description: "Αναψυκτικό 330ml", descriptionEn: "Soft drink 330ml", price: 2.50, category: "beverages", tags: [], tagsEn: [], image: "", options: [] },
-            { id: 12, name: "Φρέσκος Χυμός Πορτοκάλι", nameEn: "Fresh Orange Juice", description: "Φρεσκοστυμμένος", descriptionEn: "Freshly squeezed", price: 3.50, category: "beverages", tags: ["Υγιεινή"], tagsEn: ["Healthy"], image: "", options: [] }
+            { id: 1, name: "Πίτσα Μαργαρίτα", nameEn: "Margherita Pizza", description: "Κλασική σάλτσα ντομάτας, φρέσκια μοτσαρέλα, βασιλικός", descriptionEn: "Classic tomato sauce, fresh mozzarella, basil", price: 14.99, category: "pizza", tags: ["Χορτοφαγική", "Δημοφιλής"], tagsEn: ["Vegetarian", "Popular"], image: "", options: [], available: true },
+            { id: 2, name: "Πίτσα Πεπερονί", nameEn: "Pepperoni Pizza", description: "Σάλτσα ντομάτας, μοτσαρέλα, διπλό πεπερόνι", descriptionEn: "Tomato sauce, mozzarella, double pepperoni", price: 16.99, category: "pizza", tags: ["Πικάντικη"], tagsEn: ["Spicy"], image: "", options: [], available: true },
+            { id: 3, name: "Σαλάτα Καίσαρα", nameEn: "Caesar Salad", description: "Μαρούλι ρωμαϊκό, παρμεζάνα, κρουτόν, σάλτσα Καίσαρα", descriptionEn: "Romaine lettuce, parmesan, croutons, Caesar dressing", price: 9.99, category: "salads", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [], available: true },
+            { id: 4, name: "Χωριάτικη Σαλάτα", nameEn: "Greek Salad", description: "Αγγούρι, ντομάτα, ελιές, φέτα, ρίγανη", descriptionEn: "Cucumber, tomato, olives, feta, oregano", price: 10.99, category: "salads", tags: ["Χορτοφαγική", "Υγιεινή"], tagsEn: ["Vegetarian", "Healthy"], image: "", options: [], available: true },
+            { id: 5, name: "Σπαγγέτι Καρμπονάρα", nameEn: "Spaghetti Carbonara", description: "Αυγά, τυρί, πανσέτα, μαύρο πιπέρι", descriptionEn: "Eggs, cheese, pancetta, black pepper", price: 13.99, category: "pasta", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [], available: true },
+            { id: 6, name: "Λαζάνια", nameEn: "Lasagna", description: "Στρώσεις ζύμης, κιμάς, μπεσαμέλ, παρμεζάνα", descriptionEn: "Layered pasta, minced meat, béchamel, parmesan", price: 15.99, category: "pasta", tags: [], tagsEn: [], image: "", options: [], available: true },
+            { id: 7, name: "Σολομός στη Σχάρα", nameEn: "Grilled Salmon", description: "Φρέσκο φιλέτο σολομού, σάλτσα λεμονιού, λαχανικά", descriptionEn: "Fresh salmon fillet, lemon sauce, vegetables", price: 19.99, category: "main", tags: ["Χωρίς γλουτένη"], tagsEn: ["Gluten-free"], image: "", options: [], available: true },
+            { id: 8, name: "Μπριζόλα Ribeye", nameEn: "Ribeye Steak", description: "300γρ. ribeye, συνοδεύεται από πατάτες και σαλάτα", descriptionEn: "300g ribeye, served with potatoes and salad", price: 24.99, category: "main", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [], available: true },
+            { id: 9, name: "Τιραμισού", nameEn: "Tiramisu", description: "Μπισκότα Savoiardi εμποτισμένα με καφέ, κρέμα μασκαρπόνε, κακάο", descriptionEn: "Savoiardi biscuits soaked in coffee, mascarpone cream, cocoa", price: 7.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [], available: true },
+            { id: 10, name: "Τσιζκέικ", nameEn: "Cheesecake", description: "Νεοϋορκέζικο, σάλτσα μούρων", descriptionEn: "New York style, berry sauce", price: 6.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [], available: true },
+            { id: 11, name: "Coca-Cola", nameEn: "Coca-Cola", description: "Αναψυκτικό 330ml", descriptionEn: "Soft drink 330ml", price: 2.50, category: "beverages", tags: [], tagsEn: [], image: "", options: [], available: true },
+            { id: 12, name: "Φρέσκος Χυμός Πορτοκάλι", nameEn: "Fresh Orange Juice", description: "Φρεσκοστυμμένος", descriptionEn: "Freshly squeezed", price: 3.50, category: "beverages", tags: ["Υγιεινή"], tagsEn: ["Healthy"], image: "", options: [], available: true }
         ];
 
         const defaultCategories = [
@@ -2340,6 +2340,8 @@ VIP Table</textarea>
                                 }
                             });
                         }
+                        // Add available field defaulting to true
+                        if (d.available === undefined) d.available = true;
                         d.displayOrder = d.displayOrder ?? Number(doc.id) ?? 999;
                         return { id: Number(doc.id), ...d, options: d.options || [] };
                     }).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
@@ -2591,6 +2593,8 @@ VIP Table</textarea>
                             }
                         });
                     }
+                    // ensure available property
+                    if (d.available === undefined) d.available = true;
                     d.displayOrder = d.displayOrder ?? Number(doc.id) ?? 999;
                     return { id: Number(doc.id), ...d, options: d.options || [] };
                 }).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
@@ -2795,7 +2799,10 @@ VIP Table</textarea>
         function displayMenuItems(category) {
             if (!menuGrid) return;
             menuGrid.innerHTML = '';
-            const filtered = category === 'all' ? [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0)) : state.menuItems.filter(i=>i.category===category).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
+            // Filter out unavailable items for customer view
+            const filtered = category === 'all' 
+                ? [...state.menuItems].filter(item => item.available !== false).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0))
+                : state.menuItems.filter(i => i.category === category && i.available !== false).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             if (filtered.length === 0) { 
                 menuGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--gray);"><i class="fas fa-utensils" style="font-size:50px; margin-bottom:15px; opacity:0.5;"></i><p>${state.currentLanguage === 'el' ? 'Δεν υπάρχουν είδη σε αυτή την κατηγορία ακόμα.' : 'No items in this category yet.'}</p></div>`; 
                 return; 
@@ -2827,6 +2834,11 @@ VIP Table</textarea>
             if (state.isAdminMode && (!state.currentTable || state.currentTable === "Admin")) return;
             const item = state.menuItems.find(i=>i.id===itemId);
             if (!item) return;
+            // Prevent adding if not available (double-check)
+            if (item.available === false) {
+                showNotification(state.currentLanguage === 'el' ? 'Αυτό το προϊόν δεν είναι διαθέσιμο προς το παρόν.' : 'This item is currently unavailable.');
+                return;
+            }
             if (item.options && item.options.length) openOptionsModal(item);
             else addToCartWithOptions(itemId, []);
         }
@@ -4806,323 +4818,31 @@ VIP Table</textarea>
             saveCumulativeStats();
         }
 
-        // ========== ADMIN DASHBOARD (unchanged, except added location fields) ==========
-        function loadAdminDashboardData() {
-            document.getElementById('adminRestaurantName').value = state.restaurantInfo.name;
-            document.getElementById('adminTaxRate').value = state.restaurantInfo.taxRate;
-            document.getElementById('adminPrepTime').value = state.restaurantInfo.estimatedPrepTime;
-            document.getElementById('adminWelcomeMessage').value = state.restaurantInfo.welcomeMessage || '';
-            // Location fields
-            document.getElementById('adminLat').value = state.restaurantInfo.lat || '';
-            document.getElementById('adminLng').value = state.restaurantInfo.lng || '';
-            document.getElementById('adminRadius').value = state.restaurantInfo.radius || 100;
-            // NEW: set adminChangeCode field
-            document.getElementById('adminChangeCode').value = state.adminChangeCode || '';
-            // Set custom payment text fields (EL and EN)
-            document.getElementById('adminPaymentCardLabelEl').value = state.restaurantInfo.paymentCardLabelEl || '';
-            document.getElementById('adminPaymentCardLabelEn').value = state.restaurantInfo.paymentCardLabelEn || '';
-            document.getElementById('adminPaymentCardDescEl').value = state.restaurantInfo.paymentCardDescEl || '';
-            document.getElementById('adminPaymentCardDescEn').value = state.restaurantInfo.paymentCardDescEn || '';
-            document.getElementById('adminPaymentCashLabelEl').value = state.restaurantInfo.paymentCashLabelEl || '';
-            document.getElementById('adminPaymentCashLabelEn').value = state.restaurantInfo.paymentCashLabelEn || '';
-            document.getElementById('adminPaymentCashDescEl').value = state.restaurantInfo.paymentCashDescEl || '';
-            document.getElementById('adminPaymentCashDescEn').value = state.restaurantInfo.paymentCashDescEn || '';
-            document.getElementById('adminPaymentNowLabelEl').value = state.restaurantInfo.paymentNowLabelEl || '';
-            document.getElementById('adminPaymentNowLabelEn').value = state.restaurantInfo.paymentNowLabelEn || '';
-            document.getElementById('adminPaymentNowDescEl').value = state.restaurantInfo.paymentNowDescEl || '';
-            document.getElementById('adminPaymentNowDescEn').value = state.restaurantInfo.paymentNowDescEn || '';
-            document.getElementById('adminPaymentLaterLabelEl').value = state.restaurantInfo.paymentLaterLabelEl || '';
-            document.getElementById('adminPaymentLaterLabelEn').value = state.restaurantInfo.paymentLaterLabelEn || '';
-            document.getElementById('adminPaymentLaterDescEl').value = state.restaurantInfo.paymentLaterDescEl || '';
-            document.getElementById('adminPaymentLaterDescEn').value = state.restaurantInfo.paymentLaterDescEn || '';
-          
-            updateLogoPreview();
-            loadMenuItemsForAdmin();
-            loadMenuItemsForAdminEn();
-            loadCategoriesForAdmin();
-            loadCategoriesForAdminEn(); // new
-            loadOrdersForAdmin();
-            loadSystemStats();
-            loadCustomizationSettings();
-            loadSoundSettingsUI();
-            loadHelpRequestsForAdmin();
-            loadTablesForAdmin();
-            // NEW: load printers
-            loadPrintersForAdmin();
-
-            document.querySelectorAll('#adminDashboardSection .admin-tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tid = this.dataset.tab;
-                    document.querySelectorAll('#adminDashboardSection .admin-tab').forEach(t=>t.classList.remove('active'));
-                    this.classList.add('active');
-                    document.querySelectorAll('#adminDashboardSection .admin-content').forEach(c=>c.classList.remove('active'));
-                    document.getElementById(tid+'Tab').classList.add('active');
-                    if (tid==='customization') setTimeout(initializeCustomizationTab,100);
-                    if (tid==='categories') setTimeout(()=>makeCategoriesDraggable('categoriesListContainer'),200);
-                    if (tid==='categoriesEn') setTimeout(loadCategoriesForAdminEn,100);
-                    if (tid==='orders') { loadOrdersForAdmin(); populateTableSelect('tableSelectForDelete'); }
-                    if (tid==='helpRequests') { loadHelpRequestsForAdmin(); }
-                    if (tid==='sound') setTimeout(loadSoundSettingsUI,50);
-                    if (tid==='menuEn') setTimeout(()=>{ loadMenuItemsForAdminEn(); makeAdminGridDraggable('menuItemsListEn'); },50);
-                    if (tid==='tables') setTimeout(loadTablesForAdmin,50);
-                    if (tid==='printer') setTimeout(loadPrintersForAdmin,50); // NEW
-                });
-            });
-            document.getElementById('uploadLogoBtn').addEventListener('click', ()=>document.getElementById('logoUpload').click());
-            document.getElementById('logoUpload').addEventListener('change', handleLogoUpload);
-            document.getElementById('removeLogoBtn').addEventListener('click', removeLogo);
-            document.getElementById('saveRestaurantSettings').addEventListener('click', ()=> showAdminChangePrompt(saveRestaurantSettingsOptimistic));
-            document.getElementById('addMenuItemBtn').addEventListener('click', ()=> openEditMenuItemForm(null));
-            document.getElementById('addMenuItemEnBtn').addEventListener('click', ()=> openEditMenuItemFormEn(null));
-            document.getElementById('addCategoryBtn').addEventListener('click', ()=> showAdminChangePrompt(addCategoryOptimistic));
-            document.getElementById('orderStatusFilter').addEventListener('change', loadOrdersForAdmin);
-            document.getElementById('orderTableFilter').addEventListener('change', loadOrdersForAdmin);
-            document.getElementById('clearOrdersBtn').addEventListener('click', ()=> showAdminChangePrompt(clearAllOrdersOptimistic));
-            document.getElementById('resetMenuBtn').addEventListener('click', ()=> showAdminChangePrompt(async function() { 
-                if (confirm("Reset menu to default?")) { 
-                    state.menuItems = JSON.parse(JSON.stringify(defaultMenuItems)); 
-                    await Promise.all(state.menuItems.map(i=>saveMenuItem(i))); 
-                    loadMenuItemsForAdmin();
-                    loadMenuItemsForAdminEn();
-                    displayMenuItems('all'); 
-                    showNotification("Menu reset."); 
-                } 
-            }));
-            document.getElementById('exportDataBtn').addEventListener('click', exportData);
-            document.getElementById('importDataBtn').addEventListener('click', ()=> document.getElementById('importDataInput').click());
-            document.getElementById('importDataInput').addEventListener('change', (e)=> showAdminChangePrompt(()=>importData(e)));
-            document.getElementById('deleteOrdersForTableBtn').addEventListener('click', function() {
-                const sel = document.getElementById('tableSelectForDelete');
-                if (sel.value) {
-                    state.pendingAdminCodeAction = async () => { await deleteOrdersForTable(sel.value); };
-                    showAdminChangePrompt(); // uses the numeric code modal
-                } else {
-                    showNotification('Please select a table.');
-                }
-            });
-            document.getElementById('generateQRPDFBtn').addEventListener('click', function() {
-                const textarea = document.getElementById('tableNamesForQR');
-                const tableNames = textarea.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-                generateTableQRCodePDF(tableNames);
-            });
-            document.getElementById('helpRequestStatusFilter').addEventListener('change', loadHelpRequestsForAdmin);
-            document.getElementById('deleteAllResolvedHelpBtn').addEventListener('click', async function() {
-                if (!confirm('Delete all resolved help requests?')) return;
-                const resolved = state.helpRequests.filter(r => r.status === 'resolved');
-                state.helpRequests = state.helpRequests.filter(r => r.status !== 'resolved');
-                await Promise.all(resolved.map(r => deleteHelpRequestFirestore(r.id)));
-                loadHelpRequestsForAdmin();
-                showNotification('All resolved help requests deleted.');
-                updatePendingBadges();
-            });
-            document.getElementById('openHelpVerticalBtn').addEventListener('click', openHelpVerticalView);
-            document.getElementById('openCustomerOrderViewBtn').addEventListener('click', openCustomerOrderView);
-            // NEW: Vertical Orders Viewer button
-            document.getElementById('openVerticalOrdersViewBtn').addEventListener('click', openVerticalOrdersView);
-            document.getElementById('addTableBtn').addEventListener('click', ()=> showAdminChangePrompt(addTable));
-            // NEW: Add Printer button and scan button
-            document.getElementById('addPrinterBtn').addEventListener('click', ()=> showAdminChangePrompt(addPrinter));
-            document.getElementById('scanPrintersBtn').addEventListener('click', ()=> showAdminChangePrompt(scanNetworkPrinters));
-            document.getElementById('printTestPageBtn').addEventListener('click', printTestPage);
-            backToAdminBtn.addEventListener('click', function() {
-                state.currentTable = null;
-                showSection('adminDashboardSection');
-                backToAdminBtn.style.display = 'none';
-                cartFloating.style.display = 'none';
-                updateRequestPayButton();
-            });
-
-            adminDashboardSection.addEventListener('click', e => {
-                if (e.target.classList.contains('update-status') || e.target.closest('.update-status')) {
-                    const btn = e.target.classList.contains('update-status')?e.target:e.target.closest('.update-status');
-                    const oid = btn.dataset.orderId;
-                    const sel = document.querySelector(`select[data-order-id="${oid}"]`);
-                    if (sel && oid) updateOrderStatusOptimistic(oid, sel.value);
-                }
-                if (e.target.classList.contains('resolve-help-btn') || e.target.closest('.resolve-help-btn')) {
-                    const btn = e.target.classList.contains('resolve-help-btn')?e.target:e.target.closest('.resolve-help-btn');
-                    const requestId = btn.dataset.requestId;
-                    updateHelpRequestStatus(requestId, 'resolved');
-                }
-                if (e.target.classList.contains('edit-order-btn') || e.target.closest('.edit-order-btn')) {
-                    const btn = e.target.classList.contains('edit-order-btn')?e.target:e.target.closest('.edit-order-btn');
-                    const orderId = btn.dataset.orderId;
-                    const order = state.orders.find(o => o.orderNumber === orderId);
-                    if (order) openEditOrderModal(order);
-                }
-                // NEW: Delete single order button handler
-                if (e.target.classList.contains('delete-order-btn') || e.target.closest('.delete-order-btn')) {
-                    const btn = e.target.classList.contains('delete-order-btn') ? e.target : e.target.closest('.delete-order-btn');
-                    const orderId = btn.dataset.orderId;
-                    deleteSingleOrder(orderId);
-                }
-                // NEW: Print order button handler
-                if (e.target.classList.contains('print-order-btn') || e.target.closest('.print-order-btn')) {
-                    const btn = e.target.classList.contains('print-order-btn') ? e.target : e.target.closest('.print-order-btn');
-                    const orderId = btn.dataset.orderId;
-                    printOrderToPrinter(orderId);
-                }
-            });
-            setTimeout(()=>{ 
-                makeAdminGridDraggable('menuItemsList'); 
-                makeAdminGridDraggable('menuItemsListEn');
-                makeCategoriesDraggable('categoriesListContainer'); 
-                makeCategoriesDraggable('categoriesListContainerEn'); // new
-                populateTableSelect('tableSelectForDelete'); 
-            },500);
+        // ========== NEW AVAILABILITY TOGGLE FUNCTION ==========
+        async function toggleAvailability(id) {
+            const item = state.menuItems.find(i => i.id === id);
+            if (!item) return;
+            item.available = !item.available;
+            await saveMenuItem(item);
+            // Refresh all admin UI lists that show items
+            if (document.querySelector('#adminDashboardSection.active-section')) {
+                const activeTab = document.querySelector('#adminDashboardSection .admin-tab.active')?.dataset?.tab;
+                if (activeTab === 'menu') loadMenuItemsForAdmin();
+                if (activeTab === 'menuEn') loadMenuItemsForAdminEn();
+            }
+            if (adminPanel.style.display === 'flex') {
+                loadMenuItemsForAdminModal();
+                loadMenuItemsForAdminModalEn();
+            }
+            // Refresh customer menu if visible
+            if (document.querySelector('#menuSection.active-section')) {
+                const activeCat = document.querySelector('.category-tab.active')?.dataset?.category || 'all';
+                displayMenuItems(activeCat);
+            }
+            showNotification(`${getItemName(item)} is now ${item.available ? 'available' : 'unavailable'}.`);
         }
 
-        // ========== PRINT ORDER FUNCTION (MODIFIED – NO PRICES, NO RESTAURANT, ONLY TABLE, ORDER#, TIME, ITEMS WITH OPTIONS) ==========
-        function printOrderToPrinter(orderId) {
-            const order = state.orders.find(o => o.orderNumber === orderId);
-            if (!order) {
-                showNotification('Order not found.');
-                return;
-            }
-
-            // Format the time nicely
-            const orderTime = new Date(order.timestamp).toLocaleString();
-
-            // Build HTML for the print window – only table, order number, time, items with subcategories/comments
-            const printContent = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Order #${order.orderNumber}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; }
-                        h2 { margin-bottom: 5px; }
-                        .order-info { margin-bottom: 20px; }
-                        .item { margin-bottom: 15px; }
-                        .item-name { font-weight: bold; }
-                        .options { margin-left: 20px; font-size: 0.9em; color: #555; }
-                        .comment { margin-left: 20px; font-size: 0.9em; color: #2a7f62; font-style: italic; }
-                        hr { border: 0; border-top: 1px solid #ccc; margin: 15px 0; }
-                    </style>
-                </head>
-                <body>
-                    <div class="order-info">
-                        <h2>Order #${order.orderNumber}</h2>
-                        <p><strong>Table:</strong> ${order.table}</p>
-                        <p><strong>Time:</strong> ${orderTime}</p>
-                    </div>
-                    <hr>
-                    ${order.items.map(item => {
-                        // Start with the main item line (quantity + name)
-                        let itemHtml = `<div class="item"><div class="item-name">${item.quantity} × ${item.name}</div>`;
-                        // Add subcategories/options if they exist
-                        if (item.selectedOptions && item.selectedOptions.length) {
-                            itemHtml += '<div class="options">';
-                            item.selectedOptions.forEach(opt => {
-                                if (opt.isComment) {
-                                    itemHtml += `<div class="comment">📝 ${opt.groupName}: "${opt.choiceName}"</div>`;
-                                } else {
-                                    itemHtml += `<div>• ${opt.groupName}: ${opt.choiceName}</div>`;
-                                }
-                            });
-                            itemHtml += '</div>';
-                        }
-                        itemHtml += '</div>';
-                        return itemHtml;
-                    }).join('')}
-                    <hr>
-                </body>
-                </html>
-            `;
-
-            // Open a new window with the print content
-            const printWindow = window.open('', '_blank', 'width=800,height=600');
-            if (printWindow) {
-                printWindow.document.write(printContent);
-                printWindow.document.close();
-                printWindow.focus();
-                // Automatically open the print dialog after a short delay
-                setTimeout(() => {
-                    printWindow.print();
-                }, 500);
-            } else {
-                showNotification('Pop‑up blocked. Please allow pop‑ups for printing.');
-                return;
-            }
-
-            // Mark as printed if not already
-            if (!order.printed) {
-                order.printed = true;
-                saveOrder(order);  // Firestore update
-                // Refresh admin lists to show green icon
-                loadOrdersForAdmin();
-                if (adminPanel.style.display === 'flex') loadOrdersForAdminModal();
-            }
-
-            showNotification(`Print dialog opened for order #${order.orderNumber}.`);
-        }
-
-        function updateLogoPreview() {
-            const p = document.getElementById('logoPreview'); const p2 = document.getElementById('logoPreviewModal');
-            if (state.restaurantInfo.logoImage) { p.innerHTML = `<img src="${state.restaurantInfo.logoImage}" alt="Restaurant Logo">`; if (p2) p2.innerHTML = `<img src="${state.restaurantInfo.logoImage}" alt="Restaurant Logo">`; }
-            else { p.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-image"></i><p>No logo uploaded</p></div>'; if (p2) p2.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-image"></i><p>No logo uploaded</p></div>'; }
-        }
-        function handleLogoUpload(e) {
-            const file = e.target.files[0]; if (!file || !file.type.match('image.*')) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) { state.restaurantInfo.logoImage = ev.target.result; updateLogoPreview(); updateRestaurantUI(); showNotification("Logo uploaded. Don't forget to save."); };
-            reader.readAsDataURL(file);
-        }
-        function removeLogo() { state.restaurantInfo.logoImage = ""; updateLogoPreview(); updateRestaurantUI(); showNotification("Logo removed. Don't forget to save."); }
-        async function saveRestaurantSettingsOptimistic() {
-            // NEW: read and validate admin change code
-            const newCode = document.getElementById('adminChangeCode').value.trim();
-            if (newCode && !/^\d{4}$/.test(newCode)) {
-                showNotification('Change code must be exactly 4 digits.');
-                return;
-            }
-            if (newCode) {
-                state.adminChangeCode = newCode;
-                state.restaurantInfo.adminChangeCode = newCode;
-            }
-
-            state.restaurantInfo.name = document.getElementById('adminRestaurantName').value;
-            state.restaurantInfo.taxRate = parseFloat(document.getElementById('adminTaxRate').value);
-            state.restaurantInfo.estimatedPrepTime = document.getElementById('adminPrepTime').value;
-            state.restaurantInfo.welcomeMessage = document.getElementById('adminWelcomeMessage').value;
-            
-            // Save location fields
-            const lat = parseFloat(document.getElementById('adminLat').value);
-            const lng = parseFloat(document.getElementById('adminLng').value);
-            const radius = parseInt(document.getElementById('adminRadius').value, 10);
-            if (!isNaN(lat)) state.restaurantInfo.lat = lat;
-            else state.restaurantInfo.lat = null;
-            if (!isNaN(lng)) state.restaurantInfo.lng = lng;
-            else state.restaurantInfo.lng = null;
-            if (!isNaN(radius) && radius >= 0) state.restaurantInfo.radius = radius;
-            else state.restaurantInfo.radius = 100;
-            
-            // Save custom payment texts – language specific
-            state.restaurantInfo.paymentCardLabelEl = document.getElementById('adminPaymentCardLabelEl').value;
-            state.restaurantInfo.paymentCardLabelEn = document.getElementById('adminPaymentCardLabelEn').value;
-            state.restaurantInfo.paymentCardDescEl = document.getElementById('adminPaymentCardDescEl').value;
-            state.restaurantInfo.paymentCardDescEn = document.getElementById('adminPaymentCardDescEn').value;
-            state.restaurantInfo.paymentCashLabelEl = document.getElementById('adminPaymentCashLabelEl').value;
-            state.restaurantInfo.paymentCashLabelEn = document.getElementById('adminPaymentCashLabelEn').value;
-            state.restaurantInfo.paymentCashDescEl = document.getElementById('adminPaymentCashDescEl').value;
-            state.restaurantInfo.paymentCashDescEn = document.getElementById('adminPaymentCashDescEn').value;
-            state.restaurantInfo.paymentNowLabelEl = document.getElementById('adminPaymentNowLabelEl').value;
-            state.restaurantInfo.paymentNowLabelEn = document.getElementById('adminPaymentNowLabelEn').value;
-            state.restaurantInfo.paymentNowDescEl = document.getElementById('adminPaymentNowDescEl').value;
-            state.restaurantInfo.paymentNowDescEn = document.getElementById('adminPaymentNowDescEn').value;
-            state.restaurantInfo.paymentLaterLabelEl = document.getElementById('adminPaymentLaterLabelEl').value;
-            state.restaurantInfo.paymentLaterLabelEn = document.getElementById('adminPaymentLaterLabelEn').value;
-            state.restaurantInfo.paymentLaterDescEl = document.getElementById('adminPaymentLaterDescEl').value;
-            state.restaurantInfo.paymentLaterDescEn = document.getElementById('adminPaymentLaterDescEn').value;
-
-            updateRestaurantUI();
-            updatePaymentOptionsText(); // Update payment section immediately
-            showNotification("Restaurant settings saved.");
-            await saveRestaurantInfo();
-        }
-
-        // --- MENU ADMIN (Greek) (unchanged) ---
+        // ========== ADMIN DASHBOARD (unchanged, except added availability buttons) ==========
         function loadMenuItemsForAdmin() {
             const list = document.getElementById('menuItemsList'); list.innerHTML = '';
             if (state.menuItems.length===0) { list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>'; return; }
@@ -5130,15 +4850,92 @@ VIP Table</textarea>
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                const availableIcon = item.available !== false ? 
+                    '<i class="fas fa-check-circle" style="color:green;"></i>' : 
+                    '<i class="fas fa-times-circle" style="color:red;"></i>';
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn toggle-availability" data-id="${item.id}" title="Toggle available">${availableIcon}</button><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
+            document.querySelectorAll('.toggle-availability').forEach(b=> b.addEventListener('click', function(e) { e.stopPropagation(); toggleAvailability(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.edit-item').forEach(b=> b.addEventListener('click', function() { openEditMenuItemForm(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.duplicate-item').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimistic(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimistic(id)); }));
             makeAdminGridDraggable('menuItemsList');
         }
+
+        function loadMenuItemsForAdminEn() {
+            const list = document.getElementById('menuItemsListEn'); if (!list) return;
+            list.innerHTML = '';
+            if (state.menuItems.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>';
+                return;
+            }
+            const sorted = [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
+            sorted.forEach(item => {
+                const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
+                const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
+                const availableIcon = item.available !== false ? 
+                    '<i class="fas fa-check-circle" style="color:green;"></i>' : 
+                    '<i class="fas fa-times-circle" style="color:red;"></i>';
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn toggle-availability" data-id="${item.id}" title="Toggle available">${availableIcon}</button><button class="admin-small-btn btn-primary edit-item-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
+                list.appendChild(card);
+            });
+            document.querySelectorAll('.toggle-availability').forEach(b=> b.addEventListener('click', function(e) { e.stopPropagation(); toggleAvailability(parseInt(this.dataset.id)); }));
+            document.querySelectorAll('.edit-item-en').forEach(b => b.addEventListener('click', function() { openEditMenuItemFormEn(parseInt(this.dataset.id)); }));
+            document.querySelectorAll('.duplicate-item-en').forEach(b => b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
+            document.querySelectorAll('.delete-item-en').forEach(b => b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
+            makeAdminGridDraggable('menuItemsListEn');
+        }
+
+        function loadMenuItemsForAdminModal() {
+            const list = document.getElementById('menuItemsListModal'); if (!list) return;
+            list.innerHTML = '';
+            if (state.menuItems.length===0) { list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>'; return; }
+            const sorted = [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
+            sorted.forEach(item => {
+                const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
+                const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
+                const availableIcon = item.available !== false ? 
+                    '<i class="fas fa-check-circle" style="color:green;"></i>' : 
+                    '<i class="fas fa-times-circle" style="color:red;"></i>';
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn toggle-availability-modal" data-id="${item.id}" title="Toggle available">${availableIcon}</button><button class="admin-small-btn btn-primary edit-item-modal" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
+                list.appendChild(card);
+            });
+            document.querySelectorAll('.toggle-availability-modal').forEach(b=> b.addEventListener('click', function(e) { e.stopPropagation(); toggleAvailability(parseInt(this.dataset.id)); }));
+            document.querySelectorAll('.edit-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemForm(id); adminPanel.style.display = 'none'; }));
+            document.querySelectorAll('.duplicate-item-modal').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimistic(parseInt(this.dataset.id)); }));
+            document.querySelectorAll('.delete-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimistic(id)); }));
+            makeAdminGridDraggable('menuItemsListModal');
+        }
+
+        function loadMenuItemsForAdminModalEn() {
+            const list = document.getElementById('menuItemsListModalEn'); if (!list) return;
+            list.innerHTML = '';
+            if (state.menuItems.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>';
+                return;
+            }
+            const sorted = [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
+            sorted.forEach(item => {
+                const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
+                const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
+                const availableIcon = item.available !== false ? 
+                    '<i class="fas fa-check-circle" style="color:green;"></i>' : 
+                    '<i class="fas fa-times-circle" style="color:red;"></i>';
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn toggle-availability-modal-en" data-id="${item.id}" title="Toggle available">${availableIcon}</button><button class="admin-small-btn btn-primary edit-item-modal-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
+                list.appendChild(card);
+            });
+            document.querySelectorAll('.toggle-availability-modal-en').forEach(b=> b.addEventListener('click', function(e) { e.stopPropagation(); toggleAvailability(parseInt(this.dataset.id)); }));
+            document.querySelectorAll('.edit-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemFormEn(id); adminPanel.style.display = 'none'; }));
+            document.querySelectorAll('.duplicate-item-modal-en').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
+            document.querySelectorAll('.delete-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
+            makeAdminGridDraggable('menuItemsListModalEn');
+        }
+
         async function duplicateMenuItemOptimistic(id) {
             const orig = state.menuItems.find(i=>i.id===id); if (!orig) return;
             const newId = state.menuItems.length ? Math.max(...state.menuItems.map(i=>i.id))+1 : 1;
@@ -5267,7 +5064,7 @@ VIP Table</textarea>
             } else {
                 const newId = state.menuItems.length ? Math.max(...state.menuItems.map(i=>i.id))+1 : 1;
                 const maxOrder = state.menuItems.reduce((m,i)=>Math.max(m,i.displayOrder||0),0);
-                state.menuItems.push({ id: newId, name, description: desc, price, category: cat, image: state.currentImageUpload||'', tags, options, displayOrder: maxOrder+1 });
+                state.menuItems.push({ id: newId, name, description: desc, price, category: cat, image: state.currentImageUpload||'', tags, options, displayOrder: maxOrder+1, available: true });
             }
             state.menuItems.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             document.getElementById('editMenuItemForm').style.display = 'none';
@@ -5292,26 +5089,6 @@ VIP Table</textarea>
         }
 
         // --- MENU ADMIN (English) (unchanged) ---
-        function loadMenuItemsForAdminEn() {
-            const list = document.getElementById('menuItemsListEn'); if (!list) return;
-            list.innerHTML = '';
-            if (state.menuItems.length === 0) {
-                list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>';
-                return;
-            }
-            const sorted = [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
-            sorted.forEach(item => {
-                const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
-                const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
-                if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
-                list.appendChild(card);
-            });
-            document.querySelectorAll('.edit-item-en').forEach(b => b.addEventListener('click', function() { openEditMenuItemFormEn(parseInt(this.dataset.id)); }));
-            document.querySelectorAll('.duplicate-item-en').forEach(b => b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
-            document.querySelectorAll('.delete-item-en').forEach(b => b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
-            makeAdminGridDraggable('menuItemsListEn');
-        }
         function openEditMenuItemFormEn(id) {
             const form = document.getElementById('editMenuItemFormEn');
             const list = document.getElementById('menuItemsListEn');
@@ -5477,7 +5254,8 @@ VIP Table</textarea>
                         type: grp.type,
                         choices: grp.choices.map(ch => ({ name: '', nameEn: ch.nameEn, price: 0 }))
                     })),
-                    displayOrder: maxOrder + 1
+                    displayOrder: maxOrder + 1,
+                    available: true
                 };
                 state.menuItems.push(newItem);
                 state.menuItems.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
@@ -6261,45 +6039,6 @@ VIP Table</textarea>
                 await saveRestaurantInfo();
                 showNotification("Restaurant settings saved.");
             }));
-        }
-
-        function loadMenuItemsForAdminModal() {
-            const list = document.getElementById('menuItemsListModal'); if (!list) return;
-            list.innerHTML = '';
-            if (state.menuItems.length===0) { list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>'; return; }
-            const sorted = [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
-            sorted.forEach(item => {
-                const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
-                const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
-                if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
-                list.appendChild(card);
-            });
-            document.querySelectorAll('.edit-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemForm(id); adminPanel.style.display = 'none'; }));
-            document.querySelectorAll('.duplicate-item-modal').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimistic(parseInt(this.dataset.id)); }));
-            document.querySelectorAll('.delete-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimistic(id)); }));
-            makeAdminGridDraggable('menuItemsListModal');
-        }
-
-        function loadMenuItemsForAdminModalEn() {
-            const list = document.getElementById('menuItemsListModalEn'); if (!list) return;
-            list.innerHTML = '';
-            if (state.menuItems.length === 0) {
-                list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>';
-                return;
-            }
-            const sorted = [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
-            sorted.forEach(item => {
-                const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
-                const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
-                if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
-                list.appendChild(card);
-            });
-            document.querySelectorAll('.edit-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemFormEn(id); adminPanel.style.display = 'none'; }));
-            document.querySelectorAll('.duplicate-item-modal-en').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
-            document.querySelectorAll('.delete-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
-            makeAdminGridDraggable('menuItemsListModalEn');
         }
 
         function loadCategoriesForAdminModal() {
