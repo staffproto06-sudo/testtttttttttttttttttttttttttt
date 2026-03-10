@@ -3051,16 +3051,16 @@ VIP Table</textarea>
             if (payLaterOption) payLaterOption.style.display = settings.payLater ? 'block' : 'none';
         }
 
-        // ========== AUTO-LOGIN FROM URL (FIXED: NO DEFAULT TABLE) ==========
+        // ========== AUTO-LOGIN FROM URL (NOW DOES NOTHING) ==========
         function autoLoginFromUrl() {
+            // We do NOT automatically start a session from the URL anymore.
+            // The URL parameter may be used for display purposes, but no session is created.
             const urlParams = new URLSearchParams(window.location.search);
             const tableParam = urlParams.get('table');
             if (tableParam) {
-                const tableName = decodeURIComponent(tableParam);
-                selectTable(tableName, true);
-                setTableSession(tableName);   // <-- ADD THIS
+                // Optionally you could pre-fill the scanner message, but we skip it.
+                console.log('Table parameter present, but waiting for scan.');
             }
-            // No default table - stay on scanner if no table parameter
         }
 
         // ========== QR SCANNER FUNCTIONS ==========
@@ -6391,15 +6391,24 @@ VIP Table</textarea>
             setupListeners();
             autoLoginFromUrl();
 
-            // Check session validity
-            if (state.currentTable && !isTableSessionValid()) {
-                // Session expired – clear everything and go back to scanner
-                resetOrder();
-                clearTableSession();
+            // Check for a valid session and restore it
+            const session = getTableSession();
+            if (session && isTableSessionValid()) {
+                state.currentTable = session.table;
+                tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${session.table}`;
+                menuSubtitle.textContent = state.currentLanguage === 'el' 
+                    ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${session.table}`
+                    : `Select items to add to your order for ${session.table}`;
+                cartSubtitle.textContent = state.currentLanguage === 'el'
+                    ? `Η παραγγελία σας για ${session.table}`
+                    : `Your order for ${session.table}`;
+                updateCategoryTabs();
+                displayMenuItems('all');
+                showSection('menuSection');
+            } else {
+                // No valid session – ensure we are on scanner
+                clearTableSession(); // remove any stale data
                 showSection('scannerSection');
-                showNotification(state.currentLanguage === 'el' ? 
-                    'Η συνεδρία έληξε. Παρακαλώ σαρώστε ξανά το QR.' : 
-                    'Session expired. Please scan the QR again.');
             }
 
             // QR scanner buttons
@@ -6573,5 +6582,3 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
-
-
