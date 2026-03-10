@@ -503,15 +503,7 @@
                     <span data-i18n="qrPlaceholder">Περιοχή Σάρωσης QR</span>
                 </div>
                 
-                <p style="margin: 20px 0; color: var(--gray);" data-i18n="demoTablesInstruction">Για δοκιμή, επιλέξτε ένα τραπέζι:</p>
-                <div class="demo-tables">
-                    <button class="table-btn" data-table="Table 1" data-i18n="table1">Τραπέζι 1</button>
-                    <button class="table-btn" data-table="Table 2" data-i18n="table2">Τραπέζι 2</button>
-                    <button class="table-btn" data-table="Table 3" data-i18n="table3">Τραπέζι 3</button>
-                    <button class="table-btn" data-table="Table 4" data-i18n="table4">Τραπέζι 4</button>
-                    <button class="table-btn" data-table="Table 5" data-i18n="table5">Τραπέζι 5</button>
-                    <button class="table-btn" data-table="VIP Table" data-i18n="vipTable">Τραπέζι VIP</button>
-                </div>
+                
                 <p style="margin-top: 30px; font-size: 14px; color: var(--gray);" data-i18n="scannerNote"><i class="fas fa-info-circle"></i> Μόλις σαρώσετε, θα μπορείτε να δείτε το μενού και να κάνετε την παραγγελία σας.</p>
                 <p style="margin-top: 10px; font-size: 14px; color: var(--warning);" data-i18n="adminAccessNote"><i class="fas fa-shield-alt"></i> Πρόσβαση διαχειριστή μόνο μέσω QR του τραπεζιού Admin.</p>
             </div>
@@ -6416,7 +6408,7 @@ VIP Table</textarea>
             stopCameraBtn.addEventListener('click', stopCamera);
 
             document.getElementById('languageToggleBtn').addEventListener('click', toggleLanguage);
-            document.querySelectorAll('.table-btn').forEach(btn => btn.addEventListener('click', function() { selectTable(this.dataset.table, false); }));
+            
             cartFloating.addEventListener('click', function() { if (!state.isAdminMode || (state.currentTable && state.currentTable !== "Admin")) showSection('cartSection'); });
             document.getElementById('backToMenuBtn').addEventListener('click', ()=> showSection('menuSection'));
             document.getElementById('proceedToPaymentBtn').addEventListener('click', function() { if (state.cart.length===0) { showNotification(state.currentLanguage === 'el' ? 'Παρακαλώ προσθέστε είδη στο καλάθι σας πριν προχωρήσετε στην πληρωμή' : 'Please add items to your cart before proceeding to payment'); return; } updatePaymentSummary(); showSection('paymentSection'); });
@@ -6582,3 +6574,4 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
+
