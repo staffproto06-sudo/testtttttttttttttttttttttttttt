@@ -7,7 +7,7 @@
    
     <link rel="icon" type="image/x-icon" href="https://github.com/staffproto06-sudo/testtttttttttttttttttttttttttt/tree/main/favicon_io">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="appTitle">Μενού Εστιατορίου </title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts with MANY options (now 20+ fonts) -->
@@ -53,16 +53,16 @@
         body { font-family: var(--font-primary); background-color: var(--background); color: var(--text); line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         header { background-color: var(--header-bg); box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; }
-        .nav-container { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; position: relative; flex-wrap: wrap; }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; position: relative; }
         .logo { font-family: var(--font-secondary); font-size: 36px; font-weight: 600; color: var(--primary); display: flex; align-items: center; flex: 1; }
         .logo i { margin-right: 10px; }
         .logo-img { width: 70px; height: 70px; border-radius: 8px; margin-right: 12px; object-fit: cover; display: none; }
-        .header-center { display: flex; justify-content: center; align-items: center; flex: 1; gap: 15px; flex-wrap: wrap; }
+        .header-center { display: flex; justify-content: center; align-items: center; flex: 1; gap: 15px; }
         .help-button { background-color: transparent; border: 2px solid var(--secondary); color: var(--secondary); padding: 8px 20px; border-radius: 50px; font-weight: 500; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 15px; }
         .help-button:hover { background-color: var(--secondary); color: var(--button-text); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(69, 123, 157, 0.2); }
         .language-toggle { background-color: var(--primary); color: var(--button-text); border: none; padding: 8px 16px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 15px; }
         .language-toggle:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
-        .header-right { display: flex; justify-content: flex-end; align-items: center; flex: 1; gap: 15px; flex-wrap: wrap; }
+        .header-right { display: flex; justify-content: flex-end; align-items: center; flex: 1; gap: 15px; }
         .my-orders-button { background-color: var(--secondary); color: var(--button-text); border: none; padding: 8px 16px; border-radius: 50px; font-weight: 500; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 15px; white-space: nowrap; }
         .my-orders-button:hover { background-color: var(--secondary); filter: brightness(0.9); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(69, 123, 157, 0.2); }
         .table-info { background-color: var(--light-gray); padding: 8px 16px; border-radius: 50px; font-weight: 500; display: flex; align-items: center; }
@@ -87,9 +87,9 @@
         .table-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
         .section-title { font-family: var(--font-secondary); font-size: 32px; margin-bottom: 10px; color: var(--text); }
         .section-subtitle { color: var(--gray); margin-bottom: 30px; font-size: 16px; }
-        .category-tabs { display: flex; overflow-x: auto; margin-bottom: 30px; padding-bottom: 5px; gap: 8px; -webkit-overflow-scrolling: touch; }
-        .category-tab { padding: 12px 20px; background-color: var(--card-bg); border: none; border-bottom: 3px solid transparent; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.3s; color: var(--text); font-size: 16px; min-width: 70px; text-align: center; }
-        .category-tab.active { color: var(--primary); border-bottom: 3px solid var(--primary); background-color: rgba(230,57,70,0.05); }
+        .category-tabs { display: flex; overflow-x: auto; margin-bottom: 30px; padding-bottom: 5px; }
+        .category-tab { padding: 10px 20px; background-color: var(--card-bg); border: none; border-bottom: 3px solid transparent; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.3s; color: var(--text); }
+        .category-tab.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-bottom: 40px; }
         .menu-item { background-color: var(--card-bg); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: transform 0.3s; cursor: pointer; }
         .menu-item:hover { transform: translateY(-5px); }
@@ -102,7 +102,7 @@
         .item-footer { display: flex; justify-content: space-between; align-items: center; }
         .item-tags { display: flex; gap: 5px; }
         .item-tag { font-size: 11px; padding: 3px 8px; border-radius: 20px; background-color: var(--light-gray); color: var(--text); }
-        .add-to-cart { background-color: var(--primary); color: var(--button-text); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.3s; font-size: 18px; }
+        .add-to-cart { background-color: var(--primary); color: var(--button-text); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.3s; }
         .add-to-cart:hover { background-color: var(--primary-dark); }
         .cart-container { display: flex; flex-direction: column; max-width: 800px; margin: 0 auto; }
         .cart-items { background-color: var(--cart-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 25px; margin-bottom: 25px; }
@@ -202,9 +202,9 @@
         .time-icon { font-size: 24px; color: var(--warning); }
         .time-text { font-size: 15px; color: var(--text); }
         .time-text strong { color: var(--text); }
-        .cart-floating { position: fixed; bottom: 30px; right: 30px; background-color: var(--primary); color: var(--button-text); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; box-shadow: 0 6px 20px rgba(230, 57, 70, 0.3); z-index: 99; transition: all 0.3s; }
+        .cart-floating { position: fixed; bottom: 30px; right: 30px; background-color: var(--primary); color: var(--button-text); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; box-shadow: 0 6px 20px rgba(230, 57, 70, 0.3); z-index: 99; transition: all 0.3s; }
         .cart-floating:hover { background-color: var(--primary-dark); transform: translateY(-3px); }
-        .cart-count { position: absolute; top: -5px; right: -5px; background-color: var(--secondary); color: var(--button-text); width: 28px; height: 28px; border-radius: 50%; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .cart-count { position: absolute; top: -5px; right: -5px; background-color: var(--secondary); color: var(--button-text); width: 24px; height: 24px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: 600; }
         .admin-floating { position: fixed; bottom: 30px; right: 100px; background-color: var(--dark); color: white; width: 50px; height: 50px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 99; transition: all 0.3s; border: 2px solid rgba(255,255,255,0.2); }
         .admin-floating:hover { background-color: var(--secondary); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(69,123,157,0.4); }
         .admin-floating i { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
@@ -230,7 +230,7 @@
         .admin-card:active { opacity: 0.7; }
         .admin-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .admin-card-title { font-weight: 600; font-size: 16px; color: var(--text); }
-        .admin-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .admin-card-actions { display: flex; gap: 8px; }
         .admin-small-btn { padding: 5px 10px; font-size: 12px; border-radius: 4px; border: none; cursor: pointer; }
         .tag-input-container { display: flex; gap: 10px; margin-bottom: 10px; }
         .tag-display { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
@@ -388,11 +388,6 @@
                 opacity: 0;
             }
         }
-        /* Availability toggle button styles */
-        .toggle-available { border: none; padding: 5px 10px; border-radius: 20px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
-        .toggle-available.available { background-color: #d4edda; color: #155724; }
-        .toggle-available.unavailable { background-color: #f8d7da; color: #721c24; }
-
         @media (max-width: 992px) { .theme-gallery { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } .font-options { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
         @media (max-width: 768px) { 
             .theme-gallery { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); } 
@@ -400,7 +395,7 @@
             .customization-actions { flex-direction: column; } 
             .payment-actions { flex-direction: column; gap: 15px; } 
             .btn { width: 100%; } 
-            .cart-floating { bottom: 20px; right: 20px; width: 65px; height: 65px; font-size: 24px; } 
+            .cart-floating { bottom: 20px; right: 20px; width: 55px; height: 55px; } 
             .admin-floating { bottom: 20px; right: 90px; width: 45px; height: 45px; } 
             .confirmation-card, .order-details { padding: 25px 20px; } 
             .details-header { flex-direction: column; align-items: flex-start; gap: 10px; } 
@@ -432,8 +427,6 @@
             .help-button { padding: 8px 15px; font-size: 14px; } 
             .my-orders-button { padding: 8px 15px; font-size: 14px; } 
             .theme-previews { grid-template-columns: 1fr; } 
-            .menu-grid { grid-template-columns: 1fr; } /* single column for phones */
-            .menu-item .add-to-cart { width: 44px; height: 44px; } /* larger touch target */
         }
         .pending-badge { display: none; color: red; margin-left: 5px; }
         .admin-tab.active .pending-badge { color: red; }
@@ -695,6 +688,7 @@
                     <button class="admin-tab" data-tab="orders">Order Management <span class="pending-badge" id="orderPendingBadge"><i class="fas fa-exclamation-circle"></i></span></button>
                     <button class="admin-tab" data-tab="helpRequests">🆘 Help Requests <span class="pending-badge" id="helpPendingBadge"><i class="fas fa-exclamation-circle"></i></span></button>
                     <button class="admin-tab" data-tab="tables">📋 Tables</button>
+                    <!-- NEW PRINTER TAB (dashboard) -->
                     <button class="admin-tab" data-tab="printer">🖨️ Printer</button>
                     <button class="admin-tab" data-tab="customization">Visual Customization</button>
                     <button class="admin-tab" data-tab="sound">🔊 Sound Effects</button>
@@ -769,12 +763,6 @@
                             </div>
                         </div>
                         <div class="admin-form-group"><label class="admin-label">Tags (EL) (separate with commas)</label><input type="text" class="admin-input" id="editItemTags" placeholder="Vegetarian, Popular, Spicy"></div>
-                        <!-- Availability checkbox -->
-                        <div class="admin-form-group" style="margin-top: 10px;">
-                            <label class="admin-label" style="display: flex; align-items: center; gap: 10px;">
-                                <input type="checkbox" id="editItemAvailable" checked> Available (show on menu)
-                            </label>
-                        </div>
                         <div id="adminOptionsSection" class="admin-options-section"></div>
                         <div class="payment-actions">
                             <button class="btn btn-secondary" id="cancelEditBtn"><i class="fas fa-times"></i> Cancel</button>
@@ -802,12 +790,6 @@
                             </div>
                         </div>
                         <div class="admin-form-group"><label class="admin-label">Tags (EN) (separate with commas)</label><input type="text" class="admin-input" id="editItemTagsEn" placeholder="Vegetarian, Popular, Spicy"></div>
-                        <!-- Availability (read‑only for EN tab, but we show current status) -->
-                        <div class="admin-form-group" style="margin-top: 10px;">
-                            <label class="admin-label" style="display: flex; align-items: center; gap: 10px;">
-                                <input type="checkbox" id="editItemAvailableEn" disabled> Available (controlled in Greek)
-                            </label>
-                        </div>
                         <div id="adminOptionsSectionEn" class="admin-options-section">
                             <h4 style="margin-bottom:15px;"><i class="fas fa-tasks"></i> Options / Subcategories (EN) - translate only</h4>
                             <div id="optionsGroupsContainerEn"></div>
@@ -1850,7 +1832,7 @@ VIP Table</textarea>
             }
         }
 
-        // ========== STATE (with obfuscated admin codes + custom payment texts + location + availability) ==========
+        // ========== STATE (with obfuscated admin codes + custom payment texts + location) ==========
         const state = {
             currentTable: null,
             cart: [],
@@ -1948,20 +1930,20 @@ VIP Table</textarea>
             pendingTable: null
         };
 
-        // ========== DEFAULT DATA (with available field) ==========
+        // ========== DEFAULT DATA (unchanged) ==========
         const defaultMenuItems = [
-            { id: 1, name: "Πίτσα Μαργαρίτα", nameEn: "Margherita Pizza", description: "Κλασική σάλτσα ντομάτας, φρέσκια μοτσαρέλα, βασιλικός", descriptionEn: "Classic tomato sauce, fresh mozzarella, basil", price: 14.99, category: "pizza", tags: ["Χορτοφαγική", "Δημοφιλής"], tagsEn: ["Vegetarian", "Popular"], image: "", options: [], available: true },
-            { id: 2, name: "Πίτσα Πεπερονί", nameEn: "Pepperoni Pizza", description: "Σάλτσα ντομάτας, μοτσαρέλα, διπλό πεπερόνι", descriptionEn: "Tomato sauce, mozzarella, double pepperoni", price: 16.99, category: "pizza", tags: ["Πικάντικη"], tagsEn: ["Spicy"], image: "", options: [], available: true },
-            { id: 3, name: "Σαλάτα Καίσαρα", nameEn: "Caesar Salad", description: "Μαρούλι ρωμαϊκό, παρμεζάνα, κρουτόν, σάλτσα Καίσαρα", descriptionEn: "Romaine lettuce, parmesan, croutons, Caesar dressing", price: 9.99, category: "salads", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [], available: true },
-            { id: 4, name: "Χωριάτικη Σαλάτα", nameEn: "Greek Salad", description: "Αγγούρι, ντομάτα, ελιές, φέτα, ρίγανη", descriptionEn: "Cucumber, tomato, olives, feta, oregano", price: 10.99, category: "salads", tags: ["Χορτοφαγική", "Υγιεινή"], tagsEn: ["Vegetarian", "Healthy"], image: "", options: [], available: true },
-            { id: 5, name: "Σπαγγέτι Καρμπονάρα", nameEn: "Spaghetti Carbonara", description: "Αυγά, τυρί, πανσέτα, μαύρο πιπέρι", descriptionEn: "Eggs, cheese, pancetta, black pepper", price: 13.99, category: "pasta", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [], available: true },
-            { id: 6, name: "Λαζάνια", nameEn: "Lasagna", description: "Στρώσεις ζύμης, κιμάς, μπεσαμέλ, παρμεζάνα", descriptionEn: "Layered pasta, minced meat, béchamel, parmesan", price: 15.99, category: "pasta", tags: [], tagsEn: [], image: "", options: [], available: true },
-            { id: 7, name: "Σολομός στη Σχάρα", nameEn: "Grilled Salmon", description: "Φρέσκο φιλέτο σολομού, σάλτσα λεμονιού, λαχανικά", descriptionEn: "Fresh salmon fillet, lemon sauce, vegetables", price: 19.99, category: "main", tags: ["Χωρίς γλουτένη"], tagsEn: ["Gluten-free"], image: "", options: [], available: true },
-            { id: 8, name: "Μπριζόλα Ribeye", nameEn: "Ribeye Steak", description: "300γρ. ribeye, συνοδεύεται από πατάτες και σαλάτα", descriptionEn: "300g ribeye, served with potatoes and salad", price: 24.99, category: "main", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [], available: true },
-            { id: 9, name: "Τιραμισού", nameEn: "Tiramisu", description: "Μπισκότα Savoiardi εμποτισμένα με καφέ, κρέμα μασκαρπόνε, κακάο", descriptionEn: "Savoiardi biscuits soaked in coffee, mascarpone cream, cocoa", price: 7.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [], available: true },
-            { id: 10, name: "Τσιζκέικ", nameEn: "Cheesecake", description: "Νεοϋορκέζικο, σάλτσα μούρων", descriptionEn: "New York style, berry sauce", price: 6.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [], available: true },
-            { id: 11, name: "Coca-Cola", nameEn: "Coca-Cola", description: "Αναψυκτικό 330ml", descriptionEn: "Soft drink 330ml", price: 2.50, category: "beverages", tags: [], tagsEn: [], image: "", options: [], available: true },
-            { id: 12, name: "Φρέσκος Χυμός Πορτοκάλι", nameEn: "Fresh Orange Juice", description: "Φρεσκοστυμμένος", descriptionEn: "Freshly squeezed", price: 3.50, category: "beverages", tags: ["Υγιεινή"], tagsEn: ["Healthy"], image: "", options: [], available: true }
+            { id: 1, name: "Πίτσα Μαργαρίτα", nameEn: "Margherita Pizza", description: "Κλασική σάλτσα ντομάτας, φρέσκια μοτσαρέλα, βασιλικός", descriptionEn: "Classic tomato sauce, fresh mozzarella, basil", price: 14.99, category: "pizza", tags: ["Χορτοφαγική", "Δημοφιλής"], tagsEn: ["Vegetarian", "Popular"], image: "", options: [] },
+            { id: 2, name: "Πίτσα Πεπερονί", nameEn: "Pepperoni Pizza", description: "Σάλτσα ντομάτας, μοτσαρέλα, διπλό πεπερόνι", descriptionEn: "Tomato sauce, mozzarella, double pepperoni", price: 16.99, category: "pizza", tags: ["Πικάντικη"], tagsEn: ["Spicy"], image: "", options: [] },
+            { id: 3, name: "Σαλάτα Καίσαρα", nameEn: "Caesar Salad", description: "Μαρούλι ρωμαϊκό, παρμεζάνα, κρουτόν, σάλτσα Καίσαρα", descriptionEn: "Romaine lettuce, parmesan, croutons, Caesar dressing", price: 9.99, category: "salads", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [] },
+            { id: 4, name: "Χωριάτικη Σαλάτα", nameEn: "Greek Salad", description: "Αγγούρι, ντομάτα, ελιές, φέτα, ρίγανη", descriptionEn: "Cucumber, tomato, olives, feta, oregano", price: 10.99, category: "salads", tags: ["Χορτοφαγική", "Υγιεινή"], tagsEn: ["Vegetarian", "Healthy"], image: "", options: [] },
+            { id: 5, name: "Σπαγγέτι Καρμπονάρα", nameEn: "Spaghetti Carbonara", description: "Αυγά, τυρί, πανσέτα, μαύρο πιπέρι", descriptionEn: "Eggs, cheese, pancetta, black pepper", price: 13.99, category: "pasta", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [] },
+            { id: 6, name: "Λαζάνια", nameEn: "Lasagna", description: "Στρώσεις ζύμης, κιμάς, μπεσαμέλ, παρμεζάνα", descriptionEn: "Layered pasta, minced meat, béchamel, parmesan", price: 15.99, category: "pasta", tags: [], tagsEn: [], image: "", options: [] },
+            { id: 7, name: "Σολομός στη Σχάρα", nameEn: "Grilled Salmon", description: "Φρέσκο φιλέτο σολομού, σάλτσα λεμονιού, λαχανικά", descriptionEn: "Fresh salmon fillet, lemon sauce, vegetables", price: 19.99, category: "main", tags: ["Χωρίς γλουτένη"], tagsEn: ["Gluten-free"], image: "", options: [] },
+            { id: 8, name: "Μπριζόλα Ribeye", nameEn: "Ribeye Steak", description: "300γρ. ribeye, συνοδεύεται από πατάτες και σαλάτα", descriptionEn: "300g ribeye, served with potatoes and salad", price: 24.99, category: "main", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [] },
+            { id: 9, name: "Τιραμισού", nameEn: "Tiramisu", description: "Μπισκότα Savoiardi εμποτισμένα με καφέ, κρέμα μασκαρπόνε, κακάο", descriptionEn: "Savoiardi biscuits soaked in coffee, mascarpone cream, cocoa", price: 7.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [] },
+            { id: 10, name: "Τσιζκέικ", nameEn: "Cheesecake", description: "Νεοϋορκέζικο, σάλτσα μούρων", descriptionEn: "New York style, berry sauce", price: 6.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [] },
+            { id: 11, name: "Coca-Cola", nameEn: "Coca-Cola", description: "Αναψυκτικό 330ml", descriptionEn: "Soft drink 330ml", price: 2.50, category: "beverages", tags: [], tagsEn: [], image: "", options: [] },
+            { id: 12, name: "Φρέσκος Χυμός Πορτοκάλι", nameEn: "Fresh Orange Juice", description: "Φρεσκοστυμμένος", descriptionEn: "Freshly squeezed", price: 3.50, category: "beverages", tags: ["Υγιεινή"], tagsEn: ["Healthy"], image: "", options: [] }
         ];
 
         const defaultCategories = [
@@ -2290,7 +2272,7 @@ VIP Table</textarea>
         // ========== FIRESTORE SAVE / LOAD (now using helpers) ==========
         // (already defined above)
 
-        // ========== INITIAL LOAD (now loads location fields and ensures available) ==========
+        // ========== INITIAL LOAD (now loads location fields) ==========
         async function loadInitialData() {
             try {
                 const [restDoc, menuSnap, ordersSnap, catDoc, customDoc, soundDoc, helpSnap, statsDoc, tablesSnap, printersSnap] = await Promise.all([
@@ -2358,8 +2340,6 @@ VIP Table</textarea>
                                 }
                             });
                         }
-                        // Ensure available field exists (default true)
-                        if (d.available === undefined) d.available = true;
                         d.displayOrder = d.displayOrder ?? Number(doc.id) ?? 999;
                         return { id: Number(doc.id), ...d, options: d.options || [] };
                     }).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
@@ -2611,7 +2591,6 @@ VIP Table</textarea>
                             }
                         });
                     }
-                    if (d.available === undefined) d.available = true;
                     d.displayOrder = d.displayOrder ?? Number(doc.id) ?? 999;
                     return { id: Number(doc.id), ...d, options: d.options || [] };
                 }).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
@@ -2813,21 +2792,16 @@ VIP Table</textarea>
                 categoryTabs.appendChild(tab);
             });
         }
-
-        // ========== MODIFIED DISPLAY MENU ITEMS (hide unavailable) ==========
         function displayMenuItems(category) {
             if (!menuGrid) return;
             menuGrid.innerHTML = '';
-            let filtered = category === 'all' ? [...state.menuItems] : state.menuItems.filter(i=>i.category===category);
-            // Filter out unavailable items
-            filtered = filtered.filter(i => i.available !== false);
-            filtered.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
+            const filtered = category === 'all' ? [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0)) : state.menuItems.filter(i=>i.category===category).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             if (filtered.length === 0) { 
-                menuGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--gray);"><i class="fas fa-utensils" style="font-size:50px; margin-bottom:15px; opacity:0.5;"></i><p>${state.currentLanguage === 'el' ? 'Δεν υπάρχουν διαθέσιμα είδη σε αυτή την κατηγορία.' : 'No available items in this category.'}</p></div>`; 
+                menuGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--gray);"><i class="fas fa-utensils" style="font-size:50px; margin-bottom:15px; opacity:0.5;"></i><p>${state.currentLanguage === 'el' ? 'Δεν υπάρχουν είδη σε αυτή την κατηγορία ακόμα.' : 'No items in this category yet.'}</p></div>`; 
                 return; 
             }
             filtered.forEach(item => {
-                const el = document.createElement('div'); el.className = 'menu-item';
+                const el = document.createElement('div'); el.className = 'menu-item';  // cursor:pointer added in CSS
                 const imgStyle = item.image ? `background-image: url('${item.image}')` : 'background-color: var(--light-gray)';
                 let optInd = '';
                 if (item.options && item.options.length) optInd = `<div class="item-options-indicator"><i class="fas fa-sliders-h"></i> ${state.currentLanguage === 'el' ? 'Με επιλογές' : 'With options'}</div>`;
@@ -4832,7 +4806,7 @@ VIP Table</textarea>
             saveCumulativeStats();
         }
 
-        // ========== ADMIN DASHBOARD (unchanged, except added location fields and availability toggle) ==========
+        // ========== ADMIN DASHBOARD (unchanged, except added location fields) ==========
         function loadAdminDashboardData() {
             document.getElementById('adminRestaurantName').value = state.restaurantInfo.name;
             document.getElementById('adminTaxRate').value = state.restaurantInfo.taxRate;
@@ -5148,7 +5122,7 @@ VIP Table</textarea>
             await saveRestaurantInfo();
         }
 
-        // --- MENU ADMIN (Greek) (modified with availability toggle and edit form checkbox)---
+        // --- MENU ADMIN (Greek) (unchanged) ---
         function loadMenuItemsForAdmin() {
             const list = document.getElementById('menuItemsList'); list.innerHTML = '';
             if (state.menuItems.length===0) { list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>'; return; }
@@ -5156,14 +5130,13 @@ VIP Table</textarea>
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div><div style="margin-top:10px;"><button class="toggle-available ${item.available ? 'available' : 'unavailable'}" data-id="${item.id}"><i class="fas ${item.available ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${item.available ? 'Available' : 'Unavailable'}</button></div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
             document.querySelectorAll('.edit-item').forEach(b=> b.addEventListener('click', function() { openEditMenuItemForm(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.duplicate-item').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimistic(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimistic(id)); }));
-            document.querySelectorAll('.toggle-available').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); toggleItemAvailability(id); }));
             makeAdminGridDraggable('menuItemsList');
         }
         async function duplicateMenuItemOptimistic(id) {
@@ -5192,7 +5165,6 @@ VIP Table</textarea>
                     document.getElementById('editItemPrice').value = item.price;
                     document.getElementById('editItemCategory').value = item.category;
                     document.getElementById('editItemTags').value = item.tags.join(', ');
-                    document.getElementById('editItemAvailable').checked = item.available !== false; // default true
                     updateItemImagePreview(item.image);
                     form.dataset.itemId = id;
                     buildOptionsAdminUI(item.options||[]);
@@ -5203,7 +5175,6 @@ VIP Table</textarea>
                 document.getElementById('editItemPrice').value = '';
                 document.getElementById('editItemCategory').value = state.categories[0]?.id || '';
                 document.getElementById('editItemTags').value = '';
-                document.getElementById('editItemAvailable').checked = true;
                 updateItemImagePreview('');
                 form.dataset.itemId = '';
                 buildOptionsAdminUI([]);
@@ -5267,7 +5238,6 @@ VIP Table</textarea>
             const price = parseFloat(document.getElementById('editItemPrice').value);
             const cat = document.getElementById('editItemCategory').value;
             const tags = document.getElementById('editItemTags').value.split(',').map(t=>t.trim()).filter(t=>t);
-            const available = document.getElementById('editItemAvailable').checked;
             if (!name||!desc||!price||!cat) { showNotification("Please fill all required fields."); return; }
             let options = [];
             const optSec = document.getElementById('adminOptionsSection');
@@ -5292,12 +5262,12 @@ VIP Table</textarea>
             if (id) {
                 const idx = state.menuItems.findIndex(i=>i.id===parseInt(id));
                 if (idx!==-1) {
-                    state.menuItems[idx] = { ...state.menuItems[idx], name, description: desc, price, category: cat, image: state.currentImageUpload||state.menuItems[idx].image, tags, options, available };
+                    state.menuItems[idx] = { ...state.menuItems[idx], name, description: desc, price, category: cat, image: state.currentImageUpload||state.menuItems[idx].image, tags, options };
                 }
             } else {
                 const newId = state.menuItems.length ? Math.max(...state.menuItems.map(i=>i.id))+1 : 1;
                 const maxOrder = state.menuItems.reduce((m,i)=>Math.max(m,i.displayOrder||0),0);
-                state.menuItems.push({ id: newId, name, description: desc, price, category: cat, image: state.currentImageUpload||'', tags, options, available, displayOrder: maxOrder+1 });
+                state.menuItems.push({ id: newId, name, description: desc, price, category: cat, image: state.currentImageUpload||'', tags, options, displayOrder: maxOrder+1 });
             }
             state.menuItems.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             document.getElementById('editMenuItemForm').style.display = 'none';
@@ -5321,7 +5291,7 @@ VIP Table</textarea>
             await deleteMenuItemFirestore(id);
         }
 
-        // --- MENU ADMIN (English) (unchanged except availability read‑only) ---
+        // --- MENU ADMIN (English) (unchanged) ---
         function loadMenuItemsForAdminEn() {
             const list = document.getElementById('menuItemsListEn'); if (!list) return;
             list.innerHTML = '';
@@ -5333,14 +5303,13 @@ VIP Table</textarea>
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div><div style="margin-top:10px;"><button class="toggle-available ${item.available ? 'available' : 'unavailable'}" data-id="${item.id}"><i class="fas ${item.available ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${item.available ? 'Available' : 'Unavailable'}</button></div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
             document.querySelectorAll('.edit-item-en').forEach(b => b.addEventListener('click', function() { openEditMenuItemFormEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.duplicate-item-en').forEach(b => b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-en').forEach(b => b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
-            document.querySelectorAll('.toggle-available').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); toggleItemAvailability(id); }));
             makeAdminGridDraggable('menuItemsListEn');
         }
         function openEditMenuItemFormEn(id) {
@@ -5362,7 +5331,6 @@ VIP Table</textarea>
                     document.getElementById('editItemPriceEn').value = item.price;
                     document.getElementById('editItemCategoryEn').value = item.category;
                     document.getElementById('editItemTagsEn').value = (item.tagsEn || []).join(', ');
-                    document.getElementById('editItemAvailableEn').checked = item.available !== false;
                     updateItemImagePreviewEn(item.image || '');
                     form.dataset.itemId = id;
                     buildOptionsAdminUIEn(item.options || []);
@@ -5373,7 +5341,6 @@ VIP Table</textarea>
                 document.getElementById('editItemPriceEn').value = '0.00';
                 catSel.value = state.categories[0]?.id || '';
                 document.getElementById('editItemTagsEn').value = '';
-                document.getElementById('editItemAvailableEn').checked = true;
                 updateItemImagePreviewEn('');
                 form.dataset.itemId = '';
                 buildOptionsAdminUIEn([]);
@@ -5444,7 +5411,6 @@ VIP Table</textarea>
             const nameEn = document.getElementById('editItemNameEn').value.trim();
             const descriptionEn = document.getElementById('editItemDescriptionEn').value.trim();
             const tagsEn = document.getElementById('editItemTagsEn').value.split(',').map(t=>t.trim()).filter(t=>t);
-            // Availability is not changed in EN tab
             let options = [];
             const optSec = document.getElementById('adminOptionsSectionEn');
             if (optSec) {
@@ -5511,7 +5477,6 @@ VIP Table</textarea>
                         type: grp.type,
                         choices: grp.choices.map(ch => ({ name: '', nameEn: ch.nameEn, price: 0 }))
                     })),
-                    available: true, // default
                     displayOrder: maxOrder + 1
                 };
                 state.menuItems.push(newItem);
@@ -5553,26 +5518,6 @@ VIP Table</textarea>
             displayMenuItems('all');
             showNotification(`"${item?.name || item?.nameEn}" deleted.`);
             await deleteMenuItemFirestore(id);
-        }
-
-        // ========== AVAILABILITY TOGGLE FUNCTION ==========
-        async function toggleItemAvailability(itemId) {
-            const item = state.menuItems.find(i => i.id === itemId);
-            if (!item) return;
-            item.available = !item.available;
-            // Update UI in all admin lists
-            loadMenuItemsForAdmin();
-            loadMenuItemsForAdminEn();
-            loadMenuItemsForAdminModal();
-            loadMenuItemsForAdminModalEn();
-            // Update customer menu if visible
-            if (!state.isAdminMode && document.querySelector('#menuSection.active-section')) {
-                const activeCat = document.querySelector('.category-tab.active')?.dataset?.category || 'all';
-                displayMenuItems(activeCat);
-            }
-            // Save to Firestore
-            await saveMenuItem(item);
-            showNotification(`Item "${getItemName(item)}" marked as ${item.available ? 'available' : 'unavailable'}.`);
         }
 
         // --- CATEGORY ADMIN (EL) (unchanged) ---
@@ -5683,8 +5628,8 @@ VIP Table</textarea>
                     case 'preparing': badge='<span class="order-status-badge status-preparing">Preparing</span>'; break; 
                     case 'ready': badge='<span class="order-status-badge status-ready">Ready</span>'; break; 
                     case 'served': badge='<span class="order-status-badge status-served">Served</span>'; break; 
-                    case 'cancelled': badge='<span class="order-status-badge status-cancelled">Cancelled</span>';
-                    case 'payed': badge='<span class="order-status-badge status-payed">Payed</span>';
+                    case 'cancelled': badge='<span class="order-status-badge status-cancelled">Cancelled</span>'; break;
+                    case 'payed': badge='<span class="order-status-badge status-payed">Payed</span>'; break;
                 }
                 let printedIcon = o.printed ? '<i class="fas fa-print" style="color:green; margin-right:5px;" title="Printed"></i>' : '';
                 let itemsHtml = '';
@@ -6183,7 +6128,7 @@ VIP Table</textarea>
             }
         }
 
-        // --- MODAL ADMIN (unchanged, except added location fields and availability toggle) ---
+        // --- MODAL ADMIN (unchanged, except added location fields) ---
         function setupAdminPanel() {
             adminClose.addEventListener('click', ()=> adminPanel.style.display = 'none');
             document.querySelectorAll('#adminPanel .admin-tab').forEach(tab => {
@@ -6326,14 +6271,13 @@ VIP Table</textarea>
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div><div style="margin-top:10px;"><button class="toggle-available ${item.available ? 'available' : 'unavailable'}" data-id="${item.id}"><i class="fas ${item.available ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${item.available ? 'Available' : 'Unavailable'}</button></div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
             document.querySelectorAll('.edit-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemForm(id); adminPanel.style.display = 'none'; }));
             document.querySelectorAll('.duplicate-item-modal').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimistic(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimistic(id)); }));
-            document.querySelectorAll('.toggle-available').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); toggleItemAvailability(id); }));
             makeAdminGridDraggable('menuItemsListModal');
         }
 
@@ -6348,14 +6292,13 @@ VIP Table</textarea>
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div><div style="margin-top:10px;"><button class="toggle-available ${item.available ? 'available' : 'unavailable'}" data-id="${item.id}"><i class="fas ${item.available ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${item.available ? 'Available' : 'Unavailable'}</button></div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
             document.querySelectorAll('.edit-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemFormEn(id); adminPanel.style.display = 'none'; }));
             document.querySelectorAll('.duplicate-item-modal-en').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
-            document.querySelectorAll('.toggle-available').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); toggleItemAvailability(id); }));
             makeAdminGridDraggable('menuItemsListModalEn');
         }
 
@@ -6448,7 +6391,7 @@ VIP Table</textarea>
                     case 'preparing': badge='<span class="order-status-badge status-preparing">Preparing</span>'; break; 
                     case 'ready': badge='<span class="order-status-badge status-ready">Ready</span>'; break; 
                     case 'served': badge='<span class="order-status-badge status-served">Served</span>'; break; 
-                    case 'cancelled': badge='<span class="order-status-badge status-cancelled">Cancelled</span>';
+                    case 'cancelled': badge='<span class="order-status-badge status-cancelled">Cancelled</span>'; 
                     case 'payed': badge='<span class="order-status-badge status-payed">Payed</span>';
                 }
                 let printedIcon = o.printed ? '<i class="fas fa-print" style="color:green; margin-right:5px;" title="Printed"></i>' : '';
