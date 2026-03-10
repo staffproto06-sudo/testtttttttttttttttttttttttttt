@@ -439,6 +439,15 @@
         .edit-order-item-controls { display: flex; align-items: center; gap: 10px; }
         .edit-order-item-quantity { width: 60px; text-align: center; }
         .edit-order-item-price { font-weight: 600; color: var(--primary); min-width: 80px; text-align: right; }
+        /* New badge style for scan counter */
+        .badge {
+            background: #2b5797;
+            color: white;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -483,7 +492,7 @@
     <!-- FIRST HIDDEN MAPPING (g → 3) -->
     <div style="display:none;"><span class="code-mapping" data-letter="g" data-digit="3"></span></div>
 
-    <!-- ========== SCANNER SECTION ========== -->
+    <!-- ========== SCANNER SECTION (replaced with new scanner) ========== -->
     <section id="scannerSection" class="app-section active-section">
         <div class="container scanner-section">
             <div class="scanner-container">
@@ -493,22 +502,33 @@
                 <!-- QR Scanner Video -->
                 <video id="qr-video" playsinline></video>
                 <canvas id="qr-canvas" style="display:none;"></canvas>
+                
                 <div style="display: flex; gap: 10px; justify-content: center; margin: 15px 0;">
                     <button class="btn btn-primary" id="start-camera-btn"><i class="fas fa-camera"></i> Έναρξη κάμερας</button>
                     <button class="btn btn-secondary" id="stop-camera-btn" style="display: none;"><i class="fas fa-stop"></i> Διακοπή</button>
                 </div>
                 
-                <div class="qr-placeholder" id="qr-placeholder">
+                <!-- Status display (replacing old placeholder) -->
+                <div class="qr-placeholder" id="qr-placeholder" style="display: flex;">
                     <i class="fas fa-qrcode"></i>
-                    <span data-i18n="qrPlaceholder">Περιοχή Σάρωσης QR</span>
+                    <span id="status-message">Περιοχή Σάρωσης QR</span>
                 </div>
                 
+                <!-- Scan counter -->
+                <div style="margin-top: 10px; display: flex; gap: 0.5rem; align-items: center; justify-content: center;">
+                    <span class="badge" id="scan-count">0</span>
+                    <span style="color: var(--gray);">codes scanned this session</span>
+                </div>
                 
                 <p style="margin-top: 30px; font-size: 14px; color: var(--gray);" data-i18n="scannerNote"><i class="fas fa-info-circle"></i> Μόλις σαρώσετε, θα μπορείτε να δείτε το μενού και να κάνετε την παραγγελία σας.</p>
                 <p style="margin-top: 10px; font-size: 14px; color: var(--warning);" data-i18n="adminAccessNote"><i class="fas fa-shield-alt"></i> Πρόσβαση διαχειριστή μόνο μέσω QR του τραπεζιού Admin.</p>
+                <div id="error-msg" style="color: var(--danger); margin-top: 10px;"></div>
             </div>
         </div>
     </section>
+
+    <!-- SECOND HIDDEN MAPPING (e → 2) -->
+    <div style="display:none;"><span class="code-mapping" data-letter="e" data-digit="2"></span></div>
 
     <!-- ========== MENU SECTION ========== -->
     <section id="menuSection" class="app-section">
@@ -519,8 +539,6 @@
             <div class="menu-grid" id="menuGrid"></div>
         </div>
     </section>
-    <!-- SECOND HIDDEN MAPPING (e → 2) -->
-    <div style="display:none;"><span class="code-mapping" data-letter="e" data-digit="2"></span></div>
 
     <!-- ========== CART SECTION ========== -->
     <section id="cartSection" class="app-section">
@@ -2112,8 +2130,14 @@ VIP Table</textarea>
         const qrCanvas = document.getElementById('qr-canvas');
         const startCameraBtn = document.getElementById('start-camera-btn');
         const stopCameraBtn = document.getElementById('stop-camera-btn');
+        // Scanner state variables
         let scanning = false;
         let videoStream = null;
+        let animationFrame = null;
+        let scanCounter = 0;
+        const statusMessage = document.getElementById('status-message');
+        const scanCountSpan = document.getElementById('scan-count');
+        const errorMsgDiv = document.getElementById('error-msg');
 
         // New PDF download button
         const downloadOrderPdfBtn = document.getElementById('downloadOrderPdfBtn');
@@ -3043,76 +3067,132 @@ VIP Table</textarea>
             if (payLaterOption) payLaterOption.style.display = settings.payLater ? 'block' : 'none';
         }
 
-        // ========== AUTO-LOGIN FROM URL (NOW DOES NOTHING) ==========
+        // ========== AUTO-LOGIN FROM URL (NOW HANDLES ADMIN) ==========
         function autoLoginFromUrl() {
-            // We do NOT automatically start a session from the URL anymore.
-            // The URL parameter may be used for display purposes, but no session is created.
             const urlParams = new URLSearchParams(window.location.search);
             const tableParam = urlParams.get('table');
             if (tableParam) {
-                // Optionally you could pre-fill the scanner message, but we skip it.
-                console.log('Table parameter present, but waiting for scan.');
+                if (tableParam.toLowerCase() === 'admin') {
+                    // Set table to Admin and show admin login prompt
+                    state.currentTable = "Admin";
+                    tableInfo.innerHTML = `<i class="fas fa-chair"></i> Admin`;
+                    // Trigger admin floating click (which shows login)
+                    adminFloating.click();
+                } else {
+                    // For other tables, we wait for scan, but we could also auto-select if needed? We'll just log.
+                    console.log('Table parameter present, waiting for scan.');
+                }
             }
         }
 
-        // ========== QR SCANNER FUNCTIONS ==========
+        // ========== NEW SCANNER FUNCTIONS (replacing old ones) ==========
         async function startCamera() {
+            if (errorMsgDiv) errorMsgDiv.innerText = '';
+            // Stop any existing stream
+            stopCamera();
             try {
-                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                qrVideo.srcObject = videoStream;
+                const constraints = {
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoStream = stream;
+                qrVideo.srcObject = stream;
                 qrVideo.style.display = 'block';
-                qrVideo.play();
-                startCameraBtn.style.display = 'none';
-                stopCameraBtn.style.display = 'inline-block';
-                document.getElementById('qr-placeholder').style.display = 'none';
-                scanning = true;
-                requestAnimationFrame(scanQR);
+                // Wait for video to be ready
+                qrVideo.onloadedmetadata = () => {
+                    qrVideo.play()
+                        .then(() => {
+                            scanning = true;
+                            startCameraBtn.disabled = true;
+                            stopCameraBtn.disabled = false;
+                            if (statusMessage) statusMessage.innerText = '🔴 scanning for QR...';
+                            // start animation loop
+                            function scanLoop() {
+                                if (!scanning) return;
+                                scanQRCode();
+                                animationFrame = requestAnimationFrame(scanLoop);
+                            }
+                            animationFrame = requestAnimationFrame(scanLoop);
+                        })
+                        .catch(e => {
+                            if (errorMsgDiv) errorMsgDiv.innerText = '❌ could not play video: ' + e.message;
+                            stopCamera();
+                        });
+                };
             } catch (err) {
-                console.error("Camera error:", err);
-                showNotification(state.currentLanguage === 'el' ? 'Δεν ήταν δυνατή η πρόσβαση στην κάμερα.' : 'Could not access camera.');
+                if (errorMsgDiv) errorMsgDiv.innerText = `❌ camera access failed: ${err.message}. Ensure you have a camera and gave permission.`;
+                stopCamera();
             }
         }
 
         function stopCamera() {
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop());
                 videoStream = null;
             }
+            qrVideo.srcObject = null;
             qrVideo.style.display = 'none';
-            startCameraBtn.style.display = 'inline-block';
-            stopCameraBtn.style.display = 'none';
-            document.getElementById('qr-placeholder').style.display = 'flex';
             scanning = false;
+            startCameraBtn.disabled = false;
+            stopCameraBtn.disabled = true;
+            if (statusMessage) statusMessage.innerText = '⏸ stopped · click start';
         }
 
-        function scanQR() {
-            if (!scanning || !qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
-                if (scanning) requestAnimationFrame(scanQR);
-                return;
+        function scanQRCode() {
+            if (!scanning || qrVideo.readyState !== qrVideo.HAVE_ENOUGH_DATA) return;
+
+            const width = qrVideo.videoWidth;
+            const height = qrVideo.videoHeight;
+            if (width === 0 || height === 0) return;
+
+            // Downscale for performance
+            let targetWidth = width;
+            let targetHeight = height;
+            const MAX_WIDTH = 640;
+            if (width > MAX_WIDTH) {
+                targetWidth = MAX_WIDTH;
+                targetHeight = Math.floor(height * (MAX_WIDTH / width));
             }
-            const canvas = qrCanvas;
-            const context = canvas.getContext('2d');
-            canvas.width = qrVideo.videoWidth;
-            canvas.height = qrVideo.videoHeight;
-            context.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
-            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+            qrCanvas.width = targetWidth;
+            qrCanvas.height = targetHeight;
+            const ctx = qrCanvas.getContext('2d');
+            ctx.drawImage(qrVideo, 0, 0, targetWidth, targetHeight);
+            const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+
+            const code = jsQR(imageData.data, targetWidth, targetHeight, { inversionAttempts: "dontInvert" });
             if (code) {
-                const url = code.data;
+                const qrData = code.data;
+                scanCounter++;
+                if (scanCountSpan) scanCountSpan.innerText = scanCounter;
+                if (statusMessage) statusMessage.innerHTML = `✅ scanned: <span style="color:#b0e0a0;">${qrData.substring(0, 35)}${qrData.length > 35 ? '…' : ''}</span>`;
+
+                // Stop camera and process
+                stopCamera();
+
+                // Parse the QR data as URL and extract table parameter
                 try {
-                    const urlObj = new URL(url);
+                    const urlObj = new URL(qrData);
                     const tableParam = urlObj.searchParams.get('table');
                     if (tableParam) {
-                        stopCamera();
                         const tableName = decodeURIComponent(tableParam);
-                        selectTable(tableName, true);
-                        return;
+                        selectTable(tableName);
+                    } else {
+                        // If no table param, maybe treat as fallback? Show error
+                        if (statusMessage) statusMessage.innerText = '❌ No table parameter in QR';
+                        showNotification('Invalid QR: missing table parameter.');
                     }
                 } catch (e) {
                     // Not a valid URL
+                    if (statusMessage) statusMessage.innerText = '❌ Not a valid URL';
+                    showNotification('QR does not contain a valid URL.');
                 }
             }
-            requestAnimationFrame(scanQR);
         }
 
         // ========== REQUEST PAY BUTTON (UPDATED LOGIC) ==========
@@ -6574,4 +6654,3 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
-
