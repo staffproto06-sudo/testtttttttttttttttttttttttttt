@@ -2340,8 +2340,6 @@ VIP Table</textarea>
                                 if (grp.choices) {
                                     grp.choices.forEach(ch => {
                                         if (!ch.nameEn) ch.nameEn = '';
-                                        // NEW: ensure each choice has 'available' property (default true)
-                                        if (ch.available === undefined) ch.available = true;
                                     });
                                 }
                             });
@@ -2594,8 +2592,6 @@ VIP Table</textarea>
                             if (grp.choices) {
                                 grp.choices.forEach(ch => {
                                     if (!ch.nameEn) ch.nameEn = '';
-                                    // NEW: ensure available property
-                                    if (ch.available === undefined) ch.available = true;
                                 });
                             }
                         });
@@ -2889,7 +2885,6 @@ VIP Table</textarea>
             }, 800);
         }
 
-        // ========== OPEN OPTIONS MODAL (UPDATED TO FILTER UNAVAILABLE CHOICES) ==========
         function openOptionsModal(item) {
             let html = `<h3 class="options-modal-title">${getItemName(item)}</h3><div class="options-modal-price">$${item.price.toFixed(2)}</div><div class="item-description" style="margin-bottom:20px;">${getItemDescription(item)}</div>`;
             item.options.forEach((g, gi) => {
@@ -2898,8 +2893,7 @@ VIP Table</textarea>
                     html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-comment"></i> ${getOptionGroupName(g)}</div><div class="comment-field"><textarea class="admin-textarea" maxlength="150" placeholder="${state.currentLanguage === 'el' ? 'Εισάγετε το σχόλιό σας εδώ...' : 'Enter your comment here...'}" id="comment_${g.id||gi}"></textarea></div></div>`;
                 } else {
                     html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-tag"></i> ${getOptionGroupName(g)} ${g.type==='radio'?`<span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε ένα' : 'choose one'})</span>`:`<span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε οποιοδήποτε' : 'choose any'})</span>`}</div><div class="${g.type==='radio'?'option-group-radio':'option-group-checkbox'}">`;
-                    // Filter choices that are available (available !== false)
-                    g.choices.filter(c => c.available !== false).forEach((c, ci) => {
+                    g.choices.forEach((c, ci) => {
                         let priceText = ''; let priceClass = '';
                         if (c.price>0) { priceText = `+$${c.price.toFixed(2)}`; priceClass = 'choice-price-positive'; }
                         else if (c.price<0) { priceText = `-$${Math.abs(c.price).toFixed(2)}`; priceClass = 'choice-price-negative'; }
@@ -4947,7 +4941,15 @@ VIP Table</textarea>
                 updateRequestPayButton();
             });
 
+            // DELEGATED CLICK HANDLER FOR ADMIN DASHBOARD (covers toggle-availability)
             adminDashboardSection.addEventListener('click', e => {
+                // Handle toggle-availability
+                if (e.target.classList.contains('toggle-availability') || e.target.closest('.toggle-availability')) {
+                    const btn = e.target.classList.contains('toggle-availability') ? e.target : e.target.closest('.toggle-availability');
+                    const itemId = btn.dataset.id;
+                    if (itemId) toggleAvailability(parseInt(itemId));
+                }
+                // Existing handlers (order status updates, help requests, edit, delete, print)
                 if (e.target.classList.contains('update-status') || e.target.closest('.update-status')) {
                     const btn = e.target.classList.contains('update-status')?e.target:e.target.closest('.update-status');
                     const oid = btn.dataset.orderId;
@@ -5137,12 +5139,19 @@ VIP Table</textarea>
             await saveRestaurantInfo();
         }
 
-        // ========== TOGGLE AVAILABILITY FUNCTION (NEW) ==========
+        // ========== TOGGLE AVAILABILITY FUNCTION (with error handling) ==========
         async function toggleAvailability(itemId) {
             const item = state.menuItems.find(i => i.id === itemId);
             if (!item) return;
             item.notAvailable = !item.notAvailable;
-            await saveMenuItem(item);
+            try {
+                await saveMenuItem(item);
+                showNotification(`"${item.name}" marked as ${item.notAvailable ? 'unavailable' : 'available'}.`);
+            } catch (e) {
+                // revert the change
+                item.notAvailable = !item.notAvailable;
+                showNotification('Error saving availability: ' + e.message);
+            }
             // Refresh all admin lists
             loadMenuItemsForAdmin();
             loadMenuItemsForAdminEn();
@@ -5153,10 +5162,9 @@ VIP Table</textarea>
                 const activeCat = document.querySelector('.category-tab.active')?.dataset?.category || 'all';
                 displayMenuItems(activeCat);
             }
-            showNotification(`"${item.name}" marked as ${item.notAvailable ? 'unavailable' : 'available'}.`);
         }
 
-        // --- MENU ADMIN (Greek) (unchanged, but added notAvailable badge and toggle button) ---
+        // --- MENU ADMIN (Greek) (unchanged, but no per‑button listener for toggle) ---
         function loadMenuItemsForAdmin() {
             const list = document.getElementById('menuItemsList'); list.innerHTML = '';
             if (state.menuItems.length===0) { list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>'; return; }
@@ -5165,12 +5173,12 @@ VIP Table</textarea>
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
                 let notAvailableBadge = item.notAvailable ? '<span class="item-tag" style="background-color: var(--danger); color: white; margin-left:5px;">Not available</span>' : '';
-                // Add toggle availability button
+                // Add toggle availability button (listener via delegation)
                 card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn toggle-availability" data-id="${item.id}" title="${item.notAvailable ? 'Mark available' : 'Mark unavailable'}"><i class="fas ${item.notAvailable ? 'fa-check-circle' : 'fa-ban'}"></i></button><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
-            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
+            // No per‑button toggle listener – handled by delegation
             document.querySelectorAll('.edit-item').forEach(b=> b.addEventListener('click', function() { openEditMenuItemForm(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.duplicate-item').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimistic(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimistic(id)); }));
@@ -5225,7 +5233,6 @@ VIP Table</textarea>
             document.getElementById('cancelEditBtn').onclick = function() { form.style.display = 'none'; list.style.display = 'block'; };
             document.getElementById('saveMenuItemBtn').onclick = function() { showAdminChangePrompt(saveMenuItemOptimistic); };
         }
-        // UPDATED buildOptionsAdminUI with choice availability toggle
         function buildOptionsAdminUI(options) {
             const form = document.getElementById('editMenuItemForm');
             const sec = document.createElement('div'); sec.id = 'adminOptionsSection'; sec.className = 'admin-options-section';
@@ -5244,33 +5251,13 @@ VIP Table</textarea>
                         const chc = document.getElementById(`choices_${gi}`);
                         g.choices.forEach((c, ci) => {
                             const row = document.createElement('div'); row.className = 'admin-choice-item';
-                            row.innerHTML = `
-                                <input type="text" class="admin-input admin-choice-input" placeholder="Choice name" value="${c.name||''}" id="choice_name_${gi}_${ci}">
-                                <input type="number" class="admin-input admin-choice-price" placeholder="Price adj." step="0.01" value="${c.price||0}" id="choice_price_${gi}_${ci}">
-                                <button class="admin-small-btn btn-warning toggle-choice-availability" data-group="${gi}" data-choice="${ci}" title="${c.available !== false ? 'Available' : 'Not available'}"><i class="fas ${c.available !== false ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
-                                <button class="admin-small-btn btn-danger remove-choice" data-group="${gi}" data-choice="${ci}"><i class="fas fa-times"></i></button>
-                            `;
+                            row.innerHTML = `<input type="text" class="admin-input admin-choice-input" placeholder="Choice name" value="${c.name||''}" id="choice_name_${gi}_${ci}"><input type="number" class="admin-input admin-choice-price" placeholder="Price adj." step="0.01" value="${c.price||0}" id="choice_price_${gi}_${ci}"><button class="admin-small-btn btn-danger remove-choice" data-group="${gi}" data-choice="${ci}"><i class="fas fa-times"></i></button>`;
                             chc.appendChild(row);
                             row.querySelector(`#choice_name_${gi}_${ci}`).addEventListener('input', e=> { if (!options[gi].choices[ci]) options[gi].choices[ci] = {}; options[gi].choices[ci].name = e.target.value; });
                             row.querySelector(`#choice_price_${gi}_${ci}`).addEventListener('input', e=> { if (!options[gi].choices[ci]) options[gi].choices[ci] = {}; options[gi].choices[ci].price = parseFloat(e.target.value)||0; });
-                            // Toggle availability
-                            row.querySelector('.toggle-choice-availability').addEventListener('click', e => {
-                                const btn = e.currentTarget;
-                                const groupIdx = parseInt(btn.dataset.group);
-                                const choiceIdx = parseInt(btn.dataset.choice);
-                                const choice = options[groupIdx].choices[choiceIdx];
-                                if (choice) {
-                                    choice.available = !choice.available;
-                                    btn.title = choice.available ? 'Available' : 'Not available';
-                                    btn.querySelector('i').className = `fas ${choice.available ? 'fa-eye' : 'fa-eye-slash'}`;
-                                }
-                            });
                             row.querySelector('.remove-choice').addEventListener('click', ()=> { options[gi].choices.splice(ci,1); render(); });
                         });
-                        grp.querySelector('.add-choice-btn').addEventListener('click', ()=> { 
-                            options[gi].choices.push({ name: '', price: 0, available: true }); 
-                            render(); 
-                        });
+                        grp.querySelector('.add-choice-btn').addEventListener('click', ()=> { options[gi].choices.push({ name: '', price: 0 }); render(); });
                     }
                     grp.querySelector('.remove-group').addEventListener('click', ()=> { options.splice(gi,1); render(); });
                     grp.querySelector(`#group_name_${gi}`).addEventListener('input', e=> { options[gi].name = e.target.value; });
@@ -5314,32 +5301,10 @@ VIP Table</textarea>
                         rows.forEach((r,ci)=> {
                             const n = r.querySelector(`#choice_name_${gi}_${ci}`)?.value?.trim();
                             const p = parseFloat(r.querySelector(`#choice_price_${gi}_${ci}`)?.value) || 0;
-                            // Get availability from the button's icon (stored in dataset or class) – but we have it in the button's title or we can read from the button's icon class.
-                            // We'll rely on the fact that the options array is updated by the toggle listener, so we just use the current object.
-                            // But we are building a new options array from scratch. To preserve availability, we need to read it.
-                            // We'll store availability in a hidden input later. For now, we'll assume the options array is the source of truth.
-                            // However, the options array is being updated by the toggle listener, so we can use it directly.
-                            // But we are constructing new choices array; we need to know the current available state.
-                            // Since the options array is the same reference, we can simply use it.
-                            // We'll loop over the original options array to get availability.
-                            if (options[gi] && options[gi].choices && options[gi].choices[ci]) {
-                                // We'll use the existing available flag if present.
-                                const available = options[gi].choices[ci].available !== false;
-                                if (n) choices.push({ name: n, price: p, available: available });
-                            } else {
-                                // If somehow not present, default to true
-                                if (n) choices.push({ name: n, price: p, available: true });
-                            }
+                            if (n) choices.push({ name: n, price: p });
                         });
                     }
-                    if (gn.trim() && (gt==='text' || choices.length>0)) {
-                        // For text groups, we don't have choices
-                        if (gt === 'text') {
-                            options.push({ id: 'opt_'+Date.now()+'_'+gi, name: gn.trim(), type: gt, choices: [] });
-                        } else {
-                            options.push({ id: 'opt_'+Date.now()+'_'+gi, name: gn.trim(), type: gt, choices });
-                        }
-                    }
+                    if (gn.trim() && (gt==='text' || choices.length>0)) options.push({ id: 'opt_'+Date.now()+'_'+gi, name: gn.trim(), type: gt, choices });
                 });
             }
             if (id) {
@@ -5375,7 +5340,7 @@ VIP Table</textarea>
             await deleteMenuItemFirestore(id);
         }
 
-        // --- MENU ADMIN (English) (unchanged, but added toggle button) ---
+        // --- MENU ADMIN (English) (unchanged, but no per‑button toggle listener) ---
         function loadMenuItemsForAdminEn() {
             const list = document.getElementById('menuItemsListEn'); if (!list) return;
             list.innerHTML = '';
@@ -5392,7 +5357,7 @@ VIP Table</textarea>
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
-            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
+            // No per‑button toggle listener – handled by delegation
             document.querySelectorAll('.edit-item-en').forEach(b => b.addEventListener('click', function() { openEditMenuItemFormEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.duplicate-item-en').forEach(b => b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-en').forEach(b => b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
@@ -5448,7 +5413,6 @@ VIP Table</textarea>
             if (src) { pv.innerHTML = `<img src="${src}" alt="Menu Item Image">`; }
             else { pv.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-utensils"></i><p>No image uploaded</p></div>'; }
         }
-        // UPDATED buildOptionsAdminUIEn with availability toggle (read‑only or toggle)
         function buildOptionsAdminUIEn(options) {
             const container = document.getElementById('optionsGroupsContainerEn');
             if (!container) return;
@@ -5476,24 +5440,12 @@ VIP Table</textarea>
                             row.innerHTML = `
                                 <input type="text" class="admin-input admin-choice-input" placeholder="Choice name (EN)" value="${c.nameEn || ''}" id="choice_name_en_${gi}_${ci}">
                                 <span class="admin-choice-price" style="width:100px;">Price: $${(c.price || 0).toFixed(2)}</span>
-                                <button class="admin-small-btn btn-warning toggle-choice-availability-en" data-group="${gi}" data-choice="${ci}" title="${c.available !== false ? 'Available' : 'Not available'}"><i class="fas ${c.available !== false ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
                                 <!-- No delete button -->
                             `;
                             chc.appendChild(row);
                             row.querySelector(`#choice_name_en_${gi}_${ci}`).addEventListener('input', e => {
                                 if (!options[gi].choices[ci]) options[gi].choices[ci] = {};
                                 options[gi].choices[ci].nameEn = e.target.value;
-                            });
-                            row.querySelector('.toggle-choice-availability-en').addEventListener('click', e => {
-                                const btn = e.currentTarget;
-                                const groupIdx = parseInt(btn.dataset.group);
-                                const choiceIdx = parseInt(btn.dataset.choice);
-                                const choice = options[groupIdx].choices[choiceIdx];
-                                if (choice) {
-                                    choice.available = !choice.available;
-                                    btn.title = choice.available ? 'Available' : 'Not available';
-                                    btn.querySelector('i').className = `fas ${choice.available ? 'fa-eye' : 'fa-eye-slash'}`;
-                                }
                             });
                         });
                         // No add choice button
@@ -5526,13 +5478,7 @@ VIP Table</textarea>
                         const rows = g.querySelectorAll('.admin-choice-item');
                         rows.forEach((r, ci) => {
                             const n = r.querySelector(`#choice_name_en_${gi}_${ci}`)?.value?.trim();
-                            // Get availability from the button's icon (we'll use the object's available flag)
-                            if (n) {
-                                // We need to get the current available from the button's icon class or from the options array.
-                                // We'll use the options array which is updated by the toggle listener.
-                                const available = options[gi] && options[gi].choices && options[gi].choices[ci] ? options[gi].choices[ci].available !== false : true;
-                                choices.push({ name: '', nameEn: n, price: 0, available: available });
-                            }
+                            if (n) choices.push({ name: '', nameEn: n, price: 0 });
                         });
                     }
                     options.push({
@@ -5558,7 +5504,6 @@ VIP Table</textarea>
                                 newGrp.choices.forEach((newCh, ci) => {
                                     if (state.menuItems[idx].options[gi].choices[ci]) {
                                         state.menuItems[idx].options[gi].choices[ci].nameEn = newCh.nameEn;
-                                        state.menuItems[idx].options[gi].choices[ci].available = newCh.available;
                                     }
                                 });
                             }
@@ -5586,7 +5531,7 @@ VIP Table</textarea>
                         name: '',
                         nameEn: grp.nameEn,
                         type: grp.type,
-                        choices: grp.choices.map(ch => ({ name: '', nameEn: ch.nameEn, price: 0, available: ch.available }))
+                        choices: grp.choices.map(ch => ({ name: '', nameEn: ch.nameEn, price: 0 }))
                     })),
                     displayOrder: maxOrder + 1
                 };
@@ -6240,7 +6185,7 @@ VIP Table</textarea>
             }
         }
 
-        // --- MODAL ADMIN (unchanged, except added toggle buttons in modal lists) ---
+        // --- MODAL ADMIN (unchanged, except added toggle buttons in modal lists and delegation) ---
         function setupAdminPanel() {
             adminClose.addEventListener('click', ()=> adminPanel.style.display = 'none');
             document.querySelectorAll('#adminPanel .admin-tab').forEach(tab => {
@@ -6373,9 +6318,19 @@ VIP Table</textarea>
                 await saveRestaurantInfo();
                 showNotification("Restaurant settings saved.");
             }));
+
+            // DELEGATED CLICK HANDLER FOR MODAL PANEL (covers toggle-availability)
+            adminPanel.addEventListener('click', e => {
+                if (e.target.classList.contains('toggle-availability') || e.target.closest('.toggle-availability')) {
+                    const btn = e.target.classList.contains('toggle-availability') ? e.target : e.target.closest('.toggle-availability');
+                    const itemId = btn.dataset.id;
+                    if (itemId) toggleAvailability(parseInt(itemId));
+                }
+                // Other modal button handlers could be added here if needed
+            });
         }
 
-        // MODAL MENU LISTS WITH TOGGLE BUTTONS
+        // MODAL MENU LISTS WITH TOGGLE BUTTONS (no per‑button listeners)
         function loadMenuItemsForAdminModal() {
             const list = document.getElementById('menuItemsListModal'); if (!list) return;
             list.innerHTML = '';
@@ -6389,7 +6344,7 @@ VIP Table</textarea>
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
-            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
+            // No per‑button toggle listener – handled by delegation
             document.querySelectorAll('.edit-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemForm(id); adminPanel.style.display = 'none'; }));
             document.querySelectorAll('.duplicate-item-modal').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimistic(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimistic(id)); }));
@@ -6412,7 +6367,7 @@ VIP Table</textarea>
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
-            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
+            // No per‑button toggle listener – handled by delegation
             document.querySelectorAll('.edit-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemFormEn(id); adminPanel.style.display = 'none'; }));
             document.querySelectorAll('.duplicate-item-modal-en').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
