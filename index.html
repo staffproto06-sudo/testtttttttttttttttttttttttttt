@@ -7033,19 +7033,10 @@ VIP Table</textarea>
                 document.getElementById('downloadOrderPdfBtn').style.display = 'none';
             }
             
-            if (state.isAdminMode && state.currentTable && state.currentTable !== "Admin") {
-                state.currentTable = null;
-                showSection('adminDashboardSection');
-                backToAdminBtn.style.display = 'none';
-                cartFloating.style.display = 'none';
-                updateRequestPayButton();
-                tableInfo.innerHTML = `<i class="fas fa-qrcode"></i> ${state.currentLanguage === 'el' ? 'Σαρώστε QR για έναρξη' : 'Scan QR to start'}`;
-                myOrdersButton.style.display = 'none';
-                adminFloating.style.display = 'flex';
-            } else {
-                showSection('confirmationSection');
-                resetCart();
-            }
+            // ALWAYS go to confirmation section and reset cart, regardless of admin mode
+            showSection('confirmationSection');
+            resetCart();
+
             showNotification(state.currentLanguage === 'el' ? `Η παραγγελία #${orderNumber} επιβεβαιώθηκε!` : `Order #${orderNumber} confirmed!`);
         };
 
