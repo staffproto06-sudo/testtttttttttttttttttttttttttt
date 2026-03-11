@@ -4440,25 +4440,20 @@ VIP Table</textarea>
                 `;
                 container.appendChild(el);
             });
-            document.querySelectorAll('.order-for-table-modal').forEach(btn => {
+            document.querySelectorAll('.order-for-table').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
                     state.currentTable = table;
-                    setTableSession(table);   // <-- ADD THIS LINE
+                    setTableSession(table);   // <-- ADDED: create session for admin-started order
                     tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${escapeHtml(table)}`;
-                    menuSubtitle.textContent = state.currentLanguage === 'el' 
-                        ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${escapeHtml(table)}`
-                        : `Select items to add to your order for ${escapeHtml(table)}`;
-                    cartSubtitle.textContent = state.currentLanguage === 'el'
-                        ? `Η παραγγελία σας για ${escapeHtml(table)}`
-                        : `Your order for ${escapeHtml(table)}`;
+                    menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${escapeHtml(table)}` : `Select items to add to your order for ${escapeHtml(table)}`;
+                    cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${escapeHtml(table)}` : `Your order for ${escapeHtml(table)}`;
                     resetCart();
                     updateCategoryTabs();
                     displayMenuItems('all');
                     myOrdersButton.style.display = 'flex';
                     showSection('menuSection');
                     backToAdminBtn.style.display = 'flex';
-                    adminPanel.style.display = 'none';
                     applyTableSettings();
                 });
             });
@@ -4540,6 +4535,7 @@ VIP Table</textarea>
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
                     state.currentTable = table;
+                    setTableSession(table);   // <-- ADDED: create session for admin-started order
                     tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${escapeHtml(table)}`;
                     menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${escapeHtml(table)}` : `Select items to add to your order for ${escapeHtml(table)}`;
                     cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${escapeHtml(table)}` : `Your order for ${escapeHtml(table)}`;
@@ -7058,4 +7054,3 @@ VIP Table</textarea>
     </script>
 </body>
 </html>
-
