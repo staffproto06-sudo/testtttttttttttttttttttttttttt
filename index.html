@@ -4941,7 +4941,15 @@ VIP Table</textarea>
                 updateRequestPayButton();
             });
 
+            // DELEGATED CLICK HANDLER FOR ADMIN DASHBOARD (covers toggle-availability)
             adminDashboardSection.addEventListener('click', e => {
+                // Handle toggle-availability
+                if (e.target.classList.contains('toggle-availability') || e.target.closest('.toggle-availability')) {
+                    const btn = e.target.classList.contains('toggle-availability') ? e.target : e.target.closest('.toggle-availability');
+                    const itemId = btn.dataset.id;
+                    if (itemId) toggleAvailability(parseInt(itemId));
+                }
+                // Existing handlers (order status updates, help requests, edit, delete, print)
                 if (e.target.classList.contains('update-status') || e.target.closest('.update-status')) {
                     const btn = e.target.classList.contains('update-status')?e.target:e.target.closest('.update-status');
                     const oid = btn.dataset.orderId;
@@ -5131,12 +5139,19 @@ VIP Table</textarea>
             await saveRestaurantInfo();
         }
 
-        // ========== TOGGLE AVAILABILITY FUNCTION (NEW) ==========
+        // ========== TOGGLE AVAILABILITY FUNCTION (with error handling) ==========
         async function toggleAvailability(itemId) {
             const item = state.menuItems.find(i => i.id === itemId);
             if (!item) return;
             item.notAvailable = !item.notAvailable;
-            await saveMenuItem(item);
+            try {
+                await saveMenuItem(item);
+                showNotification(`"${item.name}" marked as ${item.notAvailable ? 'unavailable' : 'available'}.`);
+            } catch (e) {
+                // revert the change
+                item.notAvailable = !item.notAvailable;
+                showNotification('Error saving availability: ' + e.message);
+            }
             // Refresh all admin lists
             loadMenuItemsForAdmin();
             loadMenuItemsForAdminEn();
@@ -5147,10 +5162,9 @@ VIP Table</textarea>
                 const activeCat = document.querySelector('.category-tab.active')?.dataset?.category || 'all';
                 displayMenuItems(activeCat);
             }
-            showNotification(`"${item.name}" marked as ${item.notAvailable ? 'unavailable' : 'available'}.`);
         }
 
-        // --- MENU ADMIN (Greek) (unchanged, but added notAvailable badge and toggle button) ---
+        // --- MENU ADMIN (Greek) (unchanged, but no per‑button listener for toggle) ---
         function loadMenuItemsForAdmin() {
             const list = document.getElementById('menuItemsList'); list.innerHTML = '';
             if (state.menuItems.length===0) { list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>'; return; }
@@ -5159,12 +5173,12 @@ VIP Table</textarea>
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
                 let notAvailableBadge = item.notAvailable ? '<span class="item-tag" style="background-color: var(--danger); color: white; margin-left:5px;">Not available</span>' : '';
-                // Add toggle availability button
+                // Add toggle availability button (listener via delegation)
                 card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn toggle-availability" data-id="${item.id}" title="${item.notAvailable ? 'Mark available' : 'Mark unavailable'}"><i class="fas ${item.notAvailable ? 'fa-check-circle' : 'fa-ban'}"></i></button><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
-            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
+            // No per‑button toggle listener – handled by delegation
             document.querySelectorAll('.edit-item').forEach(b=> b.addEventListener('click', function() { openEditMenuItemForm(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.duplicate-item').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimistic(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimistic(id)); }));
@@ -5326,7 +5340,7 @@ VIP Table</textarea>
             await deleteMenuItemFirestore(id);
         }
 
-        // --- MENU ADMIN (English) (unchanged, but added toggle button) ---
+        // --- MENU ADMIN (English) (unchanged, but no per‑button toggle listener) ---
         function loadMenuItemsForAdminEn() {
             const list = document.getElementById('menuItemsListEn'); if (!list) return;
             list.innerHTML = '';
@@ -5343,7 +5357,7 @@ VIP Table</textarea>
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
-            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
+            // No per‑button toggle listener – handled by delegation
             document.querySelectorAll('.edit-item-en').forEach(b => b.addEventListener('click', function() { openEditMenuItemFormEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.duplicate-item-en').forEach(b => b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-en').forEach(b => b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
@@ -6171,7 +6185,7 @@ VIP Table</textarea>
             }
         }
 
-        // --- MODAL ADMIN (unchanged, except added toggle buttons in modal lists) ---
+        // --- MODAL ADMIN (unchanged, except added toggle buttons in modal lists and delegation) ---
         function setupAdminPanel() {
             adminClose.addEventListener('click', ()=> adminPanel.style.display = 'none');
             document.querySelectorAll('#adminPanel .admin-tab').forEach(tab => {
@@ -6304,9 +6318,19 @@ VIP Table</textarea>
                 await saveRestaurantInfo();
                 showNotification("Restaurant settings saved.");
             }));
+
+            // DELEGATED CLICK HANDLER FOR MODAL PANEL (covers toggle-availability)
+            adminPanel.addEventListener('click', e => {
+                if (e.target.classList.contains('toggle-availability') || e.target.closest('.toggle-availability')) {
+                    const btn = e.target.classList.contains('toggle-availability') ? e.target : e.target.closest('.toggle-availability');
+                    const itemId = btn.dataset.id;
+                    if (itemId) toggleAvailability(parseInt(itemId));
+                }
+                // Other modal button handlers could be added here if needed
+            });
         }
 
-        // MODAL MENU LISTS WITH TOGGLE BUTTONS
+        // MODAL MENU LISTS WITH TOGGLE BUTTONS (no per‑button listeners)
         function loadMenuItemsForAdminModal() {
             const list = document.getElementById('menuItemsListModal'); if (!list) return;
             list.innerHTML = '';
@@ -6320,7 +6344,7 @@ VIP Table</textarea>
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
-            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
+            // No per‑button toggle listener – handled by delegation
             document.querySelectorAll('.edit-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemForm(id); adminPanel.style.display = 'none'; }));
             document.querySelectorAll('.duplicate-item-modal').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimistic(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimistic(id)); }));
@@ -6343,7 +6367,7 @@ VIP Table</textarea>
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
-            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
+            // No per‑button toggle listener – handled by delegation
             document.querySelectorAll('.edit-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemFormEn(id); adminPanel.style.display = 'none'; }));
             document.querySelectorAll('.duplicate-item-modal-en').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
