@@ -327,7 +327,7 @@
         .admin-options-section { margin-top: 25px; padding: 20px; background-color: var(--light); border-radius: 10px; }
         .admin-option-group { background-color: var(--card-bg); border-radius: 8px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--light-gray); }
         .admin-option-group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .admin-option-group-title { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .admin-option-group-title { font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .admin-choice-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .admin-choice-input { flex: 1; }
         .admin-choice-price { width: 100px; }
@@ -2983,16 +2983,39 @@ VIP Table</textarea>
                         // If no choices available, skip the entire group
                         return;
                     }
-                    html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-tag"></i> ${escapeHtml(getOptionGroupName(g))} ${g.type==='radio'?`<span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε ένα' : 'choose one'})</span>`:`<span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε οποιοδήποτε' : 'choose any'})</span>`}</div><div class="${g.type==='radio'?'option-group-radio':'option-group-checkbox'}">`;
-                    availableChoices.forEach((c, ci) => {
-                        let priceText = ''; let priceClass = '';
-                        if (c.price>0) { priceText = `+$${c.price.toFixed(2)}`; priceClass = 'choice-price-positive'; }
-                        else if (c.price<0) { priceText = `-$${Math.abs(c.price).toFixed(2)}`; priceClass = 'choice-price-negative'; }
-                        const choiceName = escapeHtml(getChoiceName(c));
-                        if (g.type==='radio') html += `<div class="choice-item"><label class="choice-label"><input type="radio" name="group_${g.id||gi}" value="${c.name}" data-price="${c.price}" data-group-name="${g.name}" data-choice-name="${choiceName}"> <span class="choice-name">${choiceName}</span></label><span class="choice-price ${priceClass}">${priceText}</span></div>`;
-                        else html += `<div class="choice-item"><label class="choice-label"><input type="checkbox" name="group_${g.id||gi}" value="${c.name}" data-price="${c.price}" data-group-name="${g.name}" data-choice-name="${choiceName}"> <span class="choice-name">${choiceName}</span></label><span class="choice-price ${priceClass}">${priceText}</span></div>`;
-                    });
-                    html += `</div></div>`;
+                    // Determine if group type is custom (checkbox with max)
+                    if (g.type === 'custom') {
+                        const max = g.max || 1;
+                        html += `<div class="option-group" data-max="${max}"><div class="option-group-title"><i class="fas fa-tag"></i> ${escapeHtml(getOptionGroupName(g))} <span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε έως' : 'choose up to'} ${max})</span></div><div class="option-group-checkbox">`;
+                        availableChoices.forEach((c, ci) => {
+                            let priceText = ''; let priceClass = '';
+                            if (c.price>0) { priceText = `+$${c.price.toFixed(2)}`; priceClass = 'choice-price-positive'; }
+                            else if (c.price<0) { priceText = `-$${Math.abs(c.price).toFixed(2)}`; priceClass = 'choice-price-negative'; }
+                            const choiceName = escapeHtml(getChoiceName(c));
+                            html += `<div class="choice-item"><label class="choice-label"><input type="checkbox" name="group_${g.id||gi}" value="${c.name}" data-price="${c.price}" data-group-name="${g.name}" data-choice-name="${choiceName}"> <span class="choice-name">${choiceName}</span></label><span class="choice-price ${priceClass}">${priceText}</span></div>`;
+                        });
+                        html += `</div></div>`;
+                    } else if (g.type === 'radio') {
+                        html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-tag"></i> ${escapeHtml(getOptionGroupName(g))} <span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε ένα' : 'choose one'})</span></div><div class="option-group-radio">`;
+                        availableChoices.forEach((c, ci) => {
+                            let priceText = ''; let priceClass = '';
+                            if (c.price>0) { priceText = `+$${c.price.toFixed(2)}`; priceClass = 'choice-price-positive'; }
+                            else if (c.price<0) { priceText = `-$${Math.abs(c.price).toFixed(2)}`; priceClass = 'choice-price-negative'; }
+                            const choiceName = escapeHtml(getChoiceName(c));
+                            html += `<div class="choice-item"><label class="choice-label"><input type="radio" name="group_${g.id||gi}" value="${c.name}" data-price="${c.price}" data-group-name="${g.name}" data-choice-name="${choiceName}"> <span class="choice-name">${choiceName}</span></label><span class="choice-price ${priceClass}">${priceText}</span></div>`;
+                        });
+                        html += `</div></div>`;
+                    } else if (g.type === 'checkbox') {
+                        html += `<div class="option-group"><div class="option-group-title"><i class="fas fa-tag"></i> ${escapeHtml(getOptionGroupName(g))} <span style="font-size:12px; color:var(--gray);">(${state.currentLanguage === 'el' ? 'επιλέξτε οποιοδήποτε' : 'choose any'})</span></div><div class="option-group-checkbox">`;
+                        availableChoices.forEach((c, ci) => {
+                            let priceText = ''; let priceClass = '';
+                            if (c.price>0) { priceText = `+$${c.price.toFixed(2)}`; priceClass = 'choice-price-positive'; }
+                            else if (c.price<0) { priceText = `-$${Math.abs(c.price).toFixed(2)}`; priceClass = 'choice-price-negative'; }
+                            const choiceName = escapeHtml(getChoiceName(c));
+                            html += `<div class="choice-item"><label class="choice-label"><input type="checkbox" name="group_${g.id||gi}" value="${c.name}" data-price="${c.price}" data-group-name="${g.name}" data-choice-name="${choiceName}"> <span class="choice-name">${choiceName}</span></label><span class="choice-price ${priceClass}">${priceText}</span></div>`;
+                        });
+                        html += `</div></div>`;
+                    }
                 }
             });
             html += `<div class="options-total"><span>${state.currentLanguage === 'el' ? 'Σύνολο:' : 'Total:'}</span><span class="options-total-amount" id="optionsTotalAmount">$${item.price.toFixed(2)}</span></div><div class="options-modal-actions"><button class="btn btn-secondary" id="cancelOptionsBtn"><i class="fas fa-times"></i> ${state.currentLanguage === 'el' ? 'Ακύρωση' : 'Cancel'}</button><button class="btn btn-primary" id="confirmOptionsBtn"><i class="fas fa-check"></i> ${state.currentLanguage === 'el' ? 'Προσθήκη στο Καλάθι' : 'Add to Cart'}</button></div>`;
@@ -3005,6 +3028,21 @@ VIP Table</textarea>
                 document.getElementById('optionsTotalAmount').textContent = `$${(item.price + extra).toFixed(2)}`;
             };
             inputs.forEach(i => i.addEventListener('change', updateTotal));
+            // For custom groups, enforce max selections
+            optionsModal.querySelectorAll('.option-group[data-max]').forEach(group => {
+                const max = parseInt(group.dataset.max);
+                const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+                const enforce = function() {
+                    const checked = group.querySelectorAll('input[type="checkbox"]:checked');
+                    if (checked.length > max) {
+                        this.checked = false;
+                        showNotification(state.currentLanguage === 'el' ? `Μπορείτε να επιλέξετε έως ${max}` : `You can select up to ${max}`);
+                    } else {
+                        updateTotal();
+                    }
+                };
+                checkboxes.forEach(cb => cb.addEventListener('change', enforce));
+            });
             document.getElementById('cancelOptionsBtn').addEventListener('click', ()=> { optionsModal.style.display = 'none'; });
             document.getElementById('confirmOptionsBtn').addEventListener('click', ()=> {
                 let selected = [];
@@ -5371,7 +5409,7 @@ VIP Table</textarea>
             document.getElementById('saveMenuItemBtn').onclick = function() { showAdminChangePrompt(saveMenuItemOptimistic); };
         }
 
-        // ========== UPDATED ADMIN OPTIONS UI WITH AVAILABILITY TOGGLE ==========
+        // ========== UPDATED ADMIN OPTIONS UI WITH AVAILABILITY TOGGLE AND CUSTOM MAX ==========
         function buildOptionsAdminUI(options) {
             const form = document.getElementById('editMenuItemForm');
             const sec = document.createElement('div'); sec.id = 'adminOptionsSection'; sec.className = 'admin-options-section';
@@ -5384,13 +5422,52 @@ VIP Table</textarea>
                 container.innerHTML = '';
                 options.forEach((g, gi) => {
                     const grp = document.createElement('div'); grp.className = 'admin-option-group';
-                    grp.innerHTML = `<div class="admin-option-group-header"><div class="admin-option-group-title"><i class="fas fa-layer-group"></i> <input type="text" class="admin-input" style="width:150px;" placeholder="Group name" value="${escapeHtml(g.name)}" id="group_name_${gi}"><select class="admin-select" style="width:140px;" id="group_type_${gi}"><option value="radio" ${g.type==='radio'?'selected':''}>Single choice</option><option value="checkbox" ${g.type==='checkbox'?'selected':''}>Multiple choice</option><option value="text" ${g.type==='text'?'selected':''}>Comment field</option></select></div><button class="admin-small-btn btn-danger remove-group" data-index="${gi}"><i class="fas fa-trash"></i></button></div><div id="choices_${gi}" class="choices-container"></div>${g.type!=='text'?'<button class="btn btn-secondary add-choice-btn" data-group-index="'+gi+'"><i class="fas fa-plus"></i> Add Choice</button>':''}`;
+                    // Build type select with new 'custom' option
+                    let typeSelectHtml = `<select class="admin-select" style="width:140px;" id="group_type_${gi}">
+                        <option value="radio" ${g.type==='radio'?'selected':''}>Single choice</option>
+                        <option value="checkbox" ${g.type==='checkbox'?'selected':''}>Multiple choice</option>
+                        <option value="custom" ${g.type==='custom'?'selected':''}>Custom (max choices)</option>
+                        <option value="text" ${g.type==='text'?'selected':''}>Comment field</option>
+                    </select>`;
+                    // Max input for custom type (disabled for other types)
+                    let maxInputHtml = `<input type="number" class="admin-input" style="width:70px; margin-left:5px;" placeholder="Max" value="${g.max || 1}" min="1" id="group_max_${gi}" ${g.type !== 'custom' ? 'disabled' : ''}>`;
+                    grp.innerHTML = `
+                        <div class="admin-option-group-header">
+                            <div class="admin-option-group-title">
+                                <i class="fas fa-layer-group"></i> 
+                                <input type="text" class="admin-input" style="width:150px;" placeholder="Group name" value="${escapeHtml(g.name)}" id="group_name_${gi}">
+                                ${typeSelectHtml}
+                                ${maxInputHtml}
+                            </div>
+                            <button class="admin-small-btn btn-danger remove-group" data-index="${gi}"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <div id="choices_${gi}" class="choices-container"></div>
+                        ${g.type!=='text'?'<button class="btn btn-secondary add-choice-btn" data-group-index="'+gi+'"><i class="fas fa-plus"></i> Add Choice</button>':''}
+                    `;
                     container.appendChild(grp);
+                    // Event listeners for type change and max input
+                    const typeSelect = grp.querySelector(`#group_type_${gi}`);
+                    const maxInput = grp.querySelector(`#group_max_${gi}`);
+                    typeSelect.addEventListener('change', () => {
+                        if (typeSelect.value === 'custom') {
+                            maxInput.disabled = false;
+                        } else {
+                            maxInput.disabled = true;
+                        }
+                        // Update group type in options
+                        options[gi].type = typeSelect.value;
+                        if (options[gi].type === 'text') options[gi].choices = [];
+                        else if (!options[gi].choices) options[gi].choices = [];
+                        render();
+                    });
+                    maxInput.addEventListener('input', () => {
+                        options[gi].max = parseInt(maxInput.value) || 1;
+                    });
+
                     if (g.type !== 'text') {
                         const chc = document.getElementById(`choices_${gi}`);
                         g.choices.forEach((c, ci) => {
                             const row = document.createElement('div'); row.className = 'admin-choice-item';
-                            // Availability toggle button (eye icon)
                             const availIcon = c.available !== false ? 'fa-eye' : 'fa-eye-slash';
                             const availTitle = c.available !== false ? 'Click to make unavailable' : 'Click to make available';
                             row.innerHTML = `
@@ -5415,7 +5492,6 @@ VIP Table</textarea>
                                 const choiceObj = options[gi].choices[ci];
                                 if (choiceObj.available === undefined) choiceObj.available = true;
                                 choiceObj.available = !choiceObj.available;
-                                // Update button icon
                                 const icon = row.querySelector('.toggle-choice-avail i');
                                 if (choiceObj.available) {
                                     icon.className = 'fas fa-eye';
@@ -5445,18 +5521,13 @@ VIP Table</textarea>
                     grp.querySelector(`#group_name_${gi}`).addEventListener('input', e => {
                         options[gi].name = e.target.value;
                     });
-                    grp.querySelector(`#group_type_${gi}`).addEventListener('change', e => {
-                        options[gi].type = e.target.value;
-                        if (options[gi].type === 'text') options[gi].choices = [];
-                        else if (!options[gi].choices) options[gi].choices = [];
-                        render();
-                    });
+                    // Re-attach type change listener? Already attached above.
                 });
             }
             render();
             document.getElementById('addOptionGroupBtn').addEventListener('click', (e) => {
                 e.preventDefault();
-                options.push({ id: 'opt_'+Date.now()+'_'+Math.random(), name: 'New Group', type: 'radio', choices: [] });
+                options.push({ id: 'opt_'+Date.now()+'_'+Math.random(), name: 'New Group', type: 'radio', choices: [], max: 1 });
                 render();
             });
         }
@@ -5493,6 +5564,7 @@ VIP Table</textarea>
                 grps.forEach((g,gi)=> {
                     const gn = g.querySelector(`#group_name_${gi}`)?.value;
                     const gt = g.querySelector(`#group_type_${gi}`)?.value;
+                    const max = parseInt(g.querySelector(`#group_max_${gi}`)?.value) || 1;
                     if (!gn) return;
                     const choices = [];
                     if (gt !== 'text') {
@@ -5500,12 +5572,15 @@ VIP Table</textarea>
                         rows.forEach((r,ci)=> {
                             const n = r.querySelector(`#choice_name_${gi}_${ci}`)?.value?.trim();
                             const p = parseFloat(r.querySelector(`#choice_price_${gi}_${ci}`)?.value) || 0;
-                            // read available state from the choice object (already updated via toggle)
                             const avail = options[gi]?.choices[ci]?.available !== false;
                             if (n) choices.push({ name: n, price: p, available: avail });
                         });
                     }
-                    if (gn.trim() && (gt==='text' || choices.length>0)) options.push({ id: 'opt_'+Date.now()+'_'+gi, name: gn.trim(), type: gt, choices });
+                    if (gn.trim() && (gt==='text' || choices.length>0)) {
+                        const groupObj = { id: 'opt_'+Date.now()+'_'+gi, name: gn.trim(), type: gt, choices };
+                        if (gt === 'custom') groupObj.max = max;
+                        options.push(groupObj);
+                    }
                 });
             }
             if (id) {
@@ -5615,7 +5690,7 @@ VIP Table</textarea>
             else { pv.innerHTML = '<div class="image-preview-placeholder"><i class="fas fa-utensils"></i><p>No image uploaded</p></div>'; }
         }
 
-        // ========== UPDATED ADMIN OPTIONS UI (EN) WITH AVAILABILITY TOGGLE ==========
+        // ========== UPDATED ADMIN OPTIONS UI (EN) WITH AVAILABILITY TOGGLE AND MAX DISPLAY ==========
         function buildOptionsAdminUIEn(options) {
             const container = document.getElementById('optionsGroupsContainerEn');
             if (!container) return;
@@ -5624,12 +5699,13 @@ VIP Table</textarea>
                 container.innerHTML = '';
                 options.forEach((g, gi) => {
                     const grp = document.createElement('div'); grp.className = 'admin-option-group';
+                    let maxDisplay = (g.type === 'custom' && g.max) ? ` (max: ${g.max})` : '';
                     grp.innerHTML = `
                         <div class="admin-option-group-header">
                             <div class="admin-option-group-title">
                                 <i class="fas fa-layer-group"></i> 
                                 <input type="text" class="admin-input" style="width:150px;" placeholder="Group name (EN)" value="${escapeHtml(g.nameEn || '')}" id="group_name_en_${gi}">
-                                <span style="margin-left:10px; font-size:12px; color:var(--gray);">(${g.type})</span>
+                                <span style="margin-left:10px; font-size:12px; color:var(--gray);">(${g.type}${maxDisplay})</span>
                             </div>
                             <!-- No delete button in EN mode -->
                         </div>
@@ -5699,7 +5775,6 @@ VIP Table</textarea>
                     const rows = g.querySelectorAll('.admin-choice-item');
                     rows.forEach((r, ci) => {
                         const n = r.querySelector(`#choice_name_en_${gi}_${ci}`)?.value?.trim();
-                        // availability is read from the existing object (already toggled)
                         const avail = options[gi]?.choices[ci]?.available !== false;
                         if (n) choices.push({ name: '', nameEn: n, price: 0, available: avail });
                     });
