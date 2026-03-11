@@ -4444,7 +4444,8 @@ VIP Table</textarea>
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
                     state.currentTable = table;
-                    setTableSession(table);   // <-- ADDED: create session for admin-started order
+                    // Set session for this table to bypass scanner later
+                    setTableSession(table);
                     tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${escapeHtml(table)}`;
                     menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${escapeHtml(table)}` : `Select items to add to your order for ${escapeHtml(table)}`;
                     cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${escapeHtml(table)}` : `Your order for ${escapeHtml(table)}`;
@@ -4535,7 +4536,8 @@ VIP Table</textarea>
                 btn.addEventListener('click', function() {
                     const table = this.dataset.table;
                     state.currentTable = table;
-                    setTableSession(table);   // <-- ADDED: create session for admin-started order
+                    // Set session for this table
+                    setTableSession(table);
                     tableInfo.innerHTML = `<i class="fas fa-chair"></i> ${escapeHtml(table)}`;
                     menuSubtitle.textContent = state.currentLanguage === 'el' ? `Επιλέξτε είδη για να προσθέσετε στην παραγγελία σας για ${escapeHtml(table)}` : `Select items to add to your order for ${escapeHtml(table)}`;
                     cartSubtitle.textContent = state.currentLanguage === 'el' ? `Η παραγγελία σας για ${escapeHtml(table)}` : `Your order for ${escapeHtml(table)}`;
@@ -6863,6 +6865,65 @@ VIP Table</textarea>
             adminChangeCodeInput.focus();
         }
 
+        // ========== UPDATED PLACE ORDER FUNCTION ==========
+        window.placeOrderOptimistic = async function() {
+            // Session validation – skip if in admin mode (so admin can place orders without a session)
+            if (!state.isAdminMode && !isTableSessionValid()) {
+                showNotification(state.currentLanguage === 'el' ?
+                    'Η συνεδρία έχει λήξει. Παρακαλώ σαρώστε ξανά το QR.' :
+                    'Session expired. Please scan the QR again.');
+                resetOrder();
+                clearTableSession();
+                showSection('scannerSection');
+                return;
+            }
+
+            if (!state.selectedPaymentMethod || !state.selectedPaymentTime) { showNotification(state.currentLanguage === 'el' ? 'Παρακαλώ επιλέξτε τρόπο και χρόνο πληρωμής' : 'Please select payment method and time'); return; }
+            if (state.cart.length === 0) { showNotification(state.currentLanguage === 'el' ? 'Το καλάθι είναι άδειο' : 'Cart is empty'); return; }
+            const orderNumber = generateOrderNumber();
+            const order = {
+                orderNumber, table: state.currentTable,
+                items: state.cart.map(item => ({ ...item })),
+                paymentMethod: state.selectedPaymentMethod, paymentTime: state.selectedPaymentTime,
+                subtotal: calculateSubtotal(), total: calculateTotal(),
+                status: 'pending', timestamp: new Date().toISOString(), customerNotes: "",
+                printed: false
+            };
+            state.orders.push(order);
+            state.currentOrderNumber = orderNumber; // store for PDF
+            state.cumulativeStats.totalOrders++;
+            state.cumulativeStats.totalRevenue += order.total;
+            await saveCumulativeStats();
+            showOrderConfirmation(order);
+            playSound(state.soundEffects.checkoutSound);
+            await saveOrder(order);
+            
+            // Adjust confirmation buttons based on table type
+            const isTakeaway = state.currentTable && state.currentTable.toLowerCase().includes('take away');
+            if (isTakeaway) {
+                document.getElementById('viewMyOrdersBtn').style.display = 'none';
+                document.getElementById('downloadOrderPdfBtn').style.display = 'inline-flex';
+            } else {
+                document.getElementById('viewMyOrdersBtn').style.display = 'inline-flex';
+                document.getElementById('downloadOrderPdfBtn').style.display = 'none';
+            }
+            
+            if (state.isAdminMode && state.currentTable && state.currentTable !== "Admin") {
+                state.currentTable = null;
+                showSection('adminDashboardSection');
+                backToAdminBtn.style.display = 'none';
+                cartFloating.style.display = 'none';
+                updateRequestPayButton();
+                tableInfo.innerHTML = `<i class="fas fa-qrcode"></i> ${state.currentLanguage === 'el' ? 'Σαρώστε QR για έναρξη' : 'Scan QR to start'}`;
+                myOrdersButton.style.display = 'none';
+                adminFloating.style.display = 'flex';
+            } else {
+                showSection('confirmationSection');
+                resetCart();
+            }
+            showNotification(state.currentLanguage === 'el' ? `Η παραγγελία #${orderNumber} επιβεβαιώθηκε!` : `Order #${orderNumber} confirmed!`);
+        };
+
         // ========== EVENT LISTENERS ==========
         async function initApp() {
             await loadInitialData();
@@ -6991,56 +7052,6 @@ VIP Table</textarea>
             cancelTableSettingsBtn.addEventListener('click', cancelTableSettings);
             saveTableSettingsBtn.addEventListener('click', saveTableSettings);
         }
-
-        // ========== UPDATED PLACE ORDER FUNCTION ==========
-        window.placeOrderOptimistic = async function() {
-            // Session validation
-            if (!isTableSessionValid()) {
-                showNotification(state.currentLanguage === 'el' ?
-                    'Η συνεδρία έχει λήξει. Παρακαλώ σαρώστε ξανά το QR.' :
-                    'Session expired. Please scan the QR again.');
-                resetOrder();
-                clearTableSession();
-                showSection('scannerSection');
-                return;
-            }
-
-            if (!state.selectedPaymentMethod || !state.selectedPaymentTime) { showNotification(state.currentLanguage === 'el' ? 'Παρακαλώ επιλέξτε τρόπο και χρόνο πληρωμής' : 'Please select payment method and time'); return; }
-            if (state.cart.length === 0) { showNotification(state.currentLanguage === 'el' ? 'Το καλάθι είναι άδειο' : 'Cart is empty'); return; }
-            const orderNumber = generateOrderNumber();
-            const order = {
-                orderNumber, table: state.currentTable,
-                items: state.cart.map(item => ({ ...item })),
-                paymentMethod: state.selectedPaymentMethod, paymentTime: state.selectedPaymentTime,
-                subtotal: calculateSubtotal(), total: calculateTotal(),
-                status: 'pending', timestamp: new Date().toISOString(), customerNotes: "",
-                printed: false
-            };
-            state.orders.push(order);
-            state.currentOrderNumber = orderNumber; // store for PDF
-            state.cumulativeStats.totalOrders++;
-            state.cumulativeStats.totalRevenue += order.total;
-            await saveCumulativeStats();
-            showOrderConfirmation(order);
-            playSound(state.soundEffects.checkoutSound);
-            await saveOrder(order);
-            
-            // Adjust confirmation buttons based on table type
-            const isTakeaway = state.currentTable && state.currentTable.toLowerCase().includes('take away');
-            if (isTakeaway) {
-                document.getElementById('viewMyOrdersBtn').style.display = 'none';
-                document.getElementById('downloadOrderPdfBtn').style.display = 'inline-flex';
-            } else {
-                document.getElementById('viewMyOrdersBtn').style.display = 'inline-flex';
-                document.getElementById('downloadOrderPdfBtn').style.display = 'none';
-            }
-            
-            // ALWAYS go to confirmation section and reset cart, regardless of admin mode
-            showSection('confirmationSection');
-            resetCart();
-
-            showNotification(state.currentLanguage === 'el' ? `Η παραγγελία #${orderNumber} επιβεβαιώθηκε!` : `Order #${orderNumber} confirmed!`);
-        };
 
         initApp();
 
