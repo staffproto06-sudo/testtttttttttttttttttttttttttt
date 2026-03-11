@@ -763,6 +763,11 @@
                             </div>
                         </div>
                         <div class="admin-form-group"><label class="admin-label">Tags (EL) (separate with commas)</label><input type="text" class="admin-input" id="editItemTags" placeholder="Vegetarian, Popular, Spicy"></div>
+                        <!-- NEW: Not available checkbox -->
+                        <div class="admin-form-group" style="display: flex; align-items: center;">
+                            <label class="admin-label" style="margin-right: 10px;">Not available?</label>
+                            <input type="checkbox" id="editItemNotAvailable">
+                        </div>
                         <div id="adminOptionsSection" class="admin-options-section"></div>
                         <div class="payment-actions">
                             <button class="btn btn-secondary" id="cancelEditBtn"><i class="fas fa-times"></i> Cancel</button>
@@ -790,6 +795,11 @@
                             </div>
                         </div>
                         <div class="admin-form-group"><label class="admin-label">Tags (EN) (separate with commas)</label><input type="text" class="admin-input" id="editItemTagsEn" placeholder="Vegetarian, Popular, Spicy"></div>
+                        <!-- NEW: Not available checkbox (shared) -->
+                        <div class="admin-form-group" style="display: flex; align-items: center;">
+                            <label class="admin-label" style="margin-right: 10px;">Not available?</label>
+                            <input type="checkbox" id="editItemNotAvailableEn">
+                        </div>
                         <div id="adminOptionsSectionEn" class="admin-options-section">
                             <h4 style="margin-bottom:15px;"><i class="fas fa-tasks"></i> Options / Subcategories (EN) - translate only</h4>
                             <div id="optionsGroupsContainerEn"></div>
@@ -1930,20 +1940,20 @@ VIP Table</textarea>
             pendingTable: null
         };
 
-        // ========== DEFAULT DATA (unchanged) ==========
+        // ========== DEFAULT DATA (unchanged, but added notAvailable: false) ==========
         const defaultMenuItems = [
-            { id: 1, name: "Πίτσα Μαργαρίτα", nameEn: "Margherita Pizza", description: "Κλασική σάλτσα ντομάτας, φρέσκια μοτσαρέλα, βασιλικός", descriptionEn: "Classic tomato sauce, fresh mozzarella, basil", price: 14.99, category: "pizza", tags: ["Χορτοφαγική", "Δημοφιλής"], tagsEn: ["Vegetarian", "Popular"], image: "", options: [] },
-            { id: 2, name: "Πίτσα Πεπερονί", nameEn: "Pepperoni Pizza", description: "Σάλτσα ντομάτας, μοτσαρέλα, διπλό πεπερόνι", descriptionEn: "Tomato sauce, mozzarella, double pepperoni", price: 16.99, category: "pizza", tags: ["Πικάντικη"], tagsEn: ["Spicy"], image: "", options: [] },
-            { id: 3, name: "Σαλάτα Καίσαρα", nameEn: "Caesar Salad", description: "Μαρούλι ρωμαϊκό, παρμεζάνα, κρουτόν, σάλτσα Καίσαρα", descriptionEn: "Romaine lettuce, parmesan, croutons, Caesar dressing", price: 9.99, category: "salads", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [] },
-            { id: 4, name: "Χωριάτικη Σαλάτα", nameEn: "Greek Salad", description: "Αγγούρι, ντομάτα, ελιές, φέτα, ρίγανη", descriptionEn: "Cucumber, tomato, olives, feta, oregano", price: 10.99, category: "salads", tags: ["Χορτοφαγική", "Υγιεινή"], tagsEn: ["Vegetarian", "Healthy"], image: "", options: [] },
-            { id: 5, name: "Σπαγγέτι Καρμπονάρα", nameEn: "Spaghetti Carbonara", description: "Αυγά, τυρί, πανσέτα, μαύρο πιπέρι", descriptionEn: "Eggs, cheese, pancetta, black pepper", price: 13.99, category: "pasta", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [] },
-            { id: 6, name: "Λαζάνια", nameEn: "Lasagna", description: "Στρώσεις ζύμης, κιμάς, μπεσαμέλ, παρμεζάνα", descriptionEn: "Layered pasta, minced meat, béchamel, parmesan", price: 15.99, category: "pasta", tags: [], tagsEn: [], image: "", options: [] },
-            { id: 7, name: "Σολομός στη Σχάρα", nameEn: "Grilled Salmon", description: "Φρέσκο φιλέτο σολομού, σάλτσα λεμονιού, λαχανικά", descriptionEn: "Fresh salmon fillet, lemon sauce, vegetables", price: 19.99, category: "main", tags: ["Χωρίς γλουτένη"], tagsEn: ["Gluten-free"], image: "", options: [] },
-            { id: 8, name: "Μπριζόλα Ribeye", nameEn: "Ribeye Steak", description: "300γρ. ribeye, συνοδεύεται από πατάτες και σαλάτα", descriptionEn: "300g ribeye, served with potatoes and salad", price: 24.99, category: "main", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [] },
-            { id: 9, name: "Τιραμισού", nameEn: "Tiramisu", description: "Μπισκότα Savoiardi εμποτισμένα με καφέ, κρέμα μασκαρπόνε, κακάο", descriptionEn: "Savoiardi biscuits soaked in coffee, mascarpone cream, cocoa", price: 7.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [] },
-            { id: 10, name: "Τσιζκέικ", nameEn: "Cheesecake", description: "Νεοϋορκέζικο, σάλτσα μούρων", descriptionEn: "New York style, berry sauce", price: 6.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [] },
-            { id: 11, name: "Coca-Cola", nameEn: "Coca-Cola", description: "Αναψυκτικό 330ml", descriptionEn: "Soft drink 330ml", price: 2.50, category: "beverages", tags: [], tagsEn: [], image: "", options: [] },
-            { id: 12, name: "Φρέσκος Χυμός Πορτοκάλι", nameEn: "Fresh Orange Juice", description: "Φρεσκοστυμμένος", descriptionEn: "Freshly squeezed", price: 3.50, category: "beverages", tags: ["Υγιεινή"], tagsEn: ["Healthy"], image: "", options: [] }
+            { id: 1, name: "Πίτσα Μαργαρίτα", nameEn: "Margherita Pizza", description: "Κλασική σάλτσα ντομάτας, φρέσκια μοτσαρέλα, βασιλικός", descriptionEn: "Classic tomato sauce, fresh mozzarella, basil", price: 14.99, category: "pizza", tags: ["Χορτοφαγική", "Δημοφιλής"], tagsEn: ["Vegetarian", "Popular"], image: "", options: [], notAvailable: false },
+            { id: 2, name: "Πίτσα Πεπερονί", nameEn: "Pepperoni Pizza", description: "Σάλτσα ντομάτας, μοτσαρέλα, διπλό πεπερόνι", descriptionEn: "Tomato sauce, mozzarella, double pepperoni", price: 16.99, category: "pizza", tags: ["Πικάντικη"], tagsEn: ["Spicy"], image: "", options: [], notAvailable: false },
+            { id: 3, name: "Σαλάτα Καίσαρα", nameEn: "Caesar Salad", description: "Μαρούλι ρωμαϊκό, παρμεζάνα, κρουτόν, σάλτσα Καίσαρα", descriptionEn: "Romaine lettuce, parmesan, croutons, Caesar dressing", price: 9.99, category: "salads", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [], notAvailable: false },
+            { id: 4, name: "Χωριάτικη Σαλάτα", nameEn: "Greek Salad", description: "Αγγούρι, ντομάτα, ελιές, φέτα, ρίγανη", descriptionEn: "Cucumber, tomato, olives, feta, oregano", price: 10.99, category: "salads", tags: ["Χορτοφαγική", "Υγιεινή"], tagsEn: ["Vegetarian", "Healthy"], image: "", options: [], notAvailable: false },
+            { id: 5, name: "Σπαγγέτι Καρμπονάρα", nameEn: "Spaghetti Carbonara", description: "Αυγά, τυρί, πανσέτα, μαύρο πιπέρι", descriptionEn: "Eggs, cheese, pancetta, black pepper", price: 13.99, category: "pasta", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [], notAvailable: false },
+            { id: 6, name: "Λαζάνια", nameEn: "Lasagna", description: "Στρώσεις ζύμης, κιμάς, μπεσαμέλ, παρμεζάνα", descriptionEn: "Layered pasta, minced meat, béchamel, parmesan", price: 15.99, category: "pasta", tags: [], tagsEn: [], image: "", options: [], notAvailable: false },
+            { id: 7, name: "Σολομός στη Σχάρα", nameEn: "Grilled Salmon", description: "Φρέσκο φιλέτο σολομού, σάλτσα λεμονιού, λαχανικά", descriptionEn: "Fresh salmon fillet, lemon sauce, vegetables", price: 19.99, category: "main", tags: ["Χωρίς γλουτένη"], tagsEn: ["Gluten-free"], image: "", options: [], notAvailable: false },
+            { id: 8, name: "Μπριζόλα Ribeye", nameEn: "Ribeye Steak", description: "300γρ. ribeye, συνοδεύεται από πατάτες και σαλάτα", descriptionEn: "300g ribeye, served with potatoes and salad", price: 24.99, category: "main", tags: ["Δημοφιλής"], tagsEn: ["Popular"], image: "", options: [], notAvailable: false },
+            { id: 9, name: "Τιραμισού", nameEn: "Tiramisu", description: "Μπισκότα Savoiardi εμποτισμένα με καφέ, κρέμα μασκαρπόνε, κακάο", descriptionEn: "Savoiardi biscuits soaked in coffee, mascarpone cream, cocoa", price: 7.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [], notAvailable: false },
+            { id: 10, name: "Τσιζκέικ", nameEn: "Cheesecake", description: "Νεοϋορκέζικο, σάλτσα μούρων", descriptionEn: "New York style, berry sauce", price: 6.99, category: "desserts", tags: ["Χορτοφαγική"], tagsEn: ["Vegetarian"], image: "", options: [], notAvailable: false },
+            { id: 11, name: "Coca-Cola", nameEn: "Coca-Cola", description: "Αναψυκτικό 330ml", descriptionEn: "Soft drink 330ml", price: 2.50, category: "beverages", tags: [], tagsEn: [], image: "", options: [], notAvailable: false },
+            { id: 12, name: "Φρέσκος Χυμός Πορτοκάλι", nameEn: "Fresh Orange Juice", description: "Φρεσκοστυμμένος", descriptionEn: "Freshly squeezed", price: 3.50, category: "beverages", tags: ["Υγιεινή"], tagsEn: ["Healthy"], image: "", options: [], notAvailable: false }
         ];
 
         const defaultCategories = [
@@ -2330,6 +2340,8 @@ VIP Table</textarea>
                         if (!d.nameEn) d.nameEn = '';
                         if (!d.descriptionEn) d.descriptionEn = '';
                         if (!d.tagsEn) d.tagsEn = [];
+                        // Ensure notAvailable field exists
+                        if (d.notAvailable === undefined) d.notAvailable = false;
                         if (d.options) {
                             d.options.forEach(grp => {
                                 if (!grp.nameEn) grp.nameEn = '';
@@ -2581,6 +2593,7 @@ VIP Table</textarea>
                     if (!d.nameEn) d.nameEn = '';
                     if (!d.descriptionEn) d.descriptionEn = '';
                     if (!d.tagsEn) d.tagsEn = [];
+                    if (d.notAvailable === undefined) d.notAvailable = false;
                     if (d.options) {
                         d.options.forEach(grp => {
                             if (!grp.nameEn) grp.nameEn = '';
@@ -2701,7 +2714,7 @@ VIP Table</textarea>
             });
         }
 
-        // ========== UI HELPERS (unchanged) ==========
+        // ========== UI HELPERS (unchanged, but updated displayMenuItems to filter notAvailable) ==========
         function determineCurrentTheme() {
             for (const [id, t] of Object.entries(themes)) {
                 if (state.customization.primary === t.primary && state.customization.secondary === t.secondary && state.customization.background === t.background) {
@@ -2795,7 +2808,11 @@ VIP Table</textarea>
         function displayMenuItems(category) {
             if (!menuGrid) return;
             menuGrid.innerHTML = '';
-            const filtered = category === 'all' ? [...state.menuItems].sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0)) : state.menuItems.filter(i=>i.category===category).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
+            // Filter out items that are marked as not available
+            const filtered = (category === 'all' 
+                ? state.menuItems.filter(item => !item.notAvailable).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0))
+                : state.menuItems.filter(item => item.category === category && !item.notAvailable).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0))
+            );
             if (filtered.length === 0) { 
                 menuGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--gray);"><i class="fas fa-utensils" style="font-size:50px; margin-bottom:15px; opacity:0.5;"></i><p>${state.currentLanguage === 'el' ? 'Δεν υπάρχουν είδη σε αυτή την κατηγορία ακόμα.' : 'No items in this category yet.'}</p></div>`; 
                 return; 
@@ -5122,7 +5139,7 @@ VIP Table</textarea>
             await saveRestaurantInfo();
         }
 
-        // --- MENU ADMIN (Greek) (unchanged) ---
+        // --- MENU ADMIN (Greek) (unchanged, but added notAvailable badge and checkbox handling) ---
         function loadMenuItemsForAdmin() {
             const list = document.getElementById('menuItemsList'); list.innerHTML = '';
             if (state.menuItems.length===0) { list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>'; return; }
@@ -5130,7 +5147,8 @@ VIP Table</textarea>
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                let notAvailableBadge = item.notAvailable ? '<span class="item-tag" style="background-color: var(--danger); color: white; margin-left:5px;">Not available</span>' : '';
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
@@ -5143,7 +5161,7 @@ VIP Table</textarea>
             const orig = state.menuItems.find(i=>i.id===id); if (!orig) return;
             const newId = state.menuItems.length ? Math.max(...state.menuItems.map(i=>i.id))+1 : 1;
             const maxOrder = state.menuItems.reduce((m,i)=>Math.max(m,i.displayOrder||0),0);
-            const newItem = { ...orig, id: newId, name: `${orig.name} (copy)`, displayOrder: maxOrder+1 };
+            const newItem = { ...orig, id: newId, name: `${orig.name} (copy)`, displayOrder: maxOrder+1, notAvailable: orig.notAvailable };
             state.menuItems.push(newItem);
             state.menuItems.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             loadMenuItemsForAdmin();
@@ -5165,6 +5183,7 @@ VIP Table</textarea>
                     document.getElementById('editItemPrice').value = item.price;
                     document.getElementById('editItemCategory').value = item.category;
                     document.getElementById('editItemTags').value = item.tags.join(', ');
+                    document.getElementById('editItemNotAvailable').checked = item.notAvailable || false;
                     updateItemImagePreview(item.image);
                     form.dataset.itemId = id;
                     buildOptionsAdminUI(item.options||[]);
@@ -5175,6 +5194,7 @@ VIP Table</textarea>
                 document.getElementById('editItemPrice').value = '';
                 document.getElementById('editItemCategory').value = state.categories[0]?.id || '';
                 document.getElementById('editItemTags').value = '';
+                document.getElementById('editItemNotAvailable').checked = false;
                 updateItemImagePreview('');
                 form.dataset.itemId = '';
                 buildOptionsAdminUI([]);
@@ -5238,6 +5258,7 @@ VIP Table</textarea>
             const price = parseFloat(document.getElementById('editItemPrice').value);
             const cat = document.getElementById('editItemCategory').value;
             const tags = document.getElementById('editItemTags').value.split(',').map(t=>t.trim()).filter(t=>t);
+            const notAvailable = document.getElementById('editItemNotAvailable').checked;
             if (!name||!desc||!price||!cat) { showNotification("Please fill all required fields."); return; }
             let options = [];
             const optSec = document.getElementById('adminOptionsSection');
@@ -5262,12 +5283,12 @@ VIP Table</textarea>
             if (id) {
                 const idx = state.menuItems.findIndex(i=>i.id===parseInt(id));
                 if (idx!==-1) {
-                    state.menuItems[idx] = { ...state.menuItems[idx], name, description: desc, price, category: cat, image: state.currentImageUpload||state.menuItems[idx].image, tags, options };
+                    state.menuItems[idx] = { ...state.menuItems[idx], name, description: desc, price, category: cat, image: state.currentImageUpload||state.menuItems[idx].image, tags, options, notAvailable };
                 }
             } else {
                 const newId = state.menuItems.length ? Math.max(...state.menuItems.map(i=>i.id))+1 : 1;
                 const maxOrder = state.menuItems.reduce((m,i)=>Math.max(m,i.displayOrder||0),0);
-                state.menuItems.push({ id: newId, name, description: desc, price, category: cat, image: state.currentImageUpload||'', tags, options, displayOrder: maxOrder+1 });
+                state.menuItems.push({ id: newId, name, description: desc, price, category: cat, image: state.currentImageUpload||'', tags, options, displayOrder: maxOrder+1, notAvailable });
             }
             state.menuItems.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             document.getElementById('editMenuItemForm').style.display = 'none';
@@ -5291,7 +5312,7 @@ VIP Table</textarea>
             await deleteMenuItemFirestore(id);
         }
 
-        // --- MENU ADMIN (English) (unchanged) ---
+        // --- MENU ADMIN (English) (unchanged, but added notAvailable badge and checkbox) ---
         function loadMenuItemsForAdminEn() {
             const list = document.getElementById('menuItemsListEn'); if (!list) return;
             list.innerHTML = '';
@@ -5303,7 +5324,8 @@ VIP Table</textarea>
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                let notAvailableBadge = item.notAvailable ? '<span class="item-tag" style="background-color: var(--danger); color: white; margin-left:5px;">Not available</span>' : '';
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
@@ -5331,6 +5353,7 @@ VIP Table</textarea>
                     document.getElementById('editItemPriceEn').value = item.price;
                     document.getElementById('editItemCategoryEn').value = item.category;
                     document.getElementById('editItemTagsEn').value = (item.tagsEn || []).join(', ');
+                    document.getElementById('editItemNotAvailableEn').checked = item.notAvailable || false;
                     updateItemImagePreviewEn(item.image || '');
                     form.dataset.itemId = id;
                     buildOptionsAdminUIEn(item.options || []);
@@ -5341,6 +5364,7 @@ VIP Table</textarea>
                 document.getElementById('editItemPriceEn').value = '0.00';
                 catSel.value = state.categories[0]?.id || '';
                 document.getElementById('editItemTagsEn').value = '';
+                document.getElementById('editItemNotAvailableEn').checked = false;
                 updateItemImagePreviewEn('');
                 form.dataset.itemId = '';
                 buildOptionsAdminUIEn([]);
@@ -5411,6 +5435,7 @@ VIP Table</textarea>
             const nameEn = document.getElementById('editItemNameEn').value.trim();
             const descriptionEn = document.getElementById('editItemDescriptionEn').value.trim();
             const tagsEn = document.getElementById('editItemTagsEn').value.split(',').map(t=>t.trim()).filter(t=>t);
+            const notAvailable = document.getElementById('editItemNotAvailableEn').checked;
             let options = [];
             const optSec = document.getElementById('adminOptionsSectionEn');
             if (optSec) {
@@ -5442,6 +5467,7 @@ VIP Table</textarea>
                     state.menuItems[idx].nameEn = nameEn;
                     state.menuItems[idx].descriptionEn = descriptionEn;
                     state.menuItems[idx].tagsEn = tagsEn;
+                    state.menuItems[idx].notAvailable = notAvailable;
                     if (state.menuItems[idx].options) {
                         options.forEach((newGrp, gi) => {
                             if (state.menuItems[idx].options[gi]) {
@@ -5470,6 +5496,7 @@ VIP Table</textarea>
                     image: '',
                     tags: [],
                     tagsEn: tagsEn,
+                    notAvailable: notAvailable,
                     options: options.map(grp => ({
                         id: grp.id,
                         name: '',
@@ -5499,7 +5526,8 @@ VIP Table</textarea>
                 id: newId, 
                 name: orig.name + ' (αντίγραφο)',
                 nameEn: orig.nameEn ? orig.nameEn + ' (copy)' : '',
-                displayOrder: maxOrder + 1 
+                displayOrder: maxOrder + 1,
+                notAvailable: orig.notAvailable
             };
             state.menuItems.push(newItem);
             state.menuItems.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
@@ -6271,7 +6299,8 @@ VIP Table</textarea>
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                let notAvailableBadge = item.notAvailable ? '<span class="item-tag" style="background-color: var(--danger); color: white; margin-left:5px;">Not available</span>' : '';
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
@@ -6292,7 +6321,8 @@ VIP Table</textarea>
             sorted.forEach(item => {
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                let notAvailableBadge = item.notAvailable ? '<span class="item-tag" style="background-color: var(--danger); color: white; margin-left:5px;">Not available</span>' : '';
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
