@@ -763,11 +763,7 @@
                             </div>
                         </div>
                         <div class="admin-form-group"><label class="admin-label">Tags (EL) (separate with commas)</label><input type="text" class="admin-input" id="editItemTags" placeholder="Vegetarian, Popular, Spicy"></div>
-                        <!-- NEW: Not available checkbox -->
-                        <div class="admin-form-group" style="display: flex; align-items: center;">
-                            <label class="admin-label" style="margin-right: 10px;">Not available?</label>
-                            <input type="checkbox" id="editItemNotAvailable">
-                        </div>
+                        <!-- [REMOVED] Not available checkbox – now on card -->
                         <div id="adminOptionsSection" class="admin-options-section"></div>
                         <div class="payment-actions">
                             <button class="btn btn-secondary" id="cancelEditBtn"><i class="fas fa-times"></i> Cancel</button>
@@ -795,11 +791,7 @@
                             </div>
                         </div>
                         <div class="admin-form-group"><label class="admin-label">Tags (EN) (separate with commas)</label><input type="text" class="admin-input" id="editItemTagsEn" placeholder="Vegetarian, Popular, Spicy"></div>
-                        <!-- NEW: Not available checkbox (shared) -->
-                        <div class="admin-form-group" style="display: flex; align-items: center;">
-                            <label class="admin-label" style="margin-right: 10px;">Not available?</label>
-                            <input type="checkbox" id="editItemNotAvailableEn">
-                        </div>
+                        <!-- [REMOVED] Not available checkbox – now on card -->
                         <div id="adminOptionsSectionEn" class="admin-options-section">
                             <h4 style="margin-bottom:15px;"><i class="fas fa-tasks"></i> Options / Subcategories (EN) - translate only</h4>
                             <div id="optionsGroupsContainerEn"></div>
@@ -5139,7 +5131,26 @@ VIP Table</textarea>
             await saveRestaurantInfo();
         }
 
-        // --- MENU ADMIN (Greek) (unchanged, but added notAvailable badge and checkbox handling) ---
+        // ========== TOGGLE AVAILABILITY FUNCTION (NEW) ==========
+        async function toggleAvailability(itemId) {
+            const item = state.menuItems.find(i => i.id === itemId);
+            if (!item) return;
+            item.notAvailable = !item.notAvailable;
+            await saveMenuItem(item);
+            // Refresh all admin lists
+            loadMenuItemsForAdmin();
+            loadMenuItemsForAdminEn();
+            loadMenuItemsForAdminModal();
+            loadMenuItemsForAdminModalEn();
+            // Also refresh customer menu if visible
+            if (!state.isAdminMode && document.querySelector('#menuSection.active-section')) {
+                const activeCat = document.querySelector('.category-tab.active')?.dataset?.category || 'all';
+                displayMenuItems(activeCat);
+            }
+            showNotification(`"${item.name}" marked as ${item.notAvailable ? 'unavailable' : 'available'}.`);
+        }
+
+        // --- MENU ADMIN (Greek) (unchanged, but added notAvailable badge and toggle button) ---
         function loadMenuItemsForAdmin() {
             const list = document.getElementById('menuItemsList'); list.innerHTML = '';
             if (state.menuItems.length===0) { list.innerHTML = '<p style="text-align: center; color: var(--gray);">No menu items found.</p>'; return; }
@@ -5148,10 +5159,12 @@ VIP Table</textarea>
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
                 let notAvailableBadge = item.notAvailable ? '<span class="item-tag" style="background-color: var(--danger); color: white; margin-left:5px;">Not available</span>' : '';
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                // Add toggle availability button
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn toggle-availability" data-id="${item.id}" title="${item.notAvailable ? 'Mark available' : 'Mark unavailable'}"><i class="fas ${item.notAvailable ? 'fa-check-circle' : 'fa-ban'}"></i></button><button class="admin-small-btn btn-primary edit-item" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
+            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.edit-item').forEach(b=> b.addEventListener('click', function() { openEditMenuItemForm(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.duplicate-item').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimistic(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimistic(id)); }));
@@ -5183,7 +5196,7 @@ VIP Table</textarea>
                     document.getElementById('editItemPrice').value = item.price;
                     document.getElementById('editItemCategory').value = item.category;
                     document.getElementById('editItemTags').value = item.tags.join(', ');
-                    document.getElementById('editItemNotAvailable').checked = item.notAvailable || false;
+                    // removed notAvailable checkbox
                     updateItemImagePreview(item.image);
                     form.dataset.itemId = id;
                     buildOptionsAdminUI(item.options||[]);
@@ -5194,7 +5207,7 @@ VIP Table</textarea>
                 document.getElementById('editItemPrice').value = '';
                 document.getElementById('editItemCategory').value = state.categories[0]?.id || '';
                 document.getElementById('editItemTags').value = '';
-                document.getElementById('editItemNotAvailable').checked = false;
+                // removed notAvailable checkbox
                 updateItemImagePreview('');
                 form.dataset.itemId = '';
                 buildOptionsAdminUI([]);
@@ -5258,7 +5271,7 @@ VIP Table</textarea>
             const price = parseFloat(document.getElementById('editItemPrice').value);
             const cat = document.getElementById('editItemCategory').value;
             const tags = document.getElementById('editItemTags').value.split(',').map(t=>t.trim()).filter(t=>t);
-            const notAvailable = document.getElementById('editItemNotAvailable').checked;
+            // removed notAvailable – will keep existing value or false for new
             if (!name||!desc||!price||!cat) { showNotification("Please fill all required fields."); return; }
             let options = [];
             const optSec = document.getElementById('adminOptionsSection');
@@ -5283,12 +5296,13 @@ VIP Table</textarea>
             if (id) {
                 const idx = state.menuItems.findIndex(i=>i.id===parseInt(id));
                 if (idx!==-1) {
-                    state.menuItems[idx] = { ...state.menuItems[idx], name, description: desc, price, category: cat, image: state.currentImageUpload||state.menuItems[idx].image, tags, options, notAvailable };
+                    // preserve notAvailable
+                    state.menuItems[idx] = { ...state.menuItems[idx], name, description: desc, price, category: cat, image: state.currentImageUpload||state.menuItems[idx].image, tags, options };
                 }
             } else {
                 const newId = state.menuItems.length ? Math.max(...state.menuItems.map(i=>i.id))+1 : 1;
                 const maxOrder = state.menuItems.reduce((m,i)=>Math.max(m,i.displayOrder||0),0);
-                state.menuItems.push({ id: newId, name, description: desc, price, category: cat, image: state.currentImageUpload||'', tags, options, displayOrder: maxOrder+1, notAvailable });
+                state.menuItems.push({ id: newId, name, description: desc, price, category: cat, image: state.currentImageUpload||'', tags, options, displayOrder: maxOrder+1, notAvailable: false });
             }
             state.menuItems.sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
             document.getElementById('editMenuItemForm').style.display = 'none';
@@ -5312,7 +5326,7 @@ VIP Table</textarea>
             await deleteMenuItemFirestore(id);
         }
 
-        // --- MENU ADMIN (English) (unchanged, but added notAvailable badge and checkbox) ---
+        // --- MENU ADMIN (English) (unchanged, but added toggle button) ---
         function loadMenuItemsForAdminEn() {
             const list = document.getElementById('menuItemsListEn'); if (!list) return;
             list.innerHTML = '';
@@ -5325,10 +5339,11 @@ VIP Table</textarea>
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
                 let notAvailableBadge = item.notAvailable ? '<span class="item-tag" style="background-color: var(--danger); color: white; margin-left:5px;">Not available</span>' : '';
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn toggle-availability" data-id="${item.id}" title="${item.notAvailable ? 'Mark available' : 'Mark unavailable'}"><i class="fas ${item.notAvailable ? 'fa-check-circle' : 'fa-ban'}"></i></button><button class="admin-small-btn btn-primary edit-item-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
+            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.edit-item-en').forEach(b => b.addEventListener('click', function() { openEditMenuItemFormEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.duplicate-item-en').forEach(b => b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-en').forEach(b => b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
@@ -5353,7 +5368,7 @@ VIP Table</textarea>
                     document.getElementById('editItemPriceEn').value = item.price;
                     document.getElementById('editItemCategoryEn').value = item.category;
                     document.getElementById('editItemTagsEn').value = (item.tagsEn || []).join(', ');
-                    document.getElementById('editItemNotAvailableEn').checked = item.notAvailable || false;
+                    // removed notAvailableEn checkbox
                     updateItemImagePreviewEn(item.image || '');
                     form.dataset.itemId = id;
                     buildOptionsAdminUIEn(item.options || []);
@@ -5364,7 +5379,7 @@ VIP Table</textarea>
                 document.getElementById('editItemPriceEn').value = '0.00';
                 catSel.value = state.categories[0]?.id || '';
                 document.getElementById('editItemTagsEn').value = '';
-                document.getElementById('editItemNotAvailableEn').checked = false;
+                // removed notAvailableEn checkbox
                 updateItemImagePreviewEn('');
                 form.dataset.itemId = '';
                 buildOptionsAdminUIEn([]);
@@ -5435,7 +5450,7 @@ VIP Table</textarea>
             const nameEn = document.getElementById('editItemNameEn').value.trim();
             const descriptionEn = document.getElementById('editItemDescriptionEn').value.trim();
             const tagsEn = document.getElementById('editItemTagsEn').value.split(',').map(t=>t.trim()).filter(t=>t);
-            const notAvailable = document.getElementById('editItemNotAvailableEn').checked;
+            // removed notAvailable checkbox – will keep existing
             let options = [];
             const optSec = document.getElementById('adminOptionsSectionEn');
             if (optSec) {
@@ -5467,7 +5482,7 @@ VIP Table</textarea>
                     state.menuItems[idx].nameEn = nameEn;
                     state.menuItems[idx].descriptionEn = descriptionEn;
                     state.menuItems[idx].tagsEn = tagsEn;
-                    state.menuItems[idx].notAvailable = notAvailable;
+                    // notAvailable remains unchanged
                     if (state.menuItems[idx].options) {
                         options.forEach((newGrp, gi) => {
                             if (state.menuItems[idx].options[gi]) {
@@ -5496,7 +5511,7 @@ VIP Table</textarea>
                     image: '',
                     tags: [],
                     tagsEn: tagsEn,
-                    notAvailable: notAvailable,
+                    notAvailable: false, // default
                     options: options.map(grp => ({
                         id: grp.id,
                         name: '',
@@ -6156,7 +6171,7 @@ VIP Table</textarea>
             }
         }
 
-        // --- MODAL ADMIN (unchanged, except added location fields) ---
+        // --- MODAL ADMIN (unchanged, except added toggle buttons in modal lists) ---
         function setupAdminPanel() {
             adminClose.addEventListener('click', ()=> adminPanel.style.display = 'none');
             document.querySelectorAll('#adminPanel .admin-tab').forEach(tab => {
@@ -6291,6 +6306,7 @@ VIP Table</textarea>
             }));
         }
 
+        // MODAL MENU LISTS WITH TOGGLE BUTTONS
         function loadMenuItemsForAdminModal() {
             const list = document.getElementById('menuItemsListModal'); if (!list) return;
             list.innerHTML = '';
@@ -6300,10 +6316,11 @@ VIP Table</textarea>
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
                 let notAvailableBadge = item.notAvailable ? '<span class="item-tag" style="background-color: var(--danger); color: white; margin-left:5px;">Not available</span>' : '';
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.name} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn toggle-availability" data-id="${item.id}" title="${item.notAvailable ? 'Mark available' : 'Mark unavailable'}"><i class="fas ${item.notAvailable ? 'fa-check-circle' : 'fa-ban'}"></i></button><button class="admin-small-btn btn-primary edit-item-modal" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.description}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${item.tags.map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
+            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.edit-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemForm(id); adminPanel.style.display = 'none'; }));
             document.querySelectorAll('.duplicate-item-modal').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimistic(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-modal').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimistic(id)); }));
@@ -6322,10 +6339,11 @@ VIP Table</textarea>
                 const card = document.createElement('div'); card.className = 'admin-card'; card.setAttribute('draggable','true'); card.dataset.itemId = item.id;
                 const img = item.image ? `<div style="height:120px; background-image:url('${item.image}'); background-size:cover; background-position:center; border-radius:8px; margin-bottom:10px;"></div>` : `<div style="height:120px; background-color:var(--light-gray); border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--gray);"><i class="fas fa-utensils"></i></div>`;
                 let notAvailableBadge = item.notAvailable ? '<span class="item-tag" style="background-color: var(--danger); color: white; margin-left:5px;">Not available</span>' : '';
-                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn btn-primary edit-item-modal-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; margin-bottom:5px;"><i class="fas fa-grip-vertical drag-handle"></i></div>${img}<div class="admin-card-header"><div class="admin-card-title">${item.nameEn || '(no English name)'} ${notAvailableBadge}</div><div class="admin-card-actions"><button class="admin-small-btn toggle-availability" data-id="${item.id}" title="${item.notAvailable ? 'Mark available' : 'Mark unavailable'}"><i class="fas ${item.notAvailable ? 'fa-check-circle' : 'fa-ban'}"></i></button><button class="admin-small-btn btn-primary edit-item-modal-en" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="admin-small-btn btn-secondary duplicate-item-modal-en" data-id="${item.id}"><i class="fas fa-copy"></i></button><button class="admin-small-btn btn-danger delete-item-modal-en" data-id="${item.id}"><i class="fas fa-trash"></i></button></div></div><p style="margin-bottom:10px; font-size:14px;">${item.descriptionEn || ''}</p><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:600; color:var(--primary);">$${item.price.toFixed(2)}</span><span style="font-size:12px; color:var(--gray);">${getCategoryDisplayName(item.category)}</span></div><div class="tag-display">${(item.tagsEn || []).map(t=>`<span class="tag-item">${t}</span>`).join('')}</div>`;
                 if (item.options?.length) card.innerHTML += `<div style="margin-top:10px; font-size:12px; color:var(--secondary);"><i class="fas fa-tasks"></i> ${item.options.length} option group(s)</div>`;
                 list.appendChild(card);
             });
+            document.querySelectorAll('.toggle-availability').forEach(b => b.addEventListener('click', function() { toggleAvailability(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.edit-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); openEditMenuItemFormEn(id); adminPanel.style.display = 'none'; }));
             document.querySelectorAll('.duplicate-item-modal-en').forEach(b=> b.addEventListener('click', function() { duplicateMenuItemOptimisticEn(parseInt(this.dataset.id)); }));
             document.querySelectorAll('.delete-item-modal-en').forEach(b=> b.addEventListener('click', function() { const id = parseInt(this.dataset.id); showAdminChangePrompt(()=>deleteMenuItemOptimisticEn(id)); }));
