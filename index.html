@@ -3823,6 +3823,18 @@ VIP Table</textarea>
         }
 
         // ========== FIXED POP-UP WINDOWS ==========
+        // Expose parent functions for popups
+        window.updateOrderStatusOptimistic = updateOrderStatusOptimistic;
+        window.deleteSingleOrder = deleteSingleOrder;
+        window.updateHelpRequestStatus = updateHelpRequestStatus;
+        window.deleteHelpRequest = async function(id) {
+            if (!confirm('Delete this help request?')) return;
+            state.helpRequests = state.helpRequests.filter(r => r.id !== id);
+            await deleteHelpRequestFirestore(id);
+            showNotification('Help request deleted.');
+            updatePendingBadges();
+        };
+
         function openVerticalOrdersView() {
             const winHtml = `<!DOCTYPE html>
 <html>
@@ -4144,24 +4156,24 @@ VIP Table</textarea>
             return d.toLocaleString();
         }
 
-        async function updateRequestStatus(requestId, newStatus) {
-            try {
-                await helpRequestsCollection.doc(requestId).update({ status: newStatus });
-            } catch (err) {
-                console.error("Error updating request:", err);
-                alert("Failed to update request status.");
+        // --- DELEGATE TO PARENT AUTHENTICATED WINDOW ---
+        function updateRequestStatus(requestId, newStatus) {
+            if (window.opener && !window.opener.closed && typeof window.opener.updateHelpRequestStatus === 'function') {
+                window.opener.updateHelpRequestStatus(requestId, newStatus);
+            } else {
+                alert("Main admin window is closed. Cannot update status.");
             }
         }
 
-        async function deleteRequest(requestId) {
+        function deleteRequest(requestId) {
             if (!confirm("Delete this help request?")) return;
-            try {
-                await helpRequestsCollection.doc(requestId).delete();
-            } catch (err) {
-                console.error("Error deleting request:", err);
-                alert("Failed to delete request.");
+            if (window.opener && !window.opener.closed && typeof window.opener.deleteHelpRequest === 'function') {
+                window.opener.deleteHelpRequest(requestId);
+            } else {
+                alert("Main admin window is closed. Cannot delete request.");
             }
         }
+        // ------------------------------------------
 
         let allRequests = [];
 
